@@ -1,0 +1,945 @@
+---
+layout: default
+title: "Tipos de Atributos"
+prev_url: /modulo-01/que-es-mineria-datos.html
+prev_title: ¿Qué es la Minería de Datos?
+next_url: /modulo-01/proceso-kdd.html
+next_title: El Proceso KDD
+---
+<style>
+/* ── Page-level styles ───────────────────────────────────────────── */
+.demo-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent); }
+.breadcrumb .sep { color: var(--border); }
+
+/* Header */
+.demo-header { margin-bottom: 2.5rem; }
+.module-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 20px;
+  padding: 0.2rem 0.85rem;
+  margin-bottom: 0.9rem;
+}
+.demo-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.demo-lead {
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 680px;
+}
+
+/* Layout grid */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 2.5rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+/* ── Theory ─────────────────────────────────────────────────────── */
+.demo-theory {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.theory-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem;
+}
+
+.theory-block h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.85rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.theory-block h2::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.theory-block p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.theory-block p strong { color: var(--text); font-weight: 600; }
+
+/* NOIR scale bar */
+.noir-bar {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.noir-step {
+  flex: 1;
+  padding: 0.55rem 0.5rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: default;
+  position: relative;
+  transition: filter 200ms ease;
+}
+.noir-step:not(:last-child)::after {
+  content: '›';
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  z-index: 1;
+  color: var(--muted);
+}
+
+.noir-n { background: rgba(139,148,158,0.15); color: #8b949e; }
+.noir-o { background: rgba(210,153,34,0.12);  color: #d29922; }
+.noir-i { background: rgba(88,166,255,0.12);  color: #58a6ff; }
+.noir-r { background: rgba(63,185,80,0.12);   color: #3fb950; }
+
+/* Scale detail table */
+.scale-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.scale-table th {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.scale-table td {
+  padding: 0.45rem 0.5rem;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  vertical-align: top;
+  line-height: 1.45;
+}
+.scale-table td:first-child {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.scale-table tr:last-child td { border-bottom: none; }
+
+.scale-n td:first-child { color: #8b949e; }
+.scale-o td:first-child { color: #d29922; }
+.scale-i td:first-child { color: #58a6ff; }
+.scale-r td:first-child { color: #3fb950; }
+
+/* Additional types */
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.type-chip {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--surface2);
+  font-family: var(--font-mono);
+}
+.type-chip span { color: var(--text); font-weight: 600; }
+
+/* ── Interactive game ───────────────────────────────────────────── */
+.demo-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.interactive-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin-bottom: 0.1rem;
+}
+.game-intro {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Score bar */
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+}
+.score-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent3);
+}
+.score-progress {
+  flex: 1;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent3), var(--accent));
+  border-radius: 3px;
+  transition: width 400ms ease;
+  width: 0%;
+}
+.btn-reset {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 200ms, color 200ms;
+}
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Attribute pile */
+.attr-pile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 48px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem;
+  align-content: flex-start;
+}
+
+.attr-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  white-space: nowrap;
+}
+.attr-chip:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.attr-chip.selected {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 2px rgba(188,140,255,0.2);
+  color: var(--accent2);
+}
+.attr-chip .chip-example {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Drop zones */
+.scale-zones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.zone {
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  min-height: 110px;
+  transition: border-color 200ms ease, background 200ms ease;
+  cursor: pointer;
+}
+.zone:hover, .zone.droppable {
+  border-style: solid;
+  border-color: rgba(88,166,255,0.5);
+  background: rgba(88,166,255,0.03);
+}
+.zone-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.zone-name {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.zone-hint {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.zone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 28px;
+}
+.zone-chip {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.zone-chip.correct   { background: rgba(63,185,80,0.15);  color: #3fb950; border: 1px solid rgba(63,185,80,0.3);  }
+.zone-chip.incorrect { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid rgba(248,81,73,0.3);  }
+.zone-chip.correct::before   { content: '✓'; font-size: 0.7rem; }
+.zone-chip.incorrect::before { content: '✗'; font-size: 0.7rem; }
+
+/* Feedback toast */
+.feedback-toast {
+  border-radius: var(--radius-md);
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  animation: fadeInUp 0.25s ease both;
+  display: none;
+}
+.feedback-toast.correct   { background: rgba(63,185,80,0.1);  border: 1px solid rgba(63,185,80,0.3);  color: #3fb950; }
+.feedback-toast.incorrect { background: rgba(248,81,73,0.1);  border: 1px solid rgba(248,81,73,0.3);  color: #f85149; }
+.feedback-toast.visible   { display: block; }
+.feedback-icon { font-size: 1rem; margin-right: 0.4rem; }
+
+/* Operations panel */
+.ops-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.3rem;
+}
+.ops-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+}
+.ops-attr-name {
+  color: var(--accent2);
+  font-weight: 700;
+}
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.op-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.4rem;
+  text-align: center;
+}
+.op-symbol {
+  font-size: 1.1rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text);
+}
+.op-name {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+.op-valid   { border-color: rgba(63,185,80,0.4);  background: rgba(63,185,80,0.06); }
+.op-invalid { border-color: rgba(248,81,73,0.3);  background: rgba(248,81,73,0.04); opacity: 0.55; }
+.op-valid   .op-symbol { color: #3fb950; }
+.op-invalid .op-symbol { color: #f85149; }
+
+.ops-placeholder {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Application section */
+.demo-application {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+}
+.demo-application h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.attr-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.showcase-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+}
+.showcase-attr {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.showcase-value {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.showcase-scale {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.sc-n { background: rgba(139,148,158,0.12); color: #8b949e; }
+.sc-o { background: rgba(210,153,34,0.12);  color: #d29922; }
+.sc-i { background: rgba(88,166,255,0.12);  color: #58a6ff; }
+.sc-r { background: rgba(63,185,80,0.12);   color: #3fb950; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .demo-layout { grid-template-columns: 1fr; }
+  .ops-grid { grid-template-columns: repeat(4,1fr); }
+}
+@media (max-width: 600px) {
+  .scale-zones { grid-template-columns: 1fr; }
+  .ops-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+
+<div class="demo-page">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb">
+    <a href="{{ '/' | relative_url }}">Inicio</a>
+    <span class="sep">›</span>
+    <a href="{{ '/modulo-01/' | relative_url }}">Módulo 01 — Introducción y Tipos de Datos</a>
+    <span class="sep">›</span>
+    Tipos de Atributos
+  </nav>
+
+  <header class="demo-header">
+    <div class="module-eyebrow">Módulo 01 · Minería de Datos · Ciencia de la Computación</div>
+    <h1>Tipos de Atributos</h1>
+    <p class="demo-lead">Las operaciones matemáticas válidas sobre un atributo dependen de su escala de medición. Aprende la escala NOIR y clasifica atributos reales en este juego interactivo.</p>
+  </header>
+
+  <div class="demo-layout">
+
+    <!-- ── Teoría ────────────────────────────────────────────── -->
+    <aside class="demo-theory">
+
+      <div class="theory-block">
+        <h2>Escala de Medición (NOIR)</h2>
+        <div class="noir-bar">
+          <div class="noir-step noir-n">N<br><span style="font-size:0.6rem;font-weight:400">ominal</span></div>
+          <div class="noir-step noir-o">O<br><span style="font-size:0.6rem;font-weight:400">rdinal</span></div>
+          <div class="noir-step noir-i">I<br><span style="font-size:0.6rem;font-weight:400">ntervalo</span></div>
+          <div class="noir-step noir-r">R<br><span style="font-size:0.6rem;font-weight:400">azón</span></div>
+        </div>
+        <p style="font-size:0.8rem;margin-bottom:0.85rem">Cada nivel hereda las propiedades del anterior y agrega nuevas. La escala determina qué algoritmos de DM son aplicables.</p>
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th>Escala</th>
+              <th>Descripción</th>
+              <th>Ops. válidas</th>
+              <th>Ejemplo CS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="scale-n">
+              <td>Nominal</td>
+              <td>Categorías sin orden</td>
+              <td>=, ≠</td>
+              <td>Sistema operativo, lenguaje de programación</td>
+            </tr>
+            <tr class="scale-o">
+              <td>Ordinal</td>
+              <td>Orden definido, distancias no uniformes</td>
+              <td>=, ≠, &lt;, &gt;</td>
+              <td>Prioridad de bug (Alta/Media/Baja), rating</td>
+            </tr>
+            <tr class="scale-i">
+              <td>Intervalo</td>
+              <td>Distancias uniformes, cero arbitrario</td>
+              <td>=, ≠, &lt;, &gt;, +, −</td>
+              <td>Temperatura en °C, fecha en calendario</td>
+            </tr>
+            <tr class="scale-r">
+              <td>Razón</td>
+              <td>Cero absoluto, ratios significativos</td>
+              <td>=, ≠, &lt;, &gt;, +, −, ×, ÷</td>
+              <td>Tiempo de ejecución, bytes, nº de errores</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="theory-block">
+        <h2>Tipos Adicionales</h2>
+        <div class="type-chips">
+          <div class="type-chip"><span>Discreto</span> — enteros contables</div>
+          <div class="type-chip"><span>Continuo</span> — valores reales</div>
+          <div class="type-chip"><span>Binario</span> — dos estados (0/1)</div>
+          <div class="type-chip"><span>Texto libre</span> — NLP requerido</div>
+          <div class="type-chip"><span>Serie de tiempo</span> — orden temporal</div>
+          <div class="type-chip"><span>Espacial</span> — coordenadas, polígonos</div>
+        </div>
+        <p style="margin-top:0.85rem">Los atributos binarios son nominales con exactamente dos valores. Los atributos continuos son de razón o intervalo. Las series de tiempo agregan la dimensión temporal a cualquier escala.</p>
+      </div>
+
+      <div class="theory-block">
+        <h2>¿Por qué importa?</h2>
+        <p>Un error común es aplicar la media aritmética a datos ordinales (p. ej., promediar satisfacción "Bajo/Medio/Alto"). La media solo es válida en escalas de intervalo y razón. En DM, elegir el algoritmo incorrecto por ignorar la escala produce resultados sin sentido.</p>
+      </div>
+
+    </aside>
+
+    <!-- ── Interactivo ──────────────────────────────────────── -->
+    <div class="demo-interactive">
+      <div>
+        <div class="interactive-label">Juego de Clasificación</div>
+        <p class="game-intro">Selecciona un atributo (clic) y luego haz clic en la zona de escala correcta. Recibirás retroalimentación inmediata y verás qué operaciones son válidas.</p>
+      </div>
+
+      <!-- Score -->
+      <div class="score-bar">
+        <span class="score-label">Puntuación</span>
+        <span class="score-val" id="scoreVal">0 / 8</span>
+        <div class="score-progress"><div class="score-fill" id="scoreFill"></div></div>
+        <button class="btn-reset" id="btnReset">Reiniciar</button>
+      </div>
+
+      <!-- Attribute pile -->
+      <div class="attr-pile" id="attrPile"></div>
+
+      <!-- Drop zones -->
+      <div class="scale-zones" id="scaleZones">
+        <div class="zone" data-scale="Nominal" id="zone-Nominal">
+          <div class="zone-header">
+            <span class="zone-name" style="color:#8b949e">Nominal</span>
+            <span class="zone-hint">Solo identifica — sin orden</span>
+          </div>
+          <div class="zone-chips" id="chips-Nominal"></div>
+        </div>
+        <div class="zone" data-scale="Ordinal" id="zone-Ordinal">
+          <div class="zone-header">
+            <span class="zone-name" style="color:#d29922">Ordinal</span>
+            <span class="zone-hint">Orden definido — distancias no uniformes</span>
+          </div>
+          <div class="zone-chips" id="chips-Ordinal"></div>
+        </div>
+        <div class="zone" data-scale="Intervalo" id="zone-Intervalo">
+          <div class="zone-header">
+            <span class="zone-name" style="color:#58a6ff">Intervalo</span>
+            <span class="zone-hint">Distancias uniformes — cero arbitrario</span>
+          </div>
+          <div class="zone-chips" id="chips-Intervalo"></div>
+        </div>
+        <div class="zone" data-scale="Razón" id="zone-Razón">
+          <div class="zone-header">
+            <span class="zone-name" style="color:#3fb950">Razón</span>
+            <span class="zone-hint">Cero absoluto — ratios válidos</span>
+          </div>
+          <div class="zone-chips" id="chips-Razón"></div>
+        </div>
+      </div>
+
+      <!-- Feedback toast -->
+      <div class="feedback-toast" id="feedbackToast"></div>
+
+      <!-- Operations panel -->
+      <div class="ops-panel">
+        <div class="ops-title">Operaciones válidas para: <span class="ops-attr-name" id="opsAttrName">— selecciona un atributo —</span></div>
+        <div id="opsContent">
+          <div class="ops-placeholder">Haz clic en un atributo para ver qué operaciones matemáticas son válidas sobre él.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .demo-layout -->
+
+  <!-- ── Application section ──────────────────────────────── -->
+  <section class="demo-application">
+    <h2>📋 Dataset completo clasificado</h2>
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.25rem">Tabla de usuarios con todos los atributos y sus escalas correctas — úsala para verificar tus respuestas en el juego.</p>
+    <div class="attr-showcase" id="attrShowcase"></div>
+  </section>
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function () {
+
+  /* ── Data ──────────────────────────────────────────────────── */
+  var ATTRS = [
+    {
+      id: 'id_usuario',
+      label: 'ID_usuario',
+      example: '1042',
+      scale: 'Nominal',
+      explanation: 'Un ID es solo una etiqueta. Que 1042 > 500 no significa que el usuario 1042 "sea más" que el 500. Solo sirve para identificar (=, ≠).',
+      ops: { eq: true, ord: false, add: false, mul: false },
+    },
+    {
+      id: 'genero',
+      label: 'Género',
+      example: '"Femenino"',
+      scale: 'Nominal',
+      explanation: 'Las categorías de género son etiquetas sin jerarquía natural. No existe un orden significativo entre "Femenino", "Masculino" u otras opciones.',
+      ops: { eq: true, ord: false, add: false, mul: false },
+    },
+    {
+      id: 'nivel_satisfaccion',
+      label: 'Nivel_satisfacción',
+      example: '"Alto"',
+      scale: 'Ordinal',
+      explanation: 'Bajo < Medio < Alto es un orden claro, pero no podemos decir que la distancia entre Bajo y Medio sea igual a la de Medio y Alto. Solo comparaciones de orden son válidas.',
+      ops: { eq: true, ord: true, add: false, mul: false },
+    },
+    {
+      id: 'temperatura_cpu',
+      label: 'Temperatura_CPU',
+      example: '72.4 °C',
+      scale: 'Intervalo',
+      explanation: 'Los grados Celsius tienen distancias uniformes (10 °C siempre es la misma diferencia), pero el cero es arbitrario (0 °C no es ausencia de temperatura). Puedes sumar y restar, pero no hacer ratios: 80 °C no es "el doble de caliente" que 40 °C.',
+      ops: { eq: true, ord: true, add: true, mul: false },
+    },
+    {
+      id: 'n_clicks',
+      label: 'N_clicks',
+      example: '47',
+      scale: 'Razón',
+      explanation: '0 clicks significa ausencia absoluta de clicks. Puedes decir "este usuario hizo el doble de clicks". Cero absoluto + distancias uniformes = escala de Razón.',
+      ops: { eq: true, ord: true, add: true, mul: true },
+    },
+    {
+      id: 'pais',
+      label: 'País',
+      example: '"Perú"',
+      scale: 'Nominal',
+      explanation: 'Los países son categorías sin orden intrínseco (no existe un orden matemático entre Perú, Chile y Brasil). Son etiquetas nominales.',
+      ops: { eq: true, ord: false, add: false, mul: false },
+    },
+    {
+      id: 'rating',
+      label: 'Rating',
+      example: '4.2 / 5',
+      scale: 'Ordinal',
+      explanation: 'Aunque parece numérico, la diferencia entre 4.0 y 4.5 estrellas no es necesariamente igual que entre 1.0 y 1.5. Los ratings subjetivos son ordinales. Algunos autores los tratan como de intervalo en la práctica — la clasificación correcta en teoría es Ordinal.',
+      ops: { eq: true, ord: true, add: false, mul: false },
+    },
+    {
+      id: 'fecha_registro',
+      label: 'Fecha_registro',
+      example: '"2023-03-15"',
+      scale: 'Intervalo',
+      explanation: 'Las fechas tienen distancias uniformes (un día siempre es 86 400 s), pero el cero es arbitrario (depende del calendario). Puedes calcular diferencias entre fechas (sumar/restar), pero "doble de fecha" carece de sentido.',
+      ops: { eq: true, ord: true, add: true, mul: false },
+    },
+  ];
+
+  var SCALE_COLORS = {
+    Nominal:   '#8b949e',
+    Ordinal:   '#d29922',
+    Intervalo: '#58a6ff',
+    Razón:     '#3fb950',
+  };
+
+  var SCALE_CSS = {
+    Nominal:   'sc-n',
+    Ordinal:   'sc-o',
+    Intervalo: 'sc-i',
+    Razón:     'sc-r',
+  };
+
+  var OPS_META = [
+    { symbol: '=  ≠', name: 'Igualdad', key: 'eq'  },
+    { symbol: '<  >', name: 'Orden',     key: 'ord' },
+    { symbol: '+  −', name: 'Suma/Resta',key: 'add' },
+    { symbol: '×  ÷', name: 'Ratio',     key: 'mul' },
+  ];
+
+  /* ── State ─────────────────────────────────────────────────── */
+  var selectedAttrId = null;
+  var placed = {};        // id -> { scale, correct }
+  var score  = 0;
+
+  /* ── DOM refs ──────────────────────────────────────────────── */
+  var attrPile      = document.getElementById('attrPile');
+  var feedbackToast = document.getElementById('feedbackToast');
+  var opsAttrName   = document.getElementById('opsAttrName');
+  var opsContent    = document.getElementById('opsContent');
+  var scoreVal      = document.getElementById('scoreVal');
+  var scoreFill     = document.getElementById('scoreFill');
+  var btnReset      = document.getElementById('btnReset');
+
+  /* ── Build attribute chips ─────────────────────────────────── */
+  function buildPile() {
+    attrPile.innerHTML = '';
+    ATTRS.forEach(function (attr) {
+      if (placed[attr.id]) return;  // already placed
+      var chip = document.createElement('div');
+      chip.className = 'attr-chip' + (selectedAttrId === attr.id ? ' selected' : '');
+      chip.dataset.id = attr.id;
+      chip.innerHTML =
+        attr.label +
+        ' <span class="chip-example">(' + attr.example + ')</span>';
+      chip.addEventListener('click', function () { selectAttr(attr.id); });
+      attrPile.appendChild(chip);
+    });
+  }
+
+  /* ── Select attribute ──────────────────────────────────────── */
+  function selectAttr(id) {
+    selectedAttrId = (selectedAttrId === id) ? null : id;
+    buildPile();
+    updateOpsPanel();
+    hideFeedback();
+    highlightZones(selectedAttrId !== null);
+  }
+
+  /* ── Operations panel ──────────────────────────────────────── */
+  function updateOpsPanel() {
+    if (!selectedAttrId) {
+      opsAttrName.textContent = '— selecciona un atributo —';
+      opsContent.innerHTML = '<div class="ops-placeholder">Haz clic en un atributo para ver qué operaciones matemáticas son válidas sobre él.</div>';
+      return;
+    }
+    var attr = ATTRS.find(function (a) { return a.id === selectedAttrId; });
+    opsAttrName.textContent = attr.label;
+
+    // Use placed scale if known, else the correct one for demonstration
+    var displayOps = attr.ops;
+
+    var html = '<div class="ops-grid">';
+    OPS_META.forEach(function (op) {
+      var valid = displayOps[op.key];
+      html +=
+        '<div class="op-cell ' + (valid ? 'op-valid' : 'op-invalid') + '">' +
+        '<span class="op-symbol">' + op.symbol + '</span>' +
+        '<span class="op-name">' + op.name + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+    opsContent.innerHTML = html;
+  }
+
+  /* ── Highlight zones when an attr is selected ──────────────── */
+  function highlightZones(on) {
+    document.querySelectorAll('.zone').forEach(function (z) {
+      if (on) z.classList.add('droppable');
+      else    z.classList.remove('droppable');
+    });
+  }
+
+  /* ── Zone click ────────────────────────────────────────────── */
+  document.querySelectorAll('.zone').forEach(function (zone) {
+    zone.addEventListener('click', function () {
+      if (!selectedAttrId) return;
+      var scale = zone.dataset.scale;
+      var attr  = ATTRS.find(function (a) { return a.id === selectedAttrId; });
+      var correct = (scale === attr.scale);
+
+      placed[selectedAttrId] = { scale: scale, correct: correct };
+      if (correct) score++;
+
+      // Add chip to zone
+      var chip = document.createElement('div');
+      chip.className = 'zone-chip ' + (correct ? 'correct' : 'incorrect');
+      chip.textContent = attr.label;
+      document.getElementById('chips-' + scale).appendChild(chip);
+
+      // Show feedback
+      showFeedback(correct, attr, scale);
+
+      // Update score
+      updateScore();
+
+      // Clear selection
+      selectedAttrId = null;
+      highlightZones(false);
+      buildPile();
+      updateOpsPanel();
+    });
+  });
+
+  /* ── Feedback ──────────────────────────────────────────────── */
+  function showFeedback(correct, attr, chosenScale) {
+    feedbackToast.className = 'feedback-toast visible ' + (correct ? 'correct' : 'incorrect');
+    if (correct) {
+      feedbackToast.innerHTML =
+        '<span class="feedback-icon">✓</span> <strong>Correcto.</strong> ' +
+        attr.explanation;
+    } else {
+      feedbackToast.innerHTML =
+        '<span class="feedback-icon">✗</span> <strong>Incorrecto.</strong> ' +
+        attr.label + ' es de escala <strong>' + attr.scale + '</strong>, no ' + chosenScale + '. ' +
+        attr.explanation;
+    }
+    // Restart animation
+    feedbackToast.style.animation = 'none';
+    feedbackToast.offsetHeight;
+    feedbackToast.style.animation = 'fadeInUp 0.25s ease both';
+  }
+
+  function hideFeedback() {
+    feedbackToast.className = 'feedback-toast';
+  }
+
+  /* ── Score ─────────────────────────────────────────────────── */
+  function updateScore() {
+    var total = Object.keys(placed).length;
+    scoreVal.textContent = score + ' / ' + ATTRS.length;
+    scoreFill.style.width = ((score / ATTRS.length) * 100) + '%';
+  }
+
+  /* ── Reset ─────────────────────────────────────────────────── */
+  btnReset.addEventListener('click', function () {
+    placed = {};
+    score  = 0;
+    selectedAttrId = null;
+    hideFeedback();
+    highlightZones(false);
+    updateScore();
+    buildPile();
+    updateOpsPanel();
+    document.querySelectorAll('.zone-chips').forEach(function (el) {
+      el.innerHTML = '';
+    });
+  });
+
+  /* ── Build showcase (application section) ──────────────────── */
+  (function buildShowcase() {
+    var showcase = document.getElementById('attrShowcase');
+    ATTRS.forEach(function (attr) {
+      var card = document.createElement('div');
+      card.className = 'showcase-card';
+      card.innerHTML =
+        '<div class="showcase-attr">' + attr.label + '</div>' +
+        '<div class="showcase-value">Ej: ' + attr.example + '</div>' +
+        '<span class="showcase-scale ' + SCALE_CSS[attr.scale] + '">' + attr.scale + '</span>';
+      showcase.appendChild(card);
+    });
+  }());
+
+  /* ── Init ──────────────────────────────────────────────────── */
+  buildPile();
+
+}());
+</script>
