@@ -1,0 +1,760 @@
+---
+layout: default
+title: "Distribuciones y Detección de Outliers"
+prev_url: /modulo-02/estadisticas-descriptivas.html
+prev_title: Estadísticas Descriptivas
+next_url: /modulo-02/matriz-correlaciones.html
+next_title: Matriz de Correlaciones
+---
+<style>
+  .do-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .do-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Theory */
+  .theory-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .theory-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    margin-bottom: 0.6rem;
+  }
+  .theory-body {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .theory-body strong { color: var(--text); }
+
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin: 0.5rem 0;
+    line-height: 1.8;
+  }
+  .formula-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+  .formula-box.danger {
+    border-left-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .concept-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .concept-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .concept-list li::before {
+    content: '›';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .concept-list li strong { color: var(--text); }
+
+  .dist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .dist-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .dist-pill strong { color: var(--accent); display: block; font-size: 0.78rem; margin-bottom: 0.1rem; }
+
+  .boxplot-legend {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.83rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .boxplot-legend strong { color: var(--text); }
+
+  .insight-box {
+    background: rgba(248,81,73,0.06);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .insight-box strong { color: var(--danger); }
+
+  /* Interactive */
+  .interactive-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--font-mono);
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .control-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 0.45rem 0.65rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 180ms ease;
+  }
+  select:focus { border-color: var(--accent); }
+  select option { background: #1c2330; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .slider-row input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+  .slider-val {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    min-width: 2.8rem;
+    text-align: right;
+  }
+
+  .toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .toggle-btn {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.38rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 180ms ease;
+    user-select: none;
+  }
+  .toggle-btn.on { color: var(--danger); border-color: rgba(248,81,73,0.5); background: rgba(248,81,73,0.08); }
+  .toggle-btn.method-iqr.on  { color: var(--accent3); border-color: rgba(63,185,80,0.5); background: rgba(63,185,80,0.08); }
+  .toggle-btn.method-z.on    { color: var(--warn);    border-color: rgba(210,153,34,0.5); background: rgba(210,153,34,0.08); }
+
+  .canvas-wrapper {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  #distCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .stat-pill-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 90px;
+  }
+  .stat-pill-sm .spv {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--danger);
+  }
+  .stat-pill-sm.pct .spv { color: var(--warn); }
+  .stat-pill-sm.extremes .spv { font-size: 0.78rem; color: var(--accent2); word-break: break-all; }
+</style>
+
+<div class="demo-page" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb" style="font-size:0.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;">
+    <a href="{{ '/' | relative_url }}" style="color:var(--accent);">Inicio</a>
+    <span style="color:var(--accent);margin:0 0.4rem;">›</span>
+    Módulo 02 — Exploración y Visualización
+    <span style="color:var(--accent);margin:0 0.4rem;">›</span>
+    Distribuciones y Outliers
+  </nav>
+
+  <header style="margin-bottom:2.5rem;">
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
+    <h1 style="font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Distribuciones y Detección de Outliers</h1>
+    <p style="font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;">Visualiza histogramas y box plots de distintas distribuciones. Compara los métodos IQR y Z-score para detectar valores atípicos.</p>
+  </header>
+
+  <div class="do-layout">
+    <!-- TEORÍA -->
+    <div class="theory-panel">
+
+      <div>
+        <div class="theory-section-title">Tipos de Distribución</div>
+        <div class="dist-grid">
+          <div class="dist-pill"><strong>Normal</strong>Simétrica, campana, μ ≈ mediana.</div>
+          <div class="dist-pill"><strong>Uniforme</strong>Todos los valores igualmente probables.</div>
+          <div class="dist-pill"><strong>Sesgada (+)</strong>Cola larga hacia la derecha. μ > mediana.</div>
+          <div class="dist-pill"><strong>Bimodal</strong>Dos picos. Sugiere dos subpoblaciones.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Método IQR</div>
+        <div class="theory-body">
+          Basado en los cuartiles, es <strong>robusto</strong>: no depende de la media ni la std, por lo que los outliers no lo distorsionan.
+        </div>
+        <div class="formula-box" style="margin-top:0.65rem;">
+          <div class="formula-label">Criterio IQR</div>
+          outlier si  x &lt; Q1 − 1.5 · IQR<br>
+          outlier si  x &gt; Q3 + 1.5 · IQR<br>
+          donde IQR = Q3 − Q1
+        </div>
+        <div class="theory-body" style="margin-top:0.4rem;">
+          El factor <strong>1.5</strong> fue propuesto por Tukey (1977). Para outliers extremos se usa <strong>3·IQR</strong>.
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Método Z-score</div>
+        <div class="theory-body">
+          Mide cuántas desviaciones estándar se aleja un valor de la media. <strong>Sensible</strong> a outliers ya que utiliza μ y σ.
+        </div>
+        <div class="formula-box danger" style="margin-top:0.65rem;">
+          <div class="formula-label">Criterio Z-score</div>
+          z = (x − μ) / σ<br>
+          outlier si |z| &gt; umbral<br>
+          (umbral típico: 2.5 – 3.0)
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Box Plot — Partes</div>
+        <div class="boxplot-legend">
+          <strong>│</strong> Bigote inferior → Q1 − 1.5·IQR (o mínimo)<br>
+          <strong>□</strong> Caja → de Q1 a Q3 (50% central)<br>
+          <strong>─</strong> Línea central → Mediana (Q2)<br>
+          <strong>│</strong> Bigote superior → Q3 + 1.5·IQR (o máximo)<br>
+          <strong>◇</strong> Puntos fuera → outliers individuales
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Impacto en Estadísticas</div>
+        <div class="insight-box">
+          Los outliers inflan la <strong>media</strong> y la <strong>desviación estándar</strong>, haciendo que el método Z-score sea circular: el umbral se eleva junto con σ, enmascarando outliers. Por eso el método <strong>IQR es preferido</strong> cuando los datos son asimétricos o contienen valores extremos.
+        </div>
+      </div>
+
+    </div><!-- /theory-panel -->
+
+    <!-- INTERACTIVO -->
+    <div class="interactive-panel">
+      <div class="panel-title">Histograma + Box Plot Interactivo</div>
+
+      <div class="controls-grid">
+        <div class="control-group">
+          <span class="control-label">Distribución</span>
+          <select id="distSelect" onchange="regenerate()">
+            <option value="normal">Normal</option>
+            <option value="uniform">Uniforme</option>
+            <option value="skewed">Sesgada (+)</option>
+            <option value="bimodal">Bimodal</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">n (muestras)</span>
+          <div class="slider-row">
+            <input type="range" id="nSlider" min="50" max="500" value="200" step="10" oninput="onNChange()">
+            <span class="slider-val" id="nVal">200</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Umbral Z-score</span>
+          <div class="slider-row">
+            <input type="range" id="zSlider" min="1.5" max="4.0" value="2.5" step="0.1" oninput="onZChange()">
+            <span class="slider-val" id="zVal">2.5</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Opciones</span>
+          <div class="toggle-row">
+            <button class="toggle-btn" id="btnOutliers" onclick="toggleOutliers()">+ Outliers</button>
+            <button class="toggle-btn method-iqr on" id="btnIQR"  onclick="setMethod('iqr')">IQR</button>
+            <button class="toggle-btn method-z"   id="btnZ"    onclick="setMethod('z')">Z-score</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="distCanvas" width="560" height="340"></canvas>
+      </div>
+
+      <div class="stats-row" id="outlierStats">
+        <div class="stat-pill-sm">
+          <span class="control-label">Outliers detectados</span>
+          <span class="spv" id="oCount">—</span>
+        </div>
+        <div class="stat-pill-sm pct">
+          <span class="control-label">% del dataset</span>
+          <span class="spv" id="oPct">—</span>
+        </div>
+        <div class="stat-pill-sm extremes" style="flex:1;min-width:150px;">
+          <span class="control-label">Valores extremos</span>
+          <span class="spv" id="oExtremes">—</span>
+        </div>
+      </div>
+    </div><!-- /interactive-panel -->
+  </div><!-- /do-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── PRNG Mulberry32 ────────────────────────────────────────────────────────
+  function makePRNG(seed) {
+    let s = (seed >>> 0) || 1;
+    return function() {
+      s += 0x6D2B79F5;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function boxMuller(rand) {
+    let u;
+    do { u = rand(); } while (u === 0);
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand());
+  }
+
+  // ── Data generation ────────────────────────────────────────────────────────
+  function generateData(type, n, addOutliers, seed) {
+    const rand = makePRNG(seed);
+    let data = [];
+
+    if (type === 'normal') {
+      for (let i = 0; i < n; i++) data.push(50 + boxMuller(rand) * 12);
+    } else if (type === 'uniform') {
+      for (let i = 0; i < n; i++) data.push(rand() * 100);
+    } else if (type === 'skewed') {
+      // Exponential-transformed, skewed right
+      for (let i = 0; i < n; i++) {
+        const v = -Math.log(1 - rand()) * 18 + 5;
+        data.push(v);
+      }
+    } else if (type === 'bimodal') {
+      const half = Math.floor(n / 2);
+      for (let i = 0; i < half; i++) data.push(30 + boxMuller(rand) * 8);
+      for (let i = 0; i < n - half; i++) data.push(70 + boxMuller(rand) * 8);
+    }
+
+    if (addOutliers) {
+      const randO = makePRNG(seed + 999);
+      const outlierCount = 3 + Math.floor(randO() * 3); // 3–5
+      for (let i = 0; i < outlierCount; i++) {
+        data.push(randO() < 0.5
+          ? -(randO() * 15 + 5)
+          : 100 + randO() * 30 + 5);
+      }
+    }
+    return data;
+  }
+
+  // ── Stats helpers ──────────────────────────────────────────────────────────
+  function percentile(sorted, p) {
+    const n = sorted.length;
+    if (n === 1) return sorted[0];
+    const idx = (p / 100) * (n - 1);
+    const lo  = Math.floor(idx);
+    const hi  = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+
+  function computeStats(data) {
+    const sorted = [...data].sort((a, b) => a - b);
+    const n    = sorted.length;
+    const mean = sorted.reduce((s, v) => s + v, 0) / n;
+    const vari = sorted.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+    const std  = Math.sqrt(vari);
+    const q1   = percentile(sorted, 25);
+    const q2   = percentile(sorted, 50);
+    const q3   = percentile(sorted, 75);
+    const iqr  = q3 - q1;
+    return { n, mean, std, q1, q2, q3, iqr, min: sorted[0], max: sorted[n-1] };
+  }
+
+  function detectOutliers(data, method, zThreshold, st) {
+    if (method === 'iqr') {
+      const lo = st.q1 - 1.5 * st.iqr;
+      const hi = st.q3 + 1.5 * st.iqr;
+      return data.map(v => v < lo || v > hi);
+    } else {
+      return data.map(v => Math.abs((v - st.mean) / (st.std || 1)) > zThreshold);
+    }
+  }
+
+  // ── Canvas ─────────────────────────────────────────────────────────────────
+  const canvas = document.getElementById('distCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = 560, H = 340;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const PAD_L  = 48, PAD_R = 20;
+  const PAD_TOP_HIST = 16;
+  const HIST_H  = 200;
+  const BP_H    = 60;
+  const GAP     = 28;
+  const BP_Y    = PAD_TOP_HIST + HIST_H + GAP;
+  const plotW   = W - PAD_L - PAD_R;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let state = {
+    type:        'normal',
+    n:           200,
+    zThreshold:  2.5,
+    addOutliers: false,
+    method:      'iqr',
+    seed:        7
+  };
+
+  // ── Draw ───────────────────────────────────────────────────────────────────
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const data     = generateData(state.type, state.n, state.addOutliers, state.seed);
+    const st       = computeStats(data);
+    const isOut    = detectOutliers(data, state.method, state.zThreshold, st);
+
+    // Data range for x-axis (padded)
+    const dMin = st.min, dMax = st.max;
+    const range = dMax - dMin || 1;
+    const xPad  = range * 0.05;
+    const xMin  = dMin - xPad;
+    const xMax  = dMax + xPad;
+    const xRange = xMax - xMin;
+
+    function toX(v) { return PAD_L + ((v - xMin) / xRange) * plotW; }
+
+    // ── Histogram ─────────────────────────────────────────────────────────────
+    const NUM_BINS = Math.max(10, Math.min(40, Math.round(Math.sqrt(data.length))));
+    const binW = xRange / NUM_BINS;
+    const bins = new Array(NUM_BINS).fill(0);
+    const binsOut = new Array(NUM_BINS).fill(0);
+
+    data.forEach((v, i) => {
+      const bi = Math.min(NUM_BINS - 1, Math.floor((v - xMin) / binW));
+      bins[bi]++;
+      if (isOut[i]) binsOut[bi]++;
+    });
+
+    const maxCount = Math.max(...bins, 1);
+    const histScale = (HIST_H - 10) / maxCount;
+
+    // Grid lines
+    const numGridLines = 4;
+    ctx.strokeStyle = 'rgba(48,54,61,0.7)';
+    ctx.lineWidth   = 0.5;
+    ctx.fillStyle   = '#8b949e';
+    ctx.font        = '10px "JetBrains Mono", monospace';
+    ctx.textAlign   = 'right';
+    for (let g = 0; g <= numGridLines; g++) {
+      const cnt = Math.round((maxCount / numGridLines) * g);
+      const y   = PAD_TOP_HIST + HIST_H - cnt * histScale;
+      ctx.beginPath();
+      ctx.moveTo(PAD_L, y);
+      ctx.lineTo(PAD_L + plotW, y);
+      ctx.stroke();
+      ctx.fillText(cnt, PAD_L - 5, y + 3);
+    }
+
+    // Bars
+    for (let b = 0; b < NUM_BINS; b++) {
+      const bx  = PAD_L + (b / NUM_BINS) * plotW;
+      const bw  = plotW / NUM_BINS;
+      const barH = bins[b] * histScale;
+      const outH = binsOut[b] * histScale;
+      const by   = PAD_TOP_HIST + HIST_H - barH;
+
+      // Normal part
+      ctx.fillStyle   = 'rgba(88,166,255,0.55)';
+      ctx.strokeStyle = 'rgba(88,166,255,0.3)';
+      ctx.lineWidth   = 0.5;
+      ctx.fillRect(bx + 0.5, by, bw - 1, barH - outH);
+      ctx.strokeRect(bx + 0.5, by, bw - 1, barH - outH);
+
+      // Outlier part (stacked on top)
+      if (outH > 0) {
+        ctx.fillStyle   = 'rgba(248,81,73,0.7)';
+        ctx.strokeStyle = 'rgba(248,81,73,0.4)';
+        ctx.fillRect(bx + 0.5, by, bw - 1, outH);
+        ctx.strokeRect(bx + 0.5, by, bw - 1, outH);
+      }
+    }
+
+    // Histogram bottom line
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, PAD_TOP_HIST + HIST_H);
+    ctx.lineTo(PAD_L + plotW, PAD_TOP_HIST + HIST_H);
+    ctx.stroke();
+
+    // ── Box Plot ───────────────────────────────────────────────────────────────
+    const bpMidY = BP_Y + BP_H / 2;
+    const bpBoxH = 28;
+    const bpBoxY = bpMidY - bpBoxH / 2;
+
+    const fenceLo = st.q1 - 1.5 * st.iqr;
+    const fenceHi = st.q3 + 1.5 * st.iqr;
+    const whiskerLo = Math.max(st.min, fenceLo);
+    const whiskerHi = Math.min(st.max, fenceHi);
+
+    const q1x    = toX(st.q1);
+    const q3x    = toX(st.q3);
+    const medX   = toX(st.q2);
+    const wLoX   = toX(whiskerLo);
+    const wHiX   = toX(whiskerHi);
+
+    // Whisker line
+    ctx.strokeStyle = '#8b949e';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(wLoX, bpMidY);
+    ctx.lineTo(wHiX, bpMidY);
+    ctx.stroke();
+
+    // Whisker caps
+    ctx.beginPath();
+    ctx.moveTo(wLoX, bpMidY - 8); ctx.lineTo(wLoX, bpMidY + 8);
+    ctx.moveTo(wHiX, bpMidY - 8); ctx.lineTo(wHiX, bpMidY + 8);
+    ctx.stroke();
+
+    // IQR box
+    ctx.fillStyle   = 'rgba(88,166,255,0.15)';
+    ctx.strokeStyle = 'rgba(88,166,255,0.6)';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(q1x, bpBoxY, q3x - q1x, bpBoxH, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // Median line
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth   = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(medX, bpBoxY);
+    ctx.lineTo(medX, bpBoxY + bpBoxH);
+    ctx.stroke();
+
+    // Outlier points in box plot
+    data.forEach((v, i) => {
+      if (!isOut[i]) return;
+      const ox = toX(v);
+      ctx.beginPath();
+      ctx.arc(ox, bpMidY, 4, 0, Math.PI * 2);
+      ctx.fillStyle   = 'rgba(248,81,73,0.85)';
+      ctx.strokeStyle = 'rgba(248,81,73,0.4)';
+      ctx.lineWidth   = 1;
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Box plot labels
+    ctx.fillStyle = 'rgba(88,166,255,0.7)';
+    ctx.font      = '9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Q1', q1x, bpBoxY - 4);
+    ctx.fillText('Q3', q3x, bpBoxY - 4);
+    ctx.fillStyle = '#58a6ff';
+    ctx.fillText('Md', medX, bpBoxY + bpBoxH + 12);
+
+    // ── X-axis ─────────────────────────────────────────────────────────────────
+    const axisY = BP_Y + BP_H + 10;
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, axisY);
+    ctx.lineTo(PAD_L + plotW, axisY);
+    ctx.stroke();
+
+    const tickCount = 6;
+    ctx.fillStyle = '#8b949e';
+    ctx.font      = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    for (let t = 0; t <= tickCount; t++) {
+      const v  = xMin + (xRange * t / tickCount);
+      const tx = PAD_L + (t / tickCount) * plotW;
+      ctx.strokeStyle = '#30363d';
+      ctx.lineWidth   = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(tx, axisY); ctx.lineTo(tx, axisY + 4);
+      ctx.stroke();
+      ctx.fillText(v.toFixed(1), tx, axisY + 14);
+    }
+
+    // ── Legend ─────────────────────────────────────────────────────────────────
+    const legY = H - 16;
+    ctx.fillStyle = 'rgba(88,166,255,0.85)';
+    ctx.fillRect(PAD_L, legY - 7, 12, 7);
+    ctx.fillStyle = '#8b949e';
+    ctx.font      = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('Normal', PAD_L + 16, legY);
+
+    ctx.fillStyle = 'rgba(248,81,73,0.85)';
+    ctx.fillRect(PAD_L + 80, legY - 7, 12, 7);
+    ctx.fillStyle = '#8b949e';
+    ctx.fillText('Outlier', PAD_L + 96, legY);
+
+    const methodLabel = state.method === 'iqr'
+      ? 'Método: IQR (1.5 · IQR)'
+      : `Método: Z-score (|z| > ${state.zThreshold.toFixed(1)})`;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = state.method === 'iqr' ? 'rgba(63,185,80,0.8)' : 'rgba(210,153,34,0.8)';
+    ctx.fillText(methodLabel, PAD_L + plotW, legY);
+
+    // ── Update outlier stats panel ─────────────────────────────────────────────
+    const outlierVals  = data.filter((v, i) => isOut[i]);
+    const nOut         = outlierVals.length;
+    const pct          = ((nOut / data.length) * 100).toFixed(1);
+    const sorted_out   = [...outlierVals].sort((a, b) => a - b);
+    const extremes_str = nOut === 0
+      ? 'ninguno'
+      : sorted_out.slice(0, 5).map(v => v.toFixed(1)).join(', ') + (nOut > 5 ? '…' : '');
+
+    document.getElementById('oCount').textContent    = nOut;
+    document.getElementById('oPct').textContent      = pct + '%';
+    document.getElementById('oExtremes').textContent = extremes_str;
+  }
+
+  // ── Controls ────────────────────────────────────────────────────────────────
+  window.regenerate = function() {
+    state.type = document.getElementById('distSelect').value;
+    state.seed = Date.now() & 0xFFFF; // vary seed on distribution change
+    draw();
+  };
+
+  window.onNChange = function() {
+    state.n = parseInt(document.getElementById('nSlider').value);
+    document.getElementById('nVal').textContent = state.n;
+    draw();
+  };
+
+  window.onZChange = function() {
+    state.zThreshold = parseFloat(document.getElementById('zSlider').value);
+    document.getElementById('zVal').textContent = state.zThreshold.toFixed(1);
+    draw();
+  };
+
+  window.toggleOutliers = function() {
+    state.addOutliers = !state.addOutliers;
+    const btn = document.getElementById('btnOutliers');
+    btn.classList.toggle('on', state.addOutliers);
+    btn.textContent = state.addOutliers ? '− Outliers' : '+ Outliers';
+    draw();
+  };
+
+  window.setMethod = function(m) {
+    state.method = m;
+    document.getElementById('btnIQR').classList.toggle('on', m === 'iqr');
+    document.getElementById('btnZ').classList.toggle('on', m === 'z');
+    draw();
+  };
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  draw();
+})();
+</script>
