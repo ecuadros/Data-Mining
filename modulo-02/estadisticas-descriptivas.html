@@ -1,0 +1,665 @@
+---
+layout: default
+title: "Estadísticas Descriptivas"
+next_url: /modulo-02/distribuciones-outliers.html
+next_title: Distribuciones y Outliers
+---
+<style>
+  .ed-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .ed-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Theory panel */
+  .theory-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .theory-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    margin-bottom: 0.6rem;
+  }
+  .theory-body {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .theory-body strong { color: var(--text); }
+
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin: 0.5rem 0;
+    line-height: 1.8;
+  }
+  .formula-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+
+  .concept-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .concept-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .concept-list li::before {
+    content: '›';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .concept-list li strong { color: var(--text); }
+
+  .insight-box {
+    background: rgba(88,166,255,0.06);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .insight-box strong { color: var(--accent); }
+
+  /* Interactive panel */
+  .interactive-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--font-mono);
+  }
+
+  .canvas-wrapper {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  #dotCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 180ms ease;
+  }
+  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(88,166,255,0.08); }
+  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.12); }
+  .btn.danger { color: var(--danger); border-color: rgba(248,81,73,0.4); }
+  .btn.danger:hover { background: rgba(248,81,73,0.1); border-color: var(--danger); }
+
+  .outlier-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .outlier-row label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+  }
+  .outlier-row input[type=range] {
+    flex: 1;
+    min-width: 80px;
+    accent-color: var(--danger);
+  }
+  #outlierVal {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--danger);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  /* Stats live panel */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.5rem;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.8rem;
+  }
+  .stat-card-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+  .stat-card-value {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-card.moda .stat-card-value { color: var(--accent2); }
+  .stat-card.dispersion .stat-card-value { color: var(--accent3); }
+
+  .legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+  .legend-dot { width: 12px; height: 3px; border-radius: 2px; }
+
+  .hint-text {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-align: center;
+    opacity: 0.7;
+  }
+</style>
+
+<div class="demo-page" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb" style="font-size:0.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;">
+    <a href="{{ '/' | relative_url }}" style="color:var(--accent);">Inicio</a>
+    <span style="color:var(--accent);margin:0 0.4rem;">›</span>
+    Módulo 02 — Exploración y Visualización
+    <span style="color:var(--accent);margin:0 0.4rem;">›</span>
+    Estadísticas Descriptivas
+  </nav>
+
+  <header style="margin-bottom:2.5rem;">
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
+    <h1 style="font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Estadísticas Descriptivas</h1>
+    <p style="font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;">Explora media, mediana, moda, varianza e IQR de forma interactiva. Añade puntos al canvas y observa cómo cambian las métricas en tiempo real.</p>
+  </header>
+
+  <div class="ed-layout">
+    <!-- TEORÍA -->
+    <div class="theory-panel">
+
+      <div>
+        <div class="theory-section-title">Tendencia Central</div>
+        <div class="theory-body">
+          Las medidas de tendencia central describen el valor "típico" de un conjunto de datos.
+        </div>
+        <ul class="concept-list" style="margin-top:0.75rem;">
+          <li><strong>Media (μ)</strong>: promedio aritmético de todos los valores.</li>
+          <li><strong>Mediana</strong>: valor central al ordenar los datos. Robusta ante outliers.</li>
+          <li><strong>Moda</strong>: valor que aparece con mayor frecuencia.</li>
+        </ul>
+        <div class="formula-box" style="margin-top:0.75rem;">
+          <div class="formula-label">Media poblacional</div>
+          μ = (Σ xᵢ) / n
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Dispersión</div>
+        <div class="theory-body">
+          Las medidas de dispersión cuantifican qué tan "esparcidos" están los datos alrededor del centro.
+        </div>
+        <ul class="concept-list" style="margin-top:0.75rem;">
+          <li><strong>Rango</strong>: diferencia entre máximo y mínimo.</li>
+          <li><strong>Varianza (σ²)</strong>: promedio de las desviaciones cuadradas respecto a la media.</li>
+          <li><strong>Desviación Estándar (σ)</strong>: raíz cuadrada de la varianza. Misma unidad que los datos.</li>
+          <li><strong>IQR</strong>: rango intercuartílico Q3 − Q1. Robusto ante outliers.</li>
+        </ul>
+        <div class="formula-box" style="margin-top:0.75rem;">
+          <div class="formula-label">Varianza poblacional</div>
+          σ² = Σ(xᵢ − μ)² / n<br>
+          σ  = √σ²
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Percentiles y Cuartiles</div>
+        <div class="theory-body">
+          Los cuartiles dividen los datos ordenados en cuatro partes iguales:
+        </div>
+        <ul class="concept-list" style="margin-top:0.75rem;">
+          <li><strong>Q1</strong> (percentil 25): 25% de los datos quedan por debajo.</li>
+          <li><strong>Q2 / Mediana</strong> (percentil 50): valor central.</li>
+          <li><strong>Q3</strong> (percentil 75): 75% de los datos quedan por debajo.</li>
+          <li><strong>IQR = Q3 − Q1</strong>: contiene el 50% central de los datos.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Media ≠ Mediana con Outliers</div>
+        <div class="insight-box">
+          Cuando hay <strong>valores atípicos (outliers)</strong>, la media se desplaza fuertemente hacia ellos porque suma todos los valores, mientras que la <strong>mediana permanece estable</strong> ya que solo considera la posición central. Por eso en datos asimétricos (salarios, precios de casas) se prefiere la mediana como medida representativa.
+        </div>
+        <div class="formula-box" style="margin-top:0.75rem;">
+          <div class="formula-label">Ejemplo</div>
+          Datos: 2, 3, 4, 5, 100<br>
+          Media = 22.8  ← jalada por 100<br>
+          Mediana = 4   ← no afectada
+        </div>
+      </div>
+
+    </div><!-- /theory-panel -->
+
+    <!-- INTERACTIVO -->
+    <div class="interactive-panel">
+      <div class="panel-title">Dot Plot Interactivo</div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnNormal" onclick="loadDataset('normal')">Normal</button>
+        <button class="btn" id="btnSkewed" onclick="loadDataset('sesgado')">Sesgado</button>
+        <button class="btn" id="btnOutlier" onclick="loadDataset('outlier')">Con Outlier</button>
+        <button class="btn danger" onclick="clearPoints()">Limpiar</button>
+      </div>
+
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="dotCanvas" width="560" height="220"></canvas>
+      </div>
+
+      <p class="hint-text">Haz clic en el canvas para agregar puntos · Click derecho sobre un punto para eliminarlo</p>
+
+      <div class="outlier-row">
+        <label for="outlierSlider">Añadir outlier en X =</label>
+        <input type="range" id="outlierSlider" min="0" max="100" value="90" step="1">
+        <span id="outlierVal">90</span>
+        <button class="btn" onclick="addOutlierPoint()">+ Añadir</button>
+      </div>
+
+      <div class="legend-row">
+        <div class="legend-item"><div class="legend-dot" style="background:#f85149;height:3px;"></div> Media</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff;height:3px;"></div> Mediana</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(63,185,80,0.25);width:18px;height:12px;border-radius:3px;"></div> IQR [Q1, Q3]</div>
+      </div>
+
+      <div style="font-size:0.78rem;color:var(--muted);font-family:var(--font-mono);">Estadísticas en tiempo real</div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-card-label">n</div><div class="stat-card-value" id="sN">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">min</div><div class="stat-card-value" id="sMin">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">max</div><div class="stat-card-value" id="sMax">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">media</div><div class="stat-card-value" id="sMean">—</div></div>
+        <div class="stat-card"><div class="stat-card-label">mediana</div><div class="stat-card-value" id="sMedian">—</div></div>
+        <div class="stat-card moda"><div class="stat-card-label">moda</div><div class="stat-card-value" id="sModa">—</div></div>
+        <div class="stat-card dispersion"><div class="stat-card-label">varianza</div><div class="stat-card-value" id="sVar">—</div></div>
+        <div class="stat-card dispersion"><div class="stat-card-label">std</div><div class="stat-card-value" id="sStd">—</div></div>
+        <div class="stat-card dispersion"><div class="stat-card-label">Q1</div><div class="stat-card-value" id="sQ1">—</div></div>
+        <div class="stat-card dispersion"><div class="stat-card-label">Q3</div><div class="stat-card-value" id="sQ3">—</div></div>
+        <div class="stat-card dispersion"><div class="stat-card-label">IQR</div><div class="stat-card-value" id="sIQR">—</div></div>
+      </div>
+    </div><!-- /interactive-panel -->
+  </div><!-- /ed-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let points = []; // raw values in [0, 100]
+
+  // ── Canvas setup ──────────────────────────────────────────────────────────
+  const canvas = document.getElementById('dotCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = 560, H = 220;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const PAD_L = 40, PAD_R = 20, PAD_TOP = 20, PAD_BOT = 55;
+  const plotW  = W - PAD_L - PAD_R;
+  const plotH  = H - PAD_TOP - PAD_BOT;
+
+  function xToCanvas(v) {
+    return PAD_L + (v / 100) * plotW;
+  }
+  function canvasToX(cx) {
+    return Math.max(0, Math.min(100, ((cx - PAD_L) / plotW) * 100));
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  function computeStats(data) {
+    if (data.length === 0) return null;
+    const sorted = [...data].sort((a, b) => a - b);
+    const n    = sorted.length;
+    const mean = sorted.reduce((s, v) => s + v, 0) / n;
+    const vari = sorted.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+    const std  = Math.sqrt(vari);
+    const med  = percentile(sorted, 50);
+    const q1   = percentile(sorted, 25);
+    const q3   = percentile(sorted, 75);
+    const iqr  = q3 - q1;
+
+    // mode: bin into integers (rounded)
+    const freq = {};
+    sorted.forEach(v => { const k = Math.round(v); freq[k] = (freq[k] || 0) + 1; });
+    let maxF = 0, modeVals = [];
+    Object.entries(freq).forEach(([k, f]) => {
+      if (f > maxF) { maxF = f; modeVals = [+k]; }
+      else if (f === maxF) modeVals.push(+k);
+    });
+    const moda = maxF <= 1 ? '—' : modeVals.slice(0, 3).join(', ');
+
+    return { n, mean, med, vari, std, q1, q3, iqr, moda,
+             min: sorted[0], max: sorted[n-1] };
+  }
+
+  function percentile(sorted, p) {
+    const n = sorted.length;
+    if (n === 1) return sorted[0];
+    const idx = (p / 100) * (n - 1);
+    const lo  = Math.floor(idx);
+    const hi  = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+
+  // ── Draw ───────────────────────────────────────────────────────────────────
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const st = computeStats(points);
+
+    // axis line
+    const axisY = PAD_TOP + plotH + 8;
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, axisY);
+    ctx.lineTo(PAD_L + plotW, axisY);
+    ctx.stroke();
+
+    // axis ticks & labels
+    ctx.fillStyle   = '#8b949e';
+    ctx.font        = '11px "JetBrains Mono", monospace';
+    ctx.textAlign   = 'center';
+    for (let v = 0; v <= 100; v += 10) {
+      const x = xToCanvas(v);
+      ctx.strokeStyle = '#30363d';
+      ctx.lineWidth   = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, axisY);
+      ctx.lineTo(x, axisY + 5);
+      ctx.stroke();
+      ctx.fillText(v, x, axisY + 16);
+    }
+
+    if (!st || points.length === 0) {
+      ctx.fillStyle = '#8b949e';
+      ctx.font      = '13px "Inter", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Haz clic aquí para agregar puntos, o elige un dataset', W / 2, H / 2 - 10);
+      updateStatsPanel(null);
+      return;
+    }
+
+    // IQR rectangle
+    const q1x = xToCanvas(st.q1);
+    const q3x = xToCanvas(st.q3);
+    ctx.fillStyle = 'rgba(63,185,80,0.12)';
+    ctx.strokeStyle = 'rgba(63,185,80,0.35)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.roundRect(q1x, PAD_TOP, q3x - q1x, plotH + 8, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // Q1 / Q3 labels
+    ctx.fillStyle = 'rgba(63,185,80,0.8)';
+    ctx.font      = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Q1', q1x, PAD_TOP - 4);
+    ctx.fillText('Q3', q3x, PAD_TOP - 4);
+
+    // Count how many dots share a rounded-x position for vertical stacking
+    const buckets = {};
+    points.forEach(v => {
+      const bk = Math.round(v * 2) / 2; // 0.5 resolution
+      buckets[bk] = (buckets[bk] || 0) + 1;
+    });
+    const placed = {};
+
+    // Draw dots
+    points.forEach(v => {
+      const bk  = Math.round(v * 2) / 2;
+      placed[bk] = (placed[bk] || 0) + 1;
+      const tier = placed[bk] - 1;
+      const cx   = xToCanvas(v);
+      const cy   = axisY - 10 - tier * 13;
+      const r    = 5;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle   = 'rgba(88,166,255,0.85)';
+      ctx.strokeStyle = 'rgba(88,166,255,0.4)';
+      ctx.lineWidth   = 1;
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Median line (blue)
+    const medX = xToCanvas(st.med);
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(medX, PAD_TOP);
+    ctx.lineTo(medX, axisY + 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle   = '#58a6ff';
+    ctx.font        = '10px "JetBrains Mono", monospace';
+    ctx.textAlign   = 'center';
+    ctx.fillText('Md=' + st.med.toFixed(1), medX, axisY + 30);
+
+    // Mean line (red)
+    const meanX = xToCanvas(st.mean);
+    ctx.strokeStyle = '#f85149';
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(meanX, PAD_TOP);
+    ctx.lineTo(meanX, axisY + 8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle   = '#f85149';
+    ctx.font        = '10px "JetBrains Mono", monospace';
+    ctx.textAlign   = 'center';
+    ctx.fillText('μ=' + st.mean.toFixed(1), meanX, axisY + 42);
+
+    updateStatsPanel(st);
+  }
+
+  // ── Stats Panel ────────────────────────────────────────────────────────────
+  function updateStatsPanel(st) {
+    const fmt = (v, d=2) => v == null ? '—' : (typeof v === 'string' ? v : v.toFixed(d));
+    document.getElementById('sN').textContent      = st ? st.n     : '0';
+    document.getElementById('sMin').textContent    = st ? fmt(st.min)   : '—';
+    document.getElementById('sMax').textContent    = st ? fmt(st.max)   : '—';
+    document.getElementById('sMean').textContent   = st ? fmt(st.mean)  : '—';
+    document.getElementById('sMedian').textContent = st ? fmt(st.med)   : '—';
+    document.getElementById('sModa').textContent   = st ? st.moda       : '—';
+    document.getElementById('sVar').textContent    = st ? fmt(st.vari)  : '—';
+    document.getElementById('sStd').textContent    = st ? fmt(st.std)   : '—';
+    document.getElementById('sQ1').textContent     = st ? fmt(st.q1)    : '—';
+    document.getElementById('sQ3').textContent     = st ? fmt(st.q3)    : '—';
+    document.getElementById('sIQR').textContent    = st ? fmt(st.iqr)   : '—';
+  }
+
+  // ── PRNG (Mulberry32) ──────────────────────────────────────────────────────
+  function makePRNG(seed) {
+    let s = seed >>> 0;
+    return function() {
+      s += 0x6D2B79F5;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function boxMuller(rand) {
+    let u, v;
+    do { u = rand(); } while (u === 0);
+    v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // ── Predefined datasets ────────────────────────────────────────────────────
+  function loadDataset(type) {
+    document.querySelectorAll('.btn[id^="btn"]').forEach(b => b.classList.remove('active'));
+    const map = { normal: 'btnNormal', sesgado: 'btnSkewed', outlier: 'btnOutlier' };
+    if (map[type]) document.getElementById(map[type]).classList.add('active');
+
+    const rand = makePRNG(42);
+    points = [];
+
+    if (type === 'normal') {
+      for (let i = 0; i < 40; i++) {
+        const v = 50 + boxMuller(rand) * 12;
+        points.push(Math.max(0, Math.min(100, v)));
+      }
+    } else if (type === 'sesgado') {
+      for (let i = 0; i < 40; i++) {
+        // exponential-like: skewed right
+        const v = -Math.log(1 - rand()) * 15 + 5;
+        points.push(Math.max(0, Math.min(100, v)));
+      }
+    } else if (type === 'outlier') {
+      for (let i = 0; i < 30; i++) {
+        const v = 45 + boxMuller(rand) * 8;
+        points.push(Math.max(0, Math.min(100, v)));
+      }
+      points.push(92, 95, 5);
+    }
+    draw();
+  }
+
+  function clearPoints() {
+    points = [];
+    document.querySelectorAll('.btn[id^="btn"]').forEach(b => b.classList.remove('active'));
+    draw();
+  }
+
+  // ── Outlier slider ─────────────────────────────────────────────────────────
+  const outlierSlider = document.getElementById('outlierSlider');
+  const outlierVal    = document.getElementById('outlierVal');
+  outlierSlider.addEventListener('input', () => {
+    outlierVal.textContent = outlierSlider.value;
+  });
+
+  window.addOutlierPoint = function() {
+    points.push(parseFloat(outlierSlider.value));
+    draw();
+  };
+
+  // ── Canvas interactions ────────────────────────────────────────────────────
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    return {
+      cx: (e.clientX - rect.left) * scaleX,
+      cy: (e.clientY - rect.top)  * (H / rect.height)
+    };
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const { cx } = getCanvasPos(e);
+    if (cx < PAD_L || cx > PAD_L + plotW) return;
+    const v = canvasToX(cx);
+    points.push(v);
+    draw();
+  });
+
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const { cx, cy } = getCanvasPos(e);
+    const axisY = PAD_TOP + plotH + 8;
+
+    // Find closest point within 12px
+    let bestIdx = -1, bestDist = Infinity;
+    const placed = {};
+    points.forEach((v, i) => {
+      const bk = Math.round(v * 2) / 2;
+      placed[bk] = (placed[bk] || 0) + 1;
+      const tier = placed[bk] - 1;
+      const px   = xToCanvas(v);
+      const py   = axisY - 10 - tier * 13;
+      const d    = Math.hypot(cx - px, cy - py);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    if (bestIdx >= 0 && bestDist < 16) {
+      points.splice(bestIdx, 1);
+      draw();
+    }
+  });
+
+  // ── Expose globals ─────────────────────────────────────────────────────────
+  window.loadDataset = loadDataset;
+  window.clearPoints = clearPoints;
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  draw();
+})();
+</script>
