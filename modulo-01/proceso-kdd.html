@@ -1,0 +1,795 @@
+---
+layout: default
+title: "El Proceso KDD"
+prev_url: /modulo-01/tipos-atributos.html
+prev_title: Tipos de Atributos
+next_url: /modulo-01/explorador-datasets.html
+next_title: Explorador de Datasets
+---
+<style>
+/* ── Page shell ─────────────────────────────────────────────── */
+.demo-page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+.breadcrumb {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 1rem 0 1.5rem;
+  font-family: var(--font-mono);
+}
+.breadcrumb a { color: var(--accent); text-decoration: none; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+.demo-header { margin-bottom: 2.5rem; }
+
+.module-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: rgba(88,166,255,.08);
+  border: 1px solid rgba(88,166,255,.25);
+  border-radius: 20px;
+  padding: 0.2rem 0.75rem;
+  margin-bottom: 1rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.demo-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: .6rem;
+}
+
+.demo-lead {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+/* ── Two-column layout ──────────────────────────────────────── */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .demo-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Theory column ──────────────────────────────────────────── */
+.demo-theory {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  position: sticky;
+  top: 80px;
+}
+
+.theory-section { margin-bottom: 1.6rem; }
+.theory-section:last-child { margin-bottom: 0; }
+
+.theory-title {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-family: var(--font-mono);
+  margin-bottom: .75rem;
+}
+
+.kdd-steps { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.kdd-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  padding: .55rem .7rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: .88rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.kdd-steps li:hover { border-color: var(--accent); background: rgba(88,166,255,.06); }
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(88,166,255,.15);
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-name { font-weight: 600; color: var(--text); display: block; }
+.step-short { color: var(--muted); font-size: .82rem; }
+
+/* ── Comparison table ───────────────────────────────────────── */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+.compare-table th {
+  background: var(--surface2);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .45rem .6rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.compare-table td {
+  padding: .4rem .6rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: top;
+  line-height: 1.45;
+}
+.compare-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+
+/* ── Iterative note ─────────────────────────────────────────── */
+.iterative-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  background: rgba(88,166,255,.06);
+  border: 1px solid rgba(88,166,255,.2);
+  border-radius: var(--radius-sm);
+  padding: .7rem .9rem;
+  font-size: .83rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.iterative-note .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Interactive column ─────────────────────────────────────── */
+.demo-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.canvas-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.canvas-wrap canvas {
+  border-radius: var(--radius-md);
+  display: block;
+  width: 100%;
+}
+
+/* ── Control bar ────────────────────────────────────────────── */
+.ctrl-bar {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-sim {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  background: rgba(88,166,255,.1);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: .88rem;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  font-family: var(--font-sans);
+}
+.btn-sim:hover { background: rgba(88,166,255,.2); }
+.btn-sim:active { transform: scale(.97); }
+.btn-sim.danger {
+  border-color: var(--danger);
+  background: rgba(248,81,73,.1);
+  color: var(--danger);
+}
+.btn-sim.danger:hover { background: rgba(248,81,73,.2); }
+
+.sim-hint { color: var(--muted); font-size: .82rem; }
+
+/* ── Detail panel ───────────────────────────────────────────── */
+.detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  animation: fadeInUp .3s ease both;
+}
+
+.detail-panel.hidden { display: none; }
+
+.detail-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: rgba(88,166,255,.12);
+  border: 1px solid rgba(88,166,255,.3);
+  color: var(--accent);
+  border-radius: 20px;
+  padding: .2rem .8rem;
+  font-size: .78rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  margin-bottom: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.detail-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .6rem;
+}
+
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .detail-body { grid-template-columns: 1fr; }
+}
+
+.detail-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.detail-card-title {
+  font-size: .72rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--accent2);
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.detail-card p { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+
+.tool-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .3rem;
+}
+
+.tool-tag {
+  background: rgba(188,140,255,.1);
+  border: 1px solid rgba(188,140,255,.25);
+  color: var(--accent2);
+  border-radius: var(--radius-sm);
+  padding: .18rem .55rem;
+  font-size: .75rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.fraud-example {
+  border-left: 3px solid var(--accent3);
+  padding-left: .75rem;
+  margin-top: .5rem;
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.fraud-example strong { color: var(--accent3); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="demo-page">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb">
+    <a href="/">Inicio</a> › Módulo 01 — Introducción y Tipos de Datos › El Proceso KDD
+  </nav>
+
+  <header class="demo-header">
+    <div class="module-eyebrow">Módulo 01 · Minería de Datos · Ciencia de la Computación</div>
+    <h1>El Proceso KDD</h1>
+    <p class="demo-lead">
+      Knowledge Discovery in Databases (KDD) es el marco metodológico que convierte
+      datos crudos en conocimiento accionable. Aprende sus cinco etapas y simula el
+      flujo de datos a través de cada una en el contexto de detección de fraude bancario.
+    </p>
+  </header>
+
+  <div class="demo-layout">
+    <!-- ── TEORÍA ───────────────────────────── -->
+    <aside class="demo-theory">
+
+      <div class="theory-section">
+        <div class="theory-title">Etapas del KDD (Fayyad, 1996)</div>
+        <ul class="kdd-steps" id="theorySteps">
+          <li onclick="selectStep(0)">
+            <span class="step-num">1</span>
+            <div>
+              <span class="step-name">Selección</span>
+              <span class="step-short">Escoger el subconjunto relevante de datos</span>
+            </div>
+          </li>
+          <li onclick="selectStep(1)">
+            <span class="step-num">2</span>
+            <div>
+              <span class="step-name">Preprocesamiento</span>
+              <span class="step-short">Limpiar, manejar valores faltantes y ruido</span>
+            </div>
+          </li>
+          <li onclick="selectStep(2)">
+            <span class="step-num">3</span>
+            <div>
+              <span class="step-name">Transformación</span>
+              <span class="step-short">Reducir dimensionalidad, normalizar, crear features</span>
+            </div>
+          </li>
+          <li onclick="selectStep(3)">
+            <span class="step-num">4</span>
+            <div>
+              <span class="step-name">Minería de Datos</span>
+              <span class="step-short">Aplicar el algoritmo (clasificación, clustering…)</span>
+            </div>
+          </li>
+          <li onclick="selectStep(4)">
+            <span class="step-num">5</span>
+            <div>
+              <span class="step-name">Interpretación / Evaluación</span>
+              <span class="step-short">Validar, visualizar y actuar sobre el conocimiento</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="theory-section">
+        <div class="theory-title">KDD vs CRISP-DM</div>
+        <table class="compare-table">
+          <thead>
+            <tr><th>KDD (Fayyad)</th><th>CRISP-DM</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Selección</td><td>Comprensión del negocio</td></tr>
+            <tr><td>Preprocesamiento</td><td>Comprensión de los datos</td></tr>
+            <tr><td>Transformación</td><td>Preparación de datos</td></tr>
+            <tr><td>Minería de Datos</td><td>Modelado</td></tr>
+            <tr><td>Interpretación</td><td>Evaluación</td></tr>
+            <tr><td>—</td><td>Despliegue</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="theory-section">
+        <div class="theory-title">Naturaleza iterativa</div>
+        <div class="iterative-note">
+          <span class="icon">↺</span>
+          <span>El proceso no es lineal. Los resultados de la minería pueden revelar
+          problemas en los datos que obligan a regresar a preprocesamiento o incluso
+          a redefinir la selección de datos.</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── INTERACTIVO ────────────────────────── -->
+    <div class="demo-interactive">
+
+      <div class="canvas-wrap">
+        <canvas id="kddCanvas" height="200"></canvas>
+      </div>
+
+      <div class="ctrl-bar">
+        <button class="btn-sim" id="btnSim" onclick="toggleSim()">▶ Iniciar simulación</button>
+        <button class="btn-sim danger" onclick="resetSim()">↺ Reiniciar</button>
+        <span class="sim-hint" id="simHint">Haz clic en una etapa del pipeline para ver detalles</span>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel hidden" id="detailPanel">
+        <div class="detail-step-badge" id="detailBadge">Etapa 1</div>
+        <div class="detail-title" id="detailTitle">Selección</div>
+        <div class="detail-body">
+          <div class="detail-card">
+            <div class="detail-card-title">¿Qué se hace?</div>
+            <p id="detailWhat"></p>
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-title">Herramientas típicas</div>
+            <div class="tool-tags" id="detailTools"></div>
+          </div>
+          <div class="detail-card" style="grid-column: 1 / -1;">
+            <div class="detail-card-title">Ejemplo — Detección de Fraude Bancario</div>
+            <div class="fraud-example" id="detailExample"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /demo-interactive -->
+  </div><!-- /demo-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+/* ================================================================
+   KDD Pipeline — Canvas 2D + Particle Simulation
+   ================================================================ */
+
+const STEPS = [
+  {
+    label: 'Selección',
+    num: '1',
+    what: 'Identificar y extraer el subconjunto de datos relevante para el objetivo del análisis. Se elige qué tablas, columnas y períodos temporales se usarán.',
+    tools: ['SQL', 'pandas', 'Apache Spark', 'AWS S3'],
+    example: '<strong>Fraude bancario:</strong> Se seleccionan transacciones de los últimos 12 meses: monto, comercio, hora, ubicación GPS y si fue marcada como fraude. Se excluyen columnas irrelevantes (e.g., notas internas).',
+    color: '#58a6ff',
+  },
+  {
+    label: 'Preprocesamiento',
+    num: '2',
+    what: 'Limpiar los datos: eliminar duplicados, imputar o eliminar valores faltantes, detectar y tratar outliers, corregir inconsistencias (e.g., fechas malformadas).',
+    tools: ['pandas', 'scikit-learn', 'OpenRefine', 'Great Expectations'],
+    example: '<strong>Fraude bancario:</strong> El 3 % de transacciones tiene monto nulo → se imputa con la mediana por comercio. Se eliminan duplicados por ID de transacción. Outliers de monto > 3σ se marcan con un flag.',
+    color: '#bc8cff',
+  },
+  {
+    label: 'Transformación',
+    num: '3',
+    what: 'Convertir datos al formato óptimo para el algoritmo: normalización, codificación one-hot, creación de nuevas features, reducción de dimensionalidad (PCA, etc.).',
+    tools: ['scikit-learn', 'Feature-engine', 'PCA', 'StandardScaler'],
+    example: '<strong>Fraude bancario:</strong> Monto normalizado con log1p. Hora → sin/cos para capturar ciclicidad. País del comercio → one-hot. Nueva feature: "transacciones en últimas 24 h desde misma IP".',
+    color: '#3fb950',
+  },
+  {
+    label: 'Minería de Datos',
+    num: '4',
+    what: 'Aplicar el algoritmo de aprendizaje automático al dataset transformado. Puede ser clasificación, clustering, regresión, detección de anomalías, reglas de asociación, etc.',
+    tools: ['scikit-learn', 'XGBoost', 'LightGBM', 'Isolation Forest', 'PyTorch'],
+    example: '<strong>Fraude bancario:</strong> Se entrena un XGBoost con SMOTE para balancear clases (fraude ~0.1 %). Validación con k-fold estratificado. Se optimiza recall para minimizar falsos negativos.',
+    color: '#d29922',
+  },
+  {
+    label: 'Interpretación',
+    num: '5',
+    what: 'Evaluar resultados, validar si el conocimiento descubierto es útil y novedoso, visualizar para comunicar a los stakeholders y decidir acciones concretas.',
+    tools: ['SHAP', 'LIME', 'matplotlib', 'Plotly', 'MLflow'],
+    example: '<strong>Fraude bancario:</strong> SHAP muestra que "país inusual" y "monto > 5× promedio" son los factores más influyentes. El modelo reduce pérdidas anuales un 34 %. Se despliega en tiempo real via API REST.',
+    color: '#f85149',
+  },
+];
+
+// ── Canvas setup ──────────────────────────────────────────────────
+const canvas = document.getElementById('kddCanvas');
+const ctx    = canvas.getContext('2d');
+
+let W, H, boxes = [];
+const BOX_H   = 80;
+const BOX_GAP = 12;
+let selectedStep = -1;
+
+// Particle system
+let particles  = [];
+let simRunning = false;
+let simRAF     = null;
+let simPhase   = 0;   // which gap is being traversed
+
+function layout() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = rect.width - 40; // account for padding
+  H = 200;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const totalW   = W;
+  const n        = STEPS.length;
+  const arrowW   = 28;
+  const boxW     = (totalW - arrowW * (n - 1)) / n;
+
+  boxes = STEPS.map((s, i) => ({
+    x:     i * (boxW + arrowW),
+    y:     (H - BOX_H) / 2,
+    w:     boxW,
+    h:     BOX_H,
+    step:  i,
+    ...s,
+  }));
+}
+
+function drawRoundRect(x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  if (fill)  { ctx.fillStyle = fill;   ctx.fill(); }
+  if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
+}
+
+function drawPipeline() {
+  ctx.clearRect(0, 0, W, H);
+
+  boxes.forEach((b, i) => {
+    const active   = i === selectedStep;
+    const fillBase = active ? b.color : '#1c2330';
+    const strokeC  = active ? b.color : '#30363d';
+    const alpha    = active ? '22' : '00';
+
+    // box shadow glow when active
+    if (active) {
+      ctx.shadowColor = b.color;
+      ctx.shadowBlur  = 16;
+    } else {
+      ctx.shadowBlur = 0;
+    }
+
+    drawRoundRect(b.x, b.y, b.w, b.h, 8, fillBase + (active ? '28' : ''), strokeC);
+    ctx.shadowBlur = 0;
+
+    // Step number circle
+    const cx = b.x + 18, cy = b.y + 18;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+    ctx.fillStyle = active ? b.color : 'rgba(88,166,255,0.15)';
+    ctx.fill();
+    ctx.fillStyle = active ? '#0d1117' : '#58a6ff';
+    ctx.font      = `700 11px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(b.num, cx, cy);
+
+    // Label
+    const labelColor = active ? b.color : '#e6edf3';
+    ctx.fillStyle    = labelColor;
+    ctx.font         = `600 12px Inter, system-ui, sans-serif`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Word-wrap label
+    const words    = b.label.split(' ');
+    const maxWidth = b.w - 16;
+    const lineH    = 16;
+    let   lines    = [], line = '';
+    words.forEach(w => {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line); line = w;
+      } else {
+        line = test;
+      }
+    });
+    lines.push(line);
+
+    const startY = b.y + b.h / 2 - ((lines.length - 1) * lineH) / 2 + 8;
+    lines.forEach((l, li) => {
+      ctx.fillText(l, b.x + b.w / 2, startY + li * lineH);
+    });
+
+    // Arrow to next box
+    if (i < boxes.length - 1) {
+      const ax = b.x + b.w + 2;
+      const ay = H / 2;
+      const aw = 24;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax + aw - 8, ay);
+      ctx.strokeStyle = '#30363d';
+      ctx.lineWidth   = 1.5;
+      ctx.stroke();
+      // arrowhead
+      ctx.beginPath();
+      ctx.moveTo(ax + aw - 8, ay - 5);
+      ctx.lineTo(ax + aw,     ay);
+      ctx.lineTo(ax + aw - 8, ay + 5);
+      ctx.fillStyle = '#30363d';
+      ctx.fill();
+    }
+  });
+
+  // particles
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + Math.floor(p.alpha * 255).toString(16).padStart(2, '0');
+    ctx.fill();
+  });
+}
+
+// ── Particle animation ────────────────────────────────────────────
+function spawnParticle(stepIdx) {
+  const b  = boxes[stepIdx];
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  return {
+    x:      cx + (Math.random() - .5) * b.w * .6,
+    y:      cy + (Math.random() - .5) * b.h * .6,
+    r:      3 + Math.random() * 3,
+    color:  STEPS[stepIdx].color,
+    alpha:  .85,
+    vx:     0,
+    vy:     0,
+    phase:  'idle',
+    target: stepIdx + 1,
+    speed:  1.5 + Math.random() * 1.5,
+  };
+}
+
+let simTimer   = 0;
+let spawnDelay = 0;
+
+function simStep(ts) {
+  if (!simRunning) return;
+
+  simTimer++;
+
+  // Spawn particles at step 0 periodically
+  if (simTimer % 18 === 0 && particles.length < 60) {
+    particles.push(spawnParticle(0));
+  }
+
+  particles.forEach(p => {
+    if (p.phase === 'idle') {
+      // Jitter in place
+      p.x += (Math.random() - .5) * .8;
+      p.y += (Math.random() - .5) * .8;
+
+      // After a random dwell, start travelling to next step
+      if (p.target < STEPS.length && Math.random() < 0.006) {
+        p.phase = 'travel';
+      }
+    } else if (p.phase === 'travel') {
+      const b  = boxes[p.target];
+      const tx = b.x + b.w / 2 + (Math.random() - .5) * 20;
+      const ty = b.y + b.h / 2;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 4) {
+        // Arrived — transform particle
+        p.color = STEPS[p.target].color;
+        p.r     = Math.min(p.r + .3, 7);
+        p.phase = 'idle';
+        p.target++;
+      } else {
+        p.x += (dx / dist) * p.speed;
+        p.y += (dy / dist) * p.speed;
+      }
+    }
+
+    // Fade particles that completed all steps
+    if (p.target >= STEPS.length && p.phase === 'idle') {
+      p.alpha -= 0.008;
+    }
+  });
+
+  particles = particles.filter(p => p.alpha > 0);
+
+  drawPipeline();
+  simRAF = requestAnimationFrame(simStep);
+}
+
+function toggleSim() {
+  if (simRunning) {
+    simRunning = false;
+    cancelAnimationFrame(simRAF);
+    document.getElementById('btnSim').textContent = '▶ Iniciar simulación';
+    document.getElementById('simHint').textContent = 'Simulación pausada. Haz clic en una etapa para ver detalles.';
+  } else {
+    simRunning = true;
+    document.getElementById('btnSim').textContent = '⏸ Pausar';
+    document.getElementById('simHint').textContent = 'Los puntos representan instancias de datos fluyendo por el pipeline.';
+    simRAF = requestAnimationFrame(simStep);
+  }
+}
+
+function resetSim() {
+  simRunning = false;
+  cancelAnimationFrame(simRAF);
+  particles  = [];
+  simTimer   = 0;
+  document.getElementById('btnSim').textContent = '▶ Iniciar simulación';
+  document.getElementById('simHint').textContent = 'Haz clic en una etapa del pipeline para ver detalles.';
+  drawPipeline();
+}
+
+// ── Step selection ────────────────────────────────────────────────
+function selectStep(i) {
+  selectedStep = i;
+
+  // highlight theory list
+  document.querySelectorAll('#theorySteps li').forEach((el, idx) => {
+    el.style.borderColor = idx === i ? STEPS[i].color : '';
+    el.style.background  = idx === i ? STEPS[i].color + '18' : '';
+  });
+
+  const s = STEPS[i];
+  const panel = document.getElementById('detailPanel');
+  panel.classList.remove('hidden');
+  // Force re-animation
+  panel.style.animation = 'none';
+  void panel.offsetWidth;
+  panel.style.animation = '';
+
+  document.getElementById('detailBadge').textContent  = `Etapa ${s.num}`;
+  document.getElementById('detailBadge').style.background    = s.color + '20';
+  document.getElementById('detailBadge').style.borderColor   = s.color + '50';
+  document.getElementById('detailBadge').style.color         = s.color;
+  document.getElementById('detailTitle').textContent  = s.label;
+  document.getElementById('detailWhat').textContent   = s.what;
+  document.getElementById('detailExample').innerHTML  = s.example;
+
+  const toolsEl = document.getElementById('detailTools');
+  toolsEl.innerHTML = '';
+  s.tools.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tool-tag';
+    span.textContent = t;
+    toolsEl.appendChild(span);
+  });
+
+  drawPipeline();
+}
+
+// ── Canvas click hit-test ─────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left)  * scaleX;
+  const my = (e.clientY - rect.top)   * scaleY;
+
+  boxes.forEach(b => {
+    if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+      selectStep(b.step);
+    }
+  });
+});
+
+canvas.style.cursor = 'pointer';
+
+// ── Init ──────────────────────────────────────────────────────────
+window.addEventListener('resize', () => { layout(); drawPipeline(); });
+layout();
+drawPipeline();
+// Auto-select first step on load
+setTimeout(() => selectStep(0), 300);
+</script>
