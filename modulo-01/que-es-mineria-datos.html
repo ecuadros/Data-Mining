@@ -1,0 +1,744 @@
+---
+layout: default
+title: "¿Qué es la Minería de Datos?"
+next_url: /modulo-01/tipos-atributos.html
+next_title: Tipos de Atributos
+---
+<style>
+/* ── Page-level styles ───────────────────────────────────────────── */
+.demo-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent); }
+.breadcrumb .sep { color: var(--border); }
+
+/* Header */
+.demo-header { margin-bottom: 2.5rem; }
+.module-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 20px;
+  padding: 0.2rem 0.85rem;
+  margin-bottom: 0.9rem;
+}
+.demo-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.demo-lead {
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 680px;
+}
+
+/* Layout grid */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 2.5rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+/* Theory panel */
+.demo-theory {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.theory-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem;
+}
+
+.theory-block h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theory-block h2::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.theory-block p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.theory-block p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.definition-box {
+  background: rgba(88,166,255,0.06);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+  margin-top: 0.8rem;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+}
+
+.compare-table th {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-table td {
+  padding: 0.5rem 0.6rem;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.compare-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.task-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.task-pill .task-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Interactive panel */
+.demo-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.interactive-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin-bottom: 0.1rem;
+}
+
+.apps-intro {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Application card gallery */
+.app-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.app-card:hover {
+  border-color: rgba(88,166,255,0.5);
+  background: var(--surface2);
+  transform: translateY(-2px);
+}
+
+.app-card.active {
+  border-color: var(--accent);
+  background: rgba(88,166,255,0.07);
+  box-shadow: 0 0 0 1px rgba(88,166,255,0.15), 0 4px 16px rgba(88,166,255,0.12);
+}
+
+.app-emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.app-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.app-task-badge {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Detail panel */
+.app-detail {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem;
+  animation: fadeInUp 0.3s ease both;
+  display: none;
+}
+
+.app-detail.visible {
+  display: block;
+}
+
+.detail-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.detail-key {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  padding-top: 0.15rem;
+}
+
+.detail-val {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.55;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+}
+
+.detail-task-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+}
+
+.detail-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}
+
+/* Application section */
+.demo-application {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.demo-application h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pipeline-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.pipeline-step {
+  flex: 1;
+  min-width: 130px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 1rem 0.85rem;
+  text-align: center;
+  position: relative;
+}
+
+.pipeline-step:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.pipeline-step:last-child  { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+
+.pipeline-step:not(:last-child)::after {
+  content: '›';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  color: var(--accent);
+  z-index: 1;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.step-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.step-desc {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Placeholder empty state */
+.detail-empty {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.detail-empty .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .demo-layout { grid-template-columns: 1fr; }
+  .app-gallery { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .app-gallery { grid-template-columns: repeat(2, 1fr); }
+  .task-grid   { grid-template-columns: 1fr; }
+  .pipeline-steps { flex-direction: column; }
+  .pipeline-step:first-child { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+  .pipeline-step:last-child  { border-radius: 0 0 var(--radius-md) var(--radius-md); }
+  .pipeline-step:not(:last-child)::after { content: '↓'; right: 50%; top: auto; bottom: -14px; transform: translateX(50%); }
+}
+</style>
+
+<div class="demo-page">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb">
+    <a href="{{ '/' | relative_url }}">Inicio</a>
+    <span class="sep">›</span>
+    <a href="{{ '/modulo-01/' | relative_url }}">Módulo 01 — Introducción y Tipos de Datos</a>
+    <span class="sep">›</span>
+    ¿Qué es la Minería de Datos?
+  </nav>
+
+  <header class="demo-header">
+    <div class="module-eyebrow">Módulo 01 · Minería de Datos · Ciencia de la Computación</div>
+    <h1>¿Qué es la Minería de Datos?</h1>
+    <p class="demo-lead">Exploración interactiva del concepto, sus diferencias con disciplinas relacionadas y sus principales tareas a través de aplicaciones reales de la industria.</p>
+  </header>
+
+  <div class="demo-layout">
+
+    <!-- ── Teoría ────────────────────────────────────────────── -->
+    <aside class="demo-theory">
+
+      <div class="theory-block">
+        <h2>Definición</h2>
+        <p>La Minería de Datos (<strong>Data Mining</strong>) es el proceso de:</p>
+        <div class="definition-box">
+          "Extracción de patrones <strong>útiles, no triviales, implícitos</strong> y potencialmente válidos de grandes volúmenes de datos."
+        </div>
+        <p style="margin-top:0.75rem">Cada adjetivo importa: <strong>útil</strong> (tiene valor de negocio), <strong>no trivial</strong> (no es evidente), <strong>implícito</strong> (no estaba explícitamente almacenado), <strong>potencialmente válido</strong> (puede generalizarse).</p>
+      </div>
+
+      <div class="theory-block">
+        <h2>DM vs. Disciplinas Relacionadas</h2>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Disciplina</th>
+              <th>Enfoque</th>
+              <th>Diferencia clave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Estadística</td>
+              <td>Confirmar hipótesis</td>
+              <td>DM <em>descubre</em> hipótesis; no parte de una</td>
+            </tr>
+            <tr>
+              <td>Machine Learning</td>
+              <td>Construir modelos predictivos</td>
+              <td>DM incluye también descripción y comprensión del dato</td>
+            </tr>
+            <tr>
+              <td>Bases de Datos</td>
+              <td>Recuperar datos conocidos</td>
+              <td>DM extrae conocimiento que <em>no</em> estaba en consultas previas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="theory-block">
+        <h2>Tareas Principales</h2>
+        <div class="task-grid">
+          <div class="task-pill">
+            <span class="task-dot" style="background:#58a6ff"></span>
+            Clasificación
+          </div>
+          <div class="task-pill">
+            <span class="task-dot" style="background:#bc8cff"></span>
+            Regresión
+          </div>
+          <div class="task-pill">
+            <span class="task-dot" style="background:#3fb950"></span>
+            Clustering
+          </div>
+          <div class="task-pill">
+            <span class="task-dot" style="background:#d29922"></span>
+            Asociación
+          </div>
+          <div class="task-pill" style="grid-column:span 2">
+            <span class="task-dot" style="background:#f85149"></span>
+            Detección de Anomalías
+          </div>
+        </div>
+        <p style="margin-top:0.85rem;font-size:0.82rem">Las tareas se dividen en <strong>descriptivas</strong> (clustering, asociación) y <strong>predictivas</strong> (clasificación, regresión). La detección de anomalías puede ser ambas.</p>
+      </div>
+
+    </aside>
+
+    <!-- ── Interactivo ──────────────────────────────────────── -->
+    <div class="demo-interactive">
+      <div>
+        <div class="interactive-label">Galería Interactiva</div>
+        <p class="apps-intro">Haz clic en una industria para ver qué datos se tienen, qué patrón se descubre y qué tarea de DM se aplica.</p>
+      </div>
+
+      <div class="app-gallery" id="appGallery">
+        <!-- Cards generadas por JS -->
+      </div>
+
+      <div class="app-detail" id="appDetail">
+        <div class="detail-empty" id="detailEmpty">
+          <div class="empty-icon">👆</div>
+          Selecciona una industria para ver el detalle
+        </div>
+        <div id="detailContent" style="display:none">
+          <div class="detail-title" id="detailTitle"></div>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <span class="detail-key">Datos de entrada</span>
+              <span class="detail-val" id="detailInput"></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Patrón descubierto</span>
+              <span class="detail-val" id="detailPattern"></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Tarea DM</span>
+              <span class="detail-val" id="detailTask"></span>
+            </div>
+          </div>
+          <div class="detail-hint" id="detailHint"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .demo-layout -->
+
+  <!-- ── Sección de aplicación: pipeline KDD simplificado ── -->
+  <section class="demo-application">
+    <h2>📊 El flujo de trabajo en la práctica</h2>
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.25rem">Antes de extraer patrones, los datos pasan por un proceso estructurado. Aquí el esquema simplificado (verás KDD completo en la siguiente sección).</p>
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="step-num">01</div>
+        <div class="step-label">Datos brutos</div>
+        <div class="step-desc">BD transaccionales, logs, sensores, redes sociales</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">02</div>
+        <div class="step-label">Selección</div>
+        <div class="step-desc">Elegir subconjunto relevante para el objetivo</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">03</div>
+        <div class="step-label">Preprocesamiento</div>
+        <div class="step-desc">Limpiar, integrar y transformar</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">04</div>
+        <div class="step-label">Minería</div>
+        <div class="step-desc">Aplicar algoritmos para extraer patrones</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">05</div>
+        <div class="step-label">Interpretación</div>
+        <div class="step-desc">Evaluar, visualizar y actuar sobre el conocimiento</div>
+      </div>
+    </div>
+  </section>
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function () {
+  const TASK_COLORS = {
+    'Reglas de Asociación':    { bg: 'rgba(210,153,34,0.12)',  color: '#d29922', border: 'rgba(210,153,34,0.3)'  },
+    'Detección de Anomalías':  { bg: 'rgba(248,81,73,0.12)',   color: '#f85149', border: 'rgba(248,81,73,0.3)'   },
+    'Clasificación':           { bg: 'rgba(88,166,255,0.12)',  color: '#58a6ff', border: 'rgba(88,166,255,0.3)'  },
+    'Clustering':              { bg: 'rgba(63,185,80,0.12)',   color: '#3fb950', border: 'rgba(63,185,80,0.3)'   },
+  };
+
+  const APPS = [
+    {
+      id: 'retail',
+      emoji: '🛒',
+      name: 'Retail',
+      input: 'Historial de compras de millones de clientes en supermercados (canasta de productos por ticket).',
+      pattern: '"Quien compra pañales los viernes también compra cerveza con 73 % de confianza."',
+      task: 'Reglas de Asociación',
+      hint: 'El algoritmo Apriori analiza co-ocurrencias de productos para encontrar reglas de la forma A → B. El minorista puede reposicionar productos y diseñar ofertas cruzadas.',
+    },
+    {
+      id: 'banca',
+      emoji: '🏦',
+      name: 'Banca',
+      input: 'Transacciones históricas: monto, hora, ubicación, comercio, frecuencia por usuario.',
+      pattern: 'Perfil de transacción fraudulenta: monto inusualmente alto, país distinto al habitual, madrugada.',
+      task: 'Detección de Anomalías',
+      hint: 'Los modelos aprenden el comportamiento normal de cada cliente. Una transacción que se desvía estadísticamente del perfil activa una alerta en tiempo real.',
+    },
+    {
+      id: 'salud',
+      emoji: '🏥',
+      name: 'Salud',
+      input: 'Síntomas, signos vitales, resultados de laboratorio y diagnósticos de historiales clínicos de miles de pacientes.',
+      pattern: 'La combinación [glucosa > 126 mg/dL + IMC > 30 + antecedentes familiares] predice diabetes tipo 2 con 89 % de exactitud.',
+      task: 'Clasificación',
+      hint: 'Un árbol de decisión o red neuronal entrenada sobre registros etiquetados (diabético / no diabético) aprende las reglas de decisión. Puede usarse para diagnóstico asistido.',
+    },
+    {
+      id: 'streaming',
+      emoji: '🎬',
+      name: 'Streaming',
+      input: 'Historial de reproducción, valoraciones, tiempo de visionado y búsquedas de millones de usuarios.',
+      pattern: 'Usuarios con perfil similar (mismo cluster) prefieren documentales históricos y thrillers nórdicos sobre otras categorías.',
+      task: 'Clustering',
+      hint: 'K-Means o técnicas de factorización matricial agrupan usuarios y contenidos en espacios latentes. Las recomendaciones se generan dentro del mismo cluster o vecindad.',
+    },
+    {
+      id: 'email',
+      emoji: '📧',
+      name: 'Email / Spam',
+      input: 'Corpus de emails etiquetados manualmente como spam o legítimos, con sus palabras y metadatos.',
+      pattern: 'Las palabras "gratis", "oferta urgente", "haz clic aquí" y "millones" tienen alta probabilidad de aparecer en spam.',
+      task: 'Clasificación',
+      hint: 'Un clasificador Naïve Bayes o SVM aprende la distribución de palabras en cada clase. Cada email nuevo se evalúa como una bolsa de palabras (bag-of-words).',
+    },
+    {
+      id: 'social',
+      emoji: '🌐',
+      name: 'Redes Sociales',
+      input: 'Grafo de conexiones entre usuarios, contenido de posts, hashtags y patrones de interacción.',
+      pattern: 'Se detectan comunidades densas de usuarios que comparten intereses en temáticas específicas (e.g., fotógrafos, fanáticos de un equipo).',
+      task: 'Clustering',
+      hint: 'Algoritmos de detección de comunidades (Louvain, Girvan-Newman) minimizan los enlaces entre grupos y maximizan los internos. Útil para segmentación de audiencias y detección de cámaras de eco.',
+    },
+  ];
+
+  const gallery = document.getElementById('appGallery');
+  const detail  = document.getElementById('appDetail');
+  const detailEmpty   = document.getElementById('detailEmpty');
+  const detailContent = document.getElementById('detailContent');
+  const detailTitle   = document.getElementById('detailTitle');
+  const detailInput   = document.getElementById('detailInput');
+  const detailPattern = document.getElementById('detailPattern');
+  const detailTask    = document.getElementById('detailTask');
+  const detailHint    = document.getElementById('detailHint');
+
+  let activeId = null;
+
+  // Build gallery cards
+  APPS.forEach(function (app) {
+    const tc = TASK_COLORS[app.task] || { bg: 'rgba(139,148,158,0.12)', color: '#8b949e', border: 'rgba(139,148,158,0.3)' };
+
+    const card = document.createElement('div');
+    card.className = 'app-card';
+    card.dataset.id = app.id;
+    card.innerHTML =
+      '<div class="app-emoji">' + app.emoji + '</div>' +
+      '<div class="app-name">' + app.name + '</div>' +
+      '<div class="app-task-badge" style="background:' + tc.bg + ';color:' + tc.color + ';border:1px solid ' + tc.border + '">' + app.task + '</div>';
+
+    card.addEventListener('click', function () {
+      selectApp(app, card);
+    });
+
+    gallery.appendChild(card);
+  });
+
+  // Show detail panel
+  detail.classList.add('visible');
+
+  function selectApp(app, cardEl) {
+    // Toggle off if same card
+    if (activeId === app.id) {
+      activeId = null;
+      cardEl.classList.remove('active');
+      detailEmpty.style.display = '';
+      detailContent.style.display = 'none';
+      return;
+    }
+
+    // Deactivate all
+    document.querySelectorAll('.app-card').forEach(function (c) {
+      c.classList.remove('active');
+    });
+
+    activeId = app.id;
+    cardEl.classList.add('active');
+
+    const tc = TASK_COLORS[app.task] || { bg: 'rgba(139,148,158,0.12)', color: '#8b949e', border: 'rgba(139,148,158,0.3)' };
+
+    detailTitle.innerHTML = app.emoji + ' <span>' + app.name + '</span>';
+    detailInput.textContent   = app.input;
+    detailPattern.textContent = app.pattern;
+    detailTask.innerHTML =
+      '<span class="detail-task-badge" style="background:' + tc.bg + ';color:' + tc.color + ';border:1px solid ' + tc.border + '">' + app.task + '</span>';
+    detailHint.textContent = app.hint;
+
+    detailEmpty.style.display   = 'none';
+    detailContent.style.display = 'block';
+
+    // Restart animation
+    detailContent.style.animation = 'none';
+    detailContent.offsetHeight; // reflow
+    detailContent.style.animation = 'fadeInUp 0.3s ease both';
+  }
+}());
+</script>
