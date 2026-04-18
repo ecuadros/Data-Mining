@@ -1,0 +1,831 @@
+---
+layout: default
+title: "Explorador de Datasets"
+prev_url: /modulo-01/proceso-kdd.html
+prev_title: El Proceso KDD
+---
+<style>
+/* ── Page shell ─────────────────────────────────────────────── */
+.demo-page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+.breadcrumb {
+  font-size: .78rem;
+  color: var(--muted);
+  margin: 1rem 0 1.5rem;
+  font-family: var(--font-mono);
+}
+.breadcrumb a { color: var(--accent); text-decoration: none; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+.demo-header { margin-bottom: 2.5rem; }
+
+.module-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: rgba(88,166,255,.08);
+  border: 1px solid rgba(88,166,255,.25);
+  border-radius: 20px;
+  padding: .2rem .75rem;
+  margin-bottom: 1rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.demo-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: .6rem;
+}
+
+.demo-lead {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+/* ── Two-column 1:2 layout ──────────────────────────────────── */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .demo-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Theory column ──────────────────────────────────────────── */
+.demo-theory {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  position: sticky;
+  top: 80px;
+}
+
+.theory-section { margin-bottom: 1.6rem; }
+.theory-section:last-child { margin-bottom: 0; }
+
+.theory-title {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-family: var(--font-mono);
+  margin-bottom: .6rem;
+}
+
+.theory-body {
+  font-size: .87rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.theory-body strong { color: var(--text); }
+
+.concept-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.concept-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  padding: .45rem .6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .84rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.concept-list li .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.concept-list li strong { color: var(--text); display: block; font-size: .83rem; }
+
+.format-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .4rem;
+}
+
+.format-badge {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .2rem .55rem;
+  font-size: .75rem;
+  font-family: var(--font-mono);
+  color: var(--accent2);
+  font-weight: 500;
+}
+
+/* ── Interactive column ─────────────────────────────────────── */
+.demo-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Dataset selector ───────────────────────────────────────── */
+.ds-selector {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  align-items: center;
+}
+
+.ds-label {
+  font-size: .78rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-right: .25rem;
+}
+
+.ds-btn {
+  padding: .45rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+  font-family: var(--font-sans);
+}
+
+.ds-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ds-btn.active {
+  border-color: var(--accent);
+  background: rgba(88,166,255,.1);
+  color: var(--accent);
+}
+
+/* ── Dim pills ──────────────────────────────────────────────── */
+.dim-pills {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.dim-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .8rem;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid;
+}
+
+.dim-pill.inst  { background: rgba(88,166,255,.1);  border-color: rgba(88,166,255,.3);  color: #58a6ff; }
+.dim-pill.attr  { background: rgba(188,140,255,.1); border-color: rgba(188,140,255,.3); color: #bc8cff; }
+.dim-pill.cls   { background: rgba(63,185,80,.1);   border-color: rgba(63,185,80,.3);   color: #3fb950; }
+.dim-pill.miss  { background: rgba(210,153,34,.1);  border-color: rgba(210,153,34,.3);  color: #d29922; }
+
+/* ── Section title inside interactive ───────────────────────── */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  animation: fadeInUp .3s ease both;
+}
+
+.section-card-title {
+  font-size: .75rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* ── Preview table ──────────────────────────────────────────── */
+.preview-scroll { overflow-x: auto; }
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.preview-table th {
+  padding: .45rem .7rem;
+  border: 1px solid var(--border);
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  position: sticky;
+  top: 0;
+}
+
+.preview-table th.num  { background: rgba(88,166,255,.15);  color: #58a6ff; }
+.preview-table th.nom  { background: rgba(188,140,255,.15); color: #bc8cff; }
+.preview-table th.cls  { background: rgba(63,185,80,.15);   color: #3fb950; }
+
+.preview-table td {
+  padding: .35rem .7rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.preview-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+.preview-table tr:hover td { background: rgba(88,166,255,.05); }
+
+.th-type-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: .7rem;
+  flex-wrap: wrap;
+}
+
+.th-type-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .76rem;
+  color: var(--muted);
+}
+
+.th-type-dot::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.th-type-dot.num::before  { background: rgba(88,166,255,.4); }
+.th-type-dot.nom::before  { background: rgba(188,140,255,.4); }
+.th-type-dot.cls::before  { background: rgba(63,185,80,.4); }
+
+/* ── Attribute summary ──────────────────────────────────────── */
+.attr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.attr-table th {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: .4rem .6rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+.attr-table td {
+  border: 1px solid var(--border);
+  padding: .35rem .6rem;
+  color: var(--muted);
+}
+
+.attr-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+
+.attr-name { color: var(--text); font-weight: 600; font-family: var(--font-mono); font-size: .8rem; }
+
+.type-badge {
+  display: inline-block;
+  padding: .15rem .45rem;
+  border-radius: var(--radius-sm);
+  font-size: .7rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.type-badge.num  { background: rgba(88,166,255,.15);  color: #58a6ff; }
+.type-badge.nom  { background: rgba(188,140,255,.15); color: #bc8cff; }
+.type-badge.cls  { background: rgba(63,185,80,.15);   color: #3fb950; }
+
+/* ── Class balance ──────────────────────────────────────────── */
+.class-rows { display: flex; flex-direction: column; gap: .5rem; }
+
+.class-row { display: flex; align-items: center; gap: .75rem; }
+
+.class-name {
+  font-size: .83rem;
+  font-weight: 600;
+  color: var(--text);
+  width: 120px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-bar-wrap {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 4px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.class-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.class-pct {
+  font-size: .78rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  width: 46px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.class-count {
+  font-size: .76rem;
+  color: var(--muted);
+  width: 50px;
+  flex-shrink: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="demo-page">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb">
+    <a href="/">Inicio</a> › Módulo 01 — Introducción y Tipos de Datos › Explorador de Datasets
+  </nav>
+
+  <header class="demo-header">
+    <div class="module-eyebrow">Módulo 01 · Minería de Datos · Ciencia de la Computación</div>
+    <h1>Explorador de Datasets</h1>
+    <p class="demo-lead">
+      Antes de aplicar cualquier algoritmo, es esencial inspeccionar el dataset:
+      sus dimensiones, tipos de atributos, balance de clases y valores faltantes.
+      Selecciona uno de los tres datasets clásicos y explora sus características al instante.
+    </p>
+  </header>
+
+  <div class="demo-layout">
+    <!-- ── TEORÍA ─────────────────────────────── -->
+    <aside class="demo-theory">
+
+      <div class="theory-section">
+        <div class="theory-title">¿Qué es un Dataset de DM?</div>
+        <ul class="concept-list">
+          <li>
+            <span class="dot" style="background:#58a6ff"></span>
+            <div><strong>Instancias</strong> Cada fila es un objeto, ejemplo o registro individual.</div>
+          </li>
+          <li>
+            <span class="dot" style="background:#bc8cff"></span>
+            <div><strong>Atributos</strong> Cada columna describe una característica (numérica, nominal, ordinal…).</div>
+          </li>
+          <li>
+            <span class="dot" style="background:#3fb950"></span>
+            <div><strong>Clase (target)</strong> Atributo especial que el modelo intenta predecir.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="theory-section">
+        <div class="theory-title">Formatos comunes</div>
+        <div class="format-badges">
+          <span class="format-badge">CSV</span>
+          <span class="format-badge">ARFF</span>
+          <span class="format-badge">JSON</span>
+          <span class="format-badge">Parquet</span>
+          <span class="format-badge">HDF5</span>
+        </div>
+        <p class="theory-body" style="margin-top:.7rem">
+          <strong>ARFF</strong> (Attribute-Relation File Format) es el formato nativo de Weka.
+          <strong>CSV</strong> es el más universal. <strong>Parquet</strong> es columnar y eficiente para Big Data.
+        </p>
+      </div>
+
+      <div class="theory-section">
+        <div class="theory-title">Métricas de inspección</div>
+        <ul class="concept-list">
+          <li>
+            <span class="dot" style="background:#58a6ff"></span>
+            <div><strong>Dimensiones</strong> n instancias × p atributos.</div>
+          </li>
+          <li>
+            <span class="dot" style="background:#bc8cff"></span>
+            <div><strong>Tipos de atributos</strong> Numéricos vs nominales vs binarios.</div>
+          </li>
+          <li>
+            <span class="dot" style="background:#3fb950"></span>
+            <div><strong>Balance de clases</strong> ¿Están las clases representadas por igual?</div>
+          </li>
+          <li>
+            <span class="dot" style="background:#d29922"></span>
+            <div><strong>Valores faltantes</strong> % de NaN por atributo — afecta el preprocesamiento.</div>
+          </li>
+        </ul>
+      </div>
+
+    </aside>
+
+    <!-- ── INTERACTIVO ────────────────────────── -->
+    <div class="demo-interactive">
+
+      <!-- Dataset selector -->
+      <div class="ds-selector">
+        <span class="ds-label">Dataset:</span>
+        <button class="ds-btn active" onclick="loadDataset('iris')">Iris</button>
+        <button class="ds-btn" onclick="loadDataset('titanic')">Titanic (subconjunto)</button>
+        <button class="ds-btn" onclick="loadDataset('clima')">Clima (Golf)</button>
+      </div>
+
+      <!-- Dimension pills -->
+      <div class="dim-pills" id="dimPills"></div>
+
+      <!-- Preview table -->
+      <div class="section-card" id="cardPreview">
+        <div class="section-card-title">Vista previa — primeras 8 filas</div>
+        <div class="preview-scroll">
+          <table class="preview-table" id="previewTable"></table>
+        </div>
+        <div class="th-type-legend">
+          <span class="th-type-dot num">Numérico</span>
+          <span class="th-type-dot nom">Nominal</span>
+          <span class="th-type-dot cls">Clase / objetivo</span>
+        </div>
+      </div>
+
+      <!-- Attribute summary -->
+      <div class="section-card" id="cardAttrs">
+        <div class="section-card-title">Resumen de atributos</div>
+        <table class="attr-table" id="attrTable">
+          <thead>
+            <tr>
+              <th>Atributo</th><th>Tipo</th><th>Mín</th><th>Máx</th>
+              <th># Únicos</th><th>% Faltantes</th>
+            </tr>
+          </thead>
+          <tbody id="attrBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Class balance -->
+      <div class="section-card" id="cardBalance">
+        <div class="section-card-title">Balance de clases</div>
+        <div class="class-rows" id="classRows"></div>
+      </div>
+
+    </div><!-- /demo-interactive -->
+  </div><!-- /demo-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+/* ================================================================
+   Dataset Explorer — Hardcoded Datasets + Vanilla JS Rendering
+   ================================================================ */
+
+// ── Type constants ────────────────────────────────────────────────
+const T_NUM = 'num';   // numeric
+const T_NOM = 'nom';   // nominal
+const T_CLS = 'cls';   // class/target
+
+// ── IRIS (150 rows × 4 features + class) ─────────────────────────
+const irisHeaders = [
+  { name: 'sepal_length', type: T_NUM },
+  { name: 'sepal_width',  type: T_NUM },
+  { name: 'petal_length', type: T_NUM },
+  { name: 'petal_width',  type: T_NUM },
+  { name: 'class',        type: T_CLS },
+];
+
+// Full 150-row Iris dataset
+const irisRows = [
+  [5.1,3.5,1.4,0.2,'Iris-setosa'],[4.9,3.0,1.4,0.2,'Iris-setosa'],[4.7,3.2,1.3,0.2,'Iris-setosa'],
+  [4.6,3.1,1.5,0.2,'Iris-setosa'],[5.0,3.6,1.4,0.2,'Iris-setosa'],[5.4,3.9,1.7,0.4,'Iris-setosa'],
+  [4.6,3.4,1.4,0.3,'Iris-setosa'],[5.0,3.4,1.5,0.2,'Iris-setosa'],[4.4,2.9,1.4,0.2,'Iris-setosa'],
+  [4.9,3.1,1.5,0.1,'Iris-setosa'],[5.4,3.7,1.5,0.2,'Iris-setosa'],[4.8,3.4,1.6,0.2,'Iris-setosa'],
+  [4.8,3.0,1.4,0.1,'Iris-setosa'],[4.3,3.0,1.1,0.1,'Iris-setosa'],[5.8,4.0,1.2,0.2,'Iris-setosa'],
+  [5.7,4.4,1.5,0.4,'Iris-setosa'],[5.4,3.9,1.3,0.4,'Iris-setosa'],[5.1,3.5,1.4,0.3,'Iris-setosa'],
+  [5.7,3.8,1.7,0.3,'Iris-setosa'],[5.1,3.8,1.5,0.3,'Iris-setosa'],[5.4,3.4,1.7,0.2,'Iris-setosa'],
+  [5.1,3.7,1.5,0.4,'Iris-setosa'],[4.6,3.6,1.0,0.2,'Iris-setosa'],[5.1,3.3,1.7,0.5,'Iris-setosa'],
+  [4.8,3.4,1.9,0.2,'Iris-setosa'],[5.0,3.0,1.6,0.2,'Iris-setosa'],[5.0,3.4,1.6,0.4,'Iris-setosa'],
+  [5.2,3.5,1.5,0.2,'Iris-setosa'],[5.2,3.4,1.4,0.2,'Iris-setosa'],[4.7,3.2,1.6,0.2,'Iris-setosa'],
+  [4.8,3.1,1.6,0.2,'Iris-setosa'],[5.4,3.4,1.5,0.4,'Iris-setosa'],[5.2,4.1,1.5,0.1,'Iris-setosa'],
+  [5.5,4.2,1.4,0.2,'Iris-setosa'],[4.9,3.1,1.5,0.2,'Iris-setosa'],[5.0,3.2,1.2,0.2,'Iris-setosa'],
+  [5.5,3.5,1.3,0.2,'Iris-setosa'],[4.9,3.6,1.4,0.1,'Iris-setosa'],[4.4,3.0,1.3,0.2,'Iris-setosa'],
+  [5.1,3.4,1.5,0.2,'Iris-setosa'],[5.0,3.5,1.3,0.3,'Iris-setosa'],[4.5,2.3,1.3,0.3,'Iris-setosa'],
+  [4.4,3.2,1.3,0.2,'Iris-setosa'],[5.0,3.5,1.6,0.6,'Iris-setosa'],[5.1,3.8,1.9,0.4,'Iris-setosa'],
+  [4.8,3.0,1.4,0.3,'Iris-setosa'],[5.1,3.8,1.6,0.2,'Iris-setosa'],[4.6,3.2,1.4,0.2,'Iris-setosa'],
+  [5.3,3.7,1.5,0.2,'Iris-setosa'],[5.0,3.3,1.4,0.2,'Iris-setosa'],
+  // versicolor
+  [7.0,3.2,4.7,1.4,'Iris-versicolor'],[6.4,3.2,4.5,1.5,'Iris-versicolor'],[6.9,3.1,4.9,1.5,'Iris-versicolor'],
+  [5.5,2.3,4.0,1.3,'Iris-versicolor'],[6.5,2.8,4.6,1.5,'Iris-versicolor'],[5.7,2.8,4.5,1.3,'Iris-versicolor'],
+  [6.3,3.3,4.7,1.6,'Iris-versicolor'],[4.9,2.4,3.3,1.0,'Iris-versicolor'],[6.6,2.9,4.6,1.3,'Iris-versicolor'],
+  [5.2,2.7,3.9,1.4,'Iris-versicolor'],[5.0,2.0,3.5,1.0,'Iris-versicolor'],[5.9,3.0,4.2,1.5,'Iris-versicolor'],
+  [6.0,2.2,4.0,1.0,'Iris-versicolor'],[6.1,2.9,4.7,1.4,'Iris-versicolor'],[5.6,2.9,3.6,1.3,'Iris-versicolor'],
+  [6.7,3.1,4.4,1.4,'Iris-versicolor'],[5.6,3.0,4.5,1.5,'Iris-versicolor'],[5.8,2.7,4.1,1.0,'Iris-versicolor'],
+  [6.2,2.2,4.5,1.5,'Iris-versicolor'],[5.6,2.5,3.9,1.1,'Iris-versicolor'],[5.9,3.2,4.8,1.8,'Iris-versicolor'],
+  [6.1,2.8,4.0,1.3,'Iris-versicolor'],[6.3,2.5,4.9,1.5,'Iris-versicolor'],[6.1,2.8,4.7,1.2,'Iris-versicolor'],
+  [6.4,2.9,4.3,1.3,'Iris-versicolor'],[6.6,3.0,4.4,1.4,'Iris-versicolor'],[6.8,2.8,4.8,1.4,'Iris-versicolor'],
+  [6.7,3.0,5.0,1.7,'Iris-versicolor'],[6.0,2.9,4.5,1.5,'Iris-versicolor'],[5.7,2.6,3.5,1.0,'Iris-versicolor'],
+  [5.5,2.4,3.8,1.1,'Iris-versicolor'],[5.5,2.4,3.7,1.0,'Iris-versicolor'],[5.8,2.7,3.9,1.2,'Iris-versicolor'],
+  [6.0,2.7,5.1,1.6,'Iris-versicolor'],[5.4,3.0,4.5,1.5,'Iris-versicolor'],[6.0,3.4,4.5,1.6,'Iris-versicolor'],
+  [6.7,3.1,4.7,1.5,'Iris-versicolor'],[6.3,2.3,4.4,1.3,'Iris-versicolor'],[5.6,3.0,4.1,1.3,'Iris-versicolor'],
+  [5.5,2.5,4.0,1.3,'Iris-versicolor'],[5.5,2.6,4.4,1.2,'Iris-versicolor'],[6.1,3.0,4.6,1.4,'Iris-versicolor'],
+  [5.8,2.6,4.0,1.2,'Iris-versicolor'],[5.0,2.3,3.3,1.0,'Iris-versicolor'],[5.6,2.7,4.2,1.3,'Iris-versicolor'],
+  [5.7,3.0,4.2,1.2,'Iris-versicolor'],[5.7,2.9,4.2,1.3,'Iris-versicolor'],[6.2,2.9,4.3,1.3,'Iris-versicolor'],
+  [5.1,2.5,3.0,1.1,'Iris-versicolor'],[5.7,2.8,4.1,1.3,'Iris-versicolor'],
+  // virginica
+  [6.3,3.3,6.0,2.5,'Iris-virginica'],[5.8,2.7,5.1,1.9,'Iris-virginica'],[7.1,3.0,5.9,2.1,'Iris-virginica'],
+  [6.3,2.9,5.6,1.8,'Iris-virginica'],[6.5,3.0,5.8,2.2,'Iris-virginica'],[7.6,3.0,6.6,2.1,'Iris-virginica'],
+  [4.9,2.5,4.5,1.7,'Iris-virginica'],[7.3,2.9,6.3,1.8,'Iris-virginica'],[6.7,2.5,5.8,1.8,'Iris-virginica'],
+  [7.2,3.6,6.1,2.5,'Iris-virginica'],[6.5,3.2,5.1,2.0,'Iris-virginica'],[6.4,2.7,5.3,1.9,'Iris-virginica'],
+  [6.8,3.0,5.5,2.1,'Iris-virginica'],[5.7,2.5,5.0,2.0,'Iris-virginica'],[5.8,2.8,5.1,2.4,'Iris-virginica'],
+  [6.4,3.2,5.3,2.3,'Iris-virginica'],[6.5,3.0,5.5,1.8,'Iris-virginica'],[7.7,3.8,6.7,2.2,'Iris-virginica'],
+  [7.7,2.6,6.9,2.3,'Iris-virginica'],[6.0,2.2,5.0,1.5,'Iris-virginica'],[6.9,3.2,5.7,2.3,'Iris-virginica'],
+  [5.6,2.8,4.9,2.0,'Iris-virginica'],[7.7,2.8,6.7,2.0,'Iris-virginica'],[6.3,2.7,4.9,1.8,'Iris-virginica'],
+  [6.7,3.3,5.7,2.1,'Iris-virginica'],[7.2,3.2,6.0,1.8,'Iris-virginica'],[6.2,2.8,4.8,1.8,'Iris-virginica'],
+  [6.1,3.0,4.9,1.8,'Iris-virginica'],[6.4,2.8,5.6,2.1,'Iris-virginica'],[7.2,3.0,5.8,1.6,'Iris-virginica'],
+  [7.4,2.8,6.1,1.9,'Iris-virginica'],[7.9,3.8,6.4,2.0,'Iris-virginica'],[6.4,2.8,5.6,2.2,'Iris-virginica'],
+  [6.3,2.8,5.1,1.5,'Iris-virginica'],[6.1,2.6,5.6,1.4,'Iris-virginica'],[7.7,3.0,6.1,2.3,'Iris-virginica'],
+  [6.3,3.4,5.6,2.4,'Iris-virginica'],[6.4,3.1,5.5,1.8,'Iris-virginica'],[6.0,3.0,4.8,1.8,'Iris-virginica'],
+  [6.9,3.1,5.4,2.1,'Iris-virginica'],[6.7,3.1,5.6,2.4,'Iris-virginica'],[6.9,3.1,5.1,2.3,'Iris-virginica'],
+  [5.8,2.7,5.1,1.9,'Iris-virginica'],[6.8,3.2,5.9,2.3,'Iris-virginica'],[6.7,3.3,5.7,2.5,'Iris-virginica'],
+  [6.7,3.0,5.2,2.3,'Iris-virginica'],[6.3,2.5,5.0,1.9,'Iris-virginica'],[6.5,3.0,5.2,2.0,'Iris-virginica'],
+  [6.2,3.4,5.4,2.3,'Iris-virginica'],[5.9,3.0,5.1,1.8,'Iris-virginica'],
+];
+
+// ── TITANIC (20 representative rows) ─────────────────────────────
+const titanicHeaders = [
+  { name: 'pclass',    type: T_NUM },
+  { name: 'name',      type: T_NOM },
+  { name: 'sex',       type: T_NOM },
+  { name: 'age',       type: T_NUM },
+  { name: 'sibsp',     type: T_NUM },
+  { name: 'parch',     type: T_NUM },
+  { name: 'fare',      type: T_NUM },
+  { name: 'embarked',  type: T_NOM },
+  { name: 'survived',  type: T_CLS },
+];
+
+const titanicRows = [
+  [1,'Allen, Miss. E.',      'female', 29.0, 0, 0, 211.34,'S','Yes'],
+  [1,'Allison, Master H.',   'male',    0.92,1, 2, 151.55,'S','Yes'],
+  [1,'Allison, Miss. H.',    'female',  2.0, 1, 2, 151.55,'S','No'],
+  [1,'Allison, Mr. H.',      'male',   30.0, 1, 2, 151.55,'S','No'],
+  [1,'Allison, Mrs. H.',     'female', 25.0, 1, 2, 151.55,'S','No'],
+  [1,'Anderson, Mr. H.',     'male',   48.0, 0, 0,  26.55,'S','Yes'],
+  [1,'Andrews, Miss. K.',    'female', 63.0, 1, 0,  77.96,'S','Yes'],
+  [1,'Andrews, Mr. T.',      'male',   39.0, 0, 0,   0.00,'S','No'],
+  [2,'Bainbridge, Mr. C.',   'male',   23.0, 0, 0,  13.00,'S','No'],
+  [2,'Balls, Mrs. A.',       'female', 36.0, 0, 0,  13.00,'S','Yes'],
+  [2,'Banfield, Mr. F.',     'male',   28.0, 0, 0,  13.00,'C','No'],
+  [2,'Bateman, Rev. R.',     'male',   51.0, 0, 0,  12.53,'S','No'],
+  [2,'Beane, Mr. E.',        'male',   32.0, 1, 0,  26.00,'S','Yes'],
+  [3,'Abbing, Mr. A.',       'male',   42.0, 0, 0,   7.55,'S','No'],
+  [3,'Abbott, Master E.',    'male',   13.0, 0, 2,  20.25,'S','No'],
+  [3,'Abbott, Mr. R.',       'male',   16.0, 1, 1,  20.25,'S','No'],
+  [3,'Abbott, Mrs. S.',      'female', 35.0, 1, 1,  20.25,'S','Yes'],
+  [3,'Abelseth, Miss K.',    'female', 16.0, 0, 0,   7.65,'S','Yes'],
+  [3,'Abelseth, Mr. O.',     'male',   25.0, 0, 0,   7.65,'S','Yes'],
+  [3,'Abrahamsson, Mr. A.',  'male',   20.0, 0, 0,   7.93,'S','No'],
+];
+
+// ── CLIMA / GOLF (14 rows) ────────────────────────────────────────
+const climaHeaders = [
+  { name: 'outlook',    type: T_NOM },
+  { name: 'temperature',type: T_NUM },
+  { name: 'humidity',   type: T_NUM },
+  { name: 'windy',      type: T_NOM },
+  { name: 'play',       type: T_CLS },
+];
+
+const climaRows = [
+  ['Sunny',    85, 85, 'False','No'],
+  ['Sunny',    80, 90, 'True', 'No'],
+  ['Overcast', 83, 86, 'False','Yes'],
+  ['Rainy',    70, 96, 'False','Yes'],
+  ['Rainy',    68, 80, 'False','Yes'],
+  ['Rainy',    65, 70, 'True', 'No'],
+  ['Overcast', 64, 65, 'True', 'Yes'],
+  ['Sunny',    72, 95, 'False','No'],
+  ['Sunny',    69, 70, 'False','Yes'],
+  ['Rainy',    75, 80, 'False','Yes'],
+  ['Sunny',    75, 70, 'True', 'Yes'],
+  ['Overcast', 72, 90, 'True', 'Yes'],
+  ['Overcast', 81, 75, 'False','Yes'],
+  ['Rainy',    71, 91, 'True', 'No'],
+];
+
+// ── DATASETS MAP ──────────────────────────────────────────────────
+const DATASETS = {
+  iris:    { name: 'Iris',                  headers: irisHeaders,    rows: irisRows    },
+  titanic: { name: 'Titanic (subconjunto)', headers: titanicHeaders, rows: titanicRows },
+  clima:   { name: 'Clima (Golf)',          headers: climaHeaders,   rows: climaRows   },
+};
+
+// Class colors cycling
+const CLASS_COLORS = ['#58a6ff','#bc8cff','#3fb950','#d29922','#f85149','#79b9ff'];
+
+// ── Helpers ───────────────────────────────────────────────────────
+function isNumericHeader(h) { return h.type === T_NUM; }
+
+function colValues(rows, colIdx) {
+  return rows.map(r => r[colIdx]);
+}
+
+function missingCount(vals) {
+  return vals.filter(v => v === null || v === undefined || v === '' || v !== v).length;
+}
+
+function numericStats(vals) {
+  const nums = vals.filter(v => typeof v === 'number' && !isNaN(v));
+  if (nums.length === 0) return { min: '—', max: '—' };
+  return {
+    min: Math.min(...nums),
+    max: Math.max(...nums),
+  };
+}
+
+function uniqueCount(vals) {
+  return new Set(vals.map(v => String(v))).size;
+}
+
+// ── Render dimension pills ────────────────────────────────────────
+function renderDimPills(ds) {
+  const { headers, rows } = ds;
+  const numAttrs  = headers.filter(h => h.type !== T_CLS).length;
+  const classCol  = headers.findIndex(h => h.type === T_CLS);
+  const numClasses = classCol >= 0
+    ? new Set(rows.map(r => String(r[classCol]))).size
+    : 0;
+
+  // compute total missing
+  let totalMissing = 0, totalCells = rows.length * headers.length;
+  headers.forEach((h, ci) => {
+    totalMissing += missingCount(colValues(rows, ci));
+  });
+  const missPct = totalCells > 0 ? ((totalMissing / totalCells) * 100).toFixed(1) : 0;
+
+  document.getElementById('dimPills').innerHTML = `
+    <span class="dim-pill inst">◈ ${rows.length} instancias</span>
+    <span class="dim-pill attr">⬡ ${numAttrs} atributo${numAttrs !== 1 ? 's' : ''}</span>
+    ${numClasses > 0 ? `<span class="dim-pill cls">✦ ${numClasses} clase${numClasses !== 1 ? 's' : ''}</span>` : ''}
+    <span class="dim-pill miss">⚠ ${missPct}% faltantes</span>
+  `;
+}
+
+// ── Render preview table ──────────────────────────────────────────
+function renderPreview(ds) {
+  const { headers, rows } = ds;
+  const preview = rows.slice(0, 8);
+  const table   = document.getElementById('previewTable');
+
+  const thClass = h => h.type === T_NUM ? 'num' : h.type === T_NOM ? 'nom' : 'cls';
+
+  const thead = `<thead><tr>${headers.map(h =>
+    `<th class="${thClass(h)}">${h.name}</th>`
+  ).join('')}</tr></thead>`;
+
+  const tbody = `<tbody>${preview.map(row =>
+    `<tr>${row.map(cell =>
+      `<td>${cell === null || cell === undefined ? '<em style="color:var(--danger)">?</em>' : cell}</td>`
+    ).join('')}</tr>`
+  ).join('')}</tbody>`;
+
+  table.innerHTML = thead + tbody;
+}
+
+// ── Render attribute summary ──────────────────────────────────────
+function renderAttrSummary(ds) {
+  const { headers, rows } = ds;
+  const tbody = document.getElementById('attrBody');
+
+  tbody.innerHTML = headers.map((h, ci) => {
+    const vals     = colValues(rows, ci);
+    const missing  = missingCount(vals);
+    const missPct  = rows.length > 0 ? ((missing / rows.length) * 100).toFixed(1) : '0.0';
+    const uniq     = uniqueCount(vals);
+    let minVal = '—', maxVal = '—';
+
+    if (h.type === T_NUM) {
+      const s = numericStats(vals);
+      minVal  = typeof s.min === 'number' ? s.min.toFixed ? s.min.toFixed(2) : s.min : s.min;
+      maxVal  = typeof s.max === 'number' ? s.max.toFixed ? s.max.toFixed(2) : s.max : s.max;
+    }
+
+    const typeLabel = h.type === T_NUM ? 'Numérico' : h.type === T_NOM ? 'Nominal' : 'Clase';
+
+    return `<tr>
+      <td><span class="attr-name">${h.name}</span></td>
+      <td><span class="type-badge ${h.type}">${typeLabel}</span></td>
+      <td style="font-family:var(--font-mono);font-size:.8rem">${minVal}</td>
+      <td style="font-family:var(--font-mono);font-size:.8rem">${maxVal}</td>
+      <td style="font-family:var(--font-mono);font-size:.8rem">${uniq}</td>
+      <td style="font-family:var(--font-mono);font-size:.8rem;color:${+missPct > 0 ? 'var(--warn)' : 'var(--muted)'}">${missPct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render class balance ──────────────────────────────────────────
+function renderClassBalance(ds) {
+  const { headers, rows } = ds;
+  const classIdx = headers.findIndex(h => h.type === T_CLS);
+  const container = document.getElementById('classRows');
+
+  if (classIdx < 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No hay atributo de clase definido.</p>';
+    return;
+  }
+
+  const counts = {};
+  rows.forEach(r => {
+    const v = String(r[classIdx]);
+    counts[v] = (counts[v] || 0) + 1;
+  });
+
+  const total   = rows.length;
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  container.innerHTML = entries.map(([cls, cnt], i) => {
+    const pct  = ((cnt / total) * 100).toFixed(1);
+    const col  = CLASS_COLORS[i % CLASS_COLORS.length];
+    return `
+      <div class="class-row">
+        <div class="class-name" title="${cls}">${cls}</div>
+        <div class="class-bar-wrap">
+          <div class="class-bar" style="width:${pct}%;background:${col}33;border:1px solid ${col}66;"></div>
+        </div>
+        <div class="class-pct">${pct}%</div>
+        <div class="class-count">(${cnt})</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Animate cards ─────────────────────────────────────────────────
+function animateCards() {
+  ['cardPreview','cardAttrs','cardBalance'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = `fadeInUp .35s ease ${i * 0.07}s both`;
+  });
+}
+
+// ── Main loader ───────────────────────────────────────────────────
+let currentDs = 'iris';
+
+function loadDataset(key) {
+  currentDs = key;
+
+  // Update buttons
+  document.querySelectorAll('.ds-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const ds = DATASETS[key];
+  renderDimPills(ds);
+  renderPreview(ds);
+  renderAttrSummary(ds);
+  renderClassBalance(ds);
+  animateCards();
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+(function init() {
+  const ds = DATASETS[currentDs];
+  renderDimPills(ds);
+  renderPreview(ds);
+  renderAttrSummary(ds);
+  renderClassBalance(ds);
+})();
+</script>
