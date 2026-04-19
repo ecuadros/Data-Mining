@@ -1,0 +1,463 @@
+---
+layout: default
+title: "Matriz de Confusión"
+next_url: /modulo-10/curvas-roc.html
+next_title: Curvas ROC y AUC
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:140px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);transition:background .15s;}
+.btn:hover{background:rgba(88,166,255,.2);}
+.btn.active{background:rgba(88,166,255,.3);border-color:var(--accent);}
+.metric-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem;}
+.metric{flex:1;min-width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.05rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;}
+.leg-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:50%;}
+.canvases-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.75rem;}
+@media(max-width:700px){.canvases-row{grid-template-columns:1fr;}}
+.section-label{font-size:.7rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0 .1rem;text-transform:uppercase;letter-spacing:.05em;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-10/' | relative_url }}">Módulo 10 — Evaluación de Modelos</a><span class="sep">›</span>
+  Matriz de Confusión
+</nav>
+<header>
+  <div class="eyebrow">Módulo 10 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Matriz de Confusión</h1>
+  <p class="demo-lead">Visualiza cómo un clasificador comete errores. Mueve el umbral de decisión y observa cómo cambian TP, FP, TN y FN — y las métricas derivadas.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Las cuatro celdas</h3>
+    <ul>
+      <li><strong style="color:#3fb950;">TP (Verdadero Positivo)</strong>: spam predicho como spam</li>
+      <li><strong style="color:#3fb950;">TN (Verdadero Negativo)</strong>: legítimo predicho como legítimo</li>
+      <li><strong style="color:#f85149;">FP (Falso Positivo)</strong>: legítimo predicho como spam (Error tipo I)</li>
+      <li><strong style="color:#d29922;">FN (Falso Negativo)</strong>: spam predicho como legítimo (Error tipo II)</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Métricas derivadas</h3>
+    <ul>
+      <li><strong>Accuracy</strong> = (TP+TN) / total</li>
+      <li><strong>Precision</strong> = TP / (TP+FP)</li>
+      <li><strong>Recall</strong> = TP / (TP+FN)</li>
+      <li><strong>F1</strong> = 2·P·R / (P+R)</li>
+      <li><strong>Specificity</strong> = TN / (TN+FP)</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Trade-off umbral</h3>
+    <p>Bajar el umbral → más positivos predichos → mayor Recall, menor Precision. Subir el umbral → lo contrario. El punto óptimo depende del costo de cada tipo de error.</p>
+  </div>
+  <div class="tb">
+    <h3>Modo multiclase</h3>
+    <p>Con 3 o más clases, la matriz se expande a n×n. La diagonal principal son los aciertos; fuera de la diagonal son los errores específicos entre pares de clases.</p>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Umbral = <span id="thrDisp">0.50</span></label><br>
+      <input type="range" id="thrRange" min="0.01" max="0.99" step="0.01" value="0.50" oninput="onThresholdChange()">
+    </div>
+    <button class="btn" id="btnBinary" onclick="setMode('binary')" style="margin-left:auto;">Binario (2 clases)</button>
+    <button class="btn" id="btnMulti" onclick="setMode('multi')">Multiclase (3 clases)</button>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#f85149;"></div>Spam (positivo)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#58a6ff;"></div>Legítimo (negativo)</div>
+  </div>
+
+  <div class="canvases-row">
+    <div>
+      <p class="section-label">Puntos de prueba</p>
+      <div class="cw"><canvas id="scatterCanvas" width="340" height="300"></canvas></div>
+    </div>
+    <div>
+      <p class="section-label">Matriz de confusión</p>
+      <div class="cw"><canvas id="matrixCanvas" width="340" height="300"></canvas></div>
+    </div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Accuracy</div>
+      <div class="m-val" id="mAcc" style="color:var(--accent);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Precision</div>
+      <div class="m-val" id="mPre" style="color:#3fb950;">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Recall</div>
+      <div class="m-val" id="mRec" style="color:#3fb950;">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">F1-Score</div>
+      <div class="m-val" id="mF1" style="color:#d29922;">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Specificity</div>
+      <div class="m-val" id="mSpec" style="color:#58a6ff;">—</div>
+    </div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// Seeded RNG
+function rng(s){let x=s^0xdeadbeef;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+// --- Generate binary dataset (200 points) ---
+// Features: x1 (word freq), x2 (link count) → score = sigmoid(linear combo) + noise
+function makeBinaryData(seed){
+  const r=rng(seed);
+  const pts=[];
+  for(let i=0;i<200;i++){
+    const label=r()<0.45?1:0; // 45% spam
+    let x1,x2;
+    if(label===1){
+      x1=0.35+r()*0.55; // spam: higher word freq
+      x2=0.4+r()*0.5;
+    } else {
+      x1=r()*0.55;
+      x2=r()*0.45;
+    }
+    // score = linear discriminant + noise
+    const score=Math.min(1,Math.max(0, 0.6*x1 + 0.4*x2 + (r()-0.5)*0.35));
+    pts.push({x1,x2,label,score});
+  }
+  return pts;
+}
+
+// --- Generate 3-class dataset ---
+function makeMultiData(seed){
+  const r=rng(seed);
+  const pts=[];
+  const classes=[
+    {label:0,cx:0.25,cy:0.25,n:60},
+    {label:1,cx:0.7,cy:0.2,n:70},
+    {label:2,cx:0.45,cy:0.75,n:70},
+  ];
+  classes.forEach(cl=>{
+    for(let i=0;i<cl.n;i++){
+      const x=Math.max(0.02,Math.min(0.98,cl.cx+(r()-0.5)*0.4));
+      const y=Math.max(0.02,Math.min(0.98,cl.cy+(r()-0.5)*0.4));
+      // Score for each class using softmax-like values
+      const d0=Math.sqrt((x-0.25)**2+(y-0.25)**2);
+      const d1=Math.sqrt((x-0.7)**2+(y-0.2)**2);
+      const d2=Math.sqrt((x-0.45)**2+(y-0.75)**2);
+      const s=[Math.exp(-d0*3),Math.exp(-d1*3),Math.exp(-d2*3)];
+      const tot=s[0]+s[1]+s[2];
+      pts.push({x,y,label:cl.label,probs:[s[0]/tot,s[1]/tot,s[2]/tot]});
+    }
+  });
+  return pts;
+}
+
+let mode='binary';
+const binaryData=makeBinaryData(42);
+const multiData=makeMultiData(99);
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btnBinary').classList.toggle('active',m==='binary');
+  document.getElementById('btnMulti').classList.toggle('active',m==='multi');
+  document.getElementById('thrRange').disabled=(m==='multi');
+  render();
+}
+
+function onThresholdChange(){
+  document.getElementById('thrDisp').textContent=parseFloat(document.getElementById('thrRange').value).toFixed(2);
+  render();
+}
+
+function render(){
+  if(mode==='binary') renderBinary();
+  else renderMulti();
+}
+
+// -------- BINARY --------
+function renderBinary(){
+  const thr=parseFloat(document.getElementById('thrRange').value);
+  // Confusion matrix
+  let TP=0,FP=0,TN=0,FN=0;
+  binaryData.forEach(p=>{
+    const pred=p.score>=thr?1:0;
+    if(pred===1&&p.label===1) TP++;
+    else if(pred===1&&p.label===0) FP++;
+    else if(pred===0&&p.label===0) TN++;
+    else FN++;
+  });
+  const total=TP+FP+TN+FN;
+  const acc=(TP+TN)/total;
+  const pre=TP+FP>0?TP/(TP+FP):0;
+  const rec=TP+FN>0?TP/(TP+FN):0;
+  const f1=pre+rec>0?2*pre*rec/(pre+rec):0;
+  const spec=TN+FP>0?TN/(TN+FP):0;
+
+  document.getElementById('mAcc').textContent=(acc*100).toFixed(1)+'%';
+  document.getElementById('mPre').textContent=(pre*100).toFixed(1)+'%';
+  document.getElementById('mRec').textContent=(rec*100).toFixed(1)+'%';
+  document.getElementById('mF1').textContent=f1.toFixed(3);
+  document.getElementById('mSpec').textContent=(spec*100).toFixed(1)+'%';
+
+  drawScatter(thr);
+  drawBinaryMatrix(TP,FP,TN,FN,total);
+}
+
+function drawScatter(thr){
+  const canvas=document.getElementById('scatterCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=28;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const toX=v=>PAD+v*(W-2*PAD);
+  const toY=v=>H-PAD-v*(H-2*PAD);
+
+  // Axes
+  ctx.strokeStyle='#30363d';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='#8b949e';ctx.font='9px monospace';ctx.textAlign='center';
+  ctx.fillText('Frecuencia palabras (x₁)',W/2,H-6);
+  ctx.save();ctx.translate(10,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('Nº links (x₂)',0,0);ctx.restore();
+
+  // Decision boundary line (where score=thr)
+  // score ≈ 0.6*x1 + 0.4*x2 = thr → x2 = (thr - 0.6*x1)/0.4
+  ctx.setLineDash([6,3]);ctx.strokeStyle='rgba(255,255,100,0.6)';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  let first=true;
+  for(let x1=0;x1<=1;x1+=0.01){
+    const x2=(thr-0.6*x1)/0.4;
+    if(x2>=0&&x2<=1){
+      const px=toX(x1),py=toY(x2);
+      if(first){ctx.moveTo(px,py);first=false;}
+      else ctx.lineTo(px,py);
+    }
+  }
+  ctx.stroke();ctx.setLineDash([]);
+
+  // Points
+  binaryData.forEach(p=>{
+    const pred=p.score>=thr?1:0;
+    let fill;
+    if(p.label===1&&pred===1) fill='#3fb950'; // TP
+    else if(p.label===0&&pred===0) fill='#58a6ff'; // TN
+    else if(p.label===0&&pred===1) fill='#f85149'; // FP
+    else fill='#d29922'; // FN
+    ctx.beginPath();ctx.arc(toX(p.x1),toY(p.x2),3.5,0,Math.PI*2);
+    ctx.fillStyle=fill;ctx.fill();
+  });
+
+  // Legend top-left
+  const lg=[['#3fb950','TP'],['#58a6ff','TN'],['#f85149','FP'],['#d29922','FN']];
+  lg.forEach(([c,l],i)=>{
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(PAD+8,PAD+8+i*14,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8b949e';ctx.font='9px monospace';ctx.textAlign='left';
+    ctx.fillText(l,PAD+16,PAD+12+i*14);
+  });
+}
+
+function drawBinaryMatrix(TP,FP,TN,FN,total){
+  const canvas=document.getElementById('matrixCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const LM=80,TM=70,CW=(W-LM-20)/2,CH=(H-TM-50)/2;
+
+  // Header labels
+  ctx.fillStyle='#8b949e';ctx.font='bold 11px monospace';ctx.textAlign='center';
+  ctx.fillText('Predicho',LM+CW,'22');ctx.fillText('Spam',LM+CW/2,45);ctx.fillText('Legítimo',LM+3*CW/2,45);
+  // Row labels
+  ctx.save();ctx.translate(14,TM+CH);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+  ctx.fillText('Real',0,0);ctx.restore();
+  ctx.save();ctx.translate(38,TM+CH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+  ctx.fillText('Spam',0,0);ctx.restore();
+  ctx.save();ctx.translate(38,TM+3*CH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+  ctx.fillText('Legítimo',0,0);ctx.restore();
+
+  const cells=[
+    {v:TP,label:'TP',bg:'rgba(63,185,80,0.25)',border:'#3fb950',row:0,col:0},
+    {v:FN,label:'FN',bg:'rgba(210,153,34,0.2)',border:'#d29922',row:0,col:1},
+    {v:FP,label:'FP',bg:'rgba(248,81,73,0.2)',border:'#f85149',row:1,col:0},
+    {v:TN,label:'TN',bg:'rgba(63,185,80,0.15)',border:'#3fb950',row:1,col:1},
+  ];
+
+  cells.forEach(cell=>{
+    const x=LM+cell.col*CW, y=TM+cell.row*CH;
+    ctx.fillStyle=cell.bg;
+    ctx.fillRect(x,y,CW,CH);
+    ctx.strokeStyle=cell.border;ctx.lineWidth=1.5;
+    ctx.strokeRect(x,y,CW,CH);
+
+    // Count
+    ctx.fillStyle='#e6edf3';ctx.font=`bold ${Math.min(28,CW*0.28)}px monospace`;ctx.textAlign='center';
+    ctx.fillText(cell.v,x+CW/2,y+CH/2-4);
+    // Percentage
+    ctx.fillStyle='#8b949e';ctx.font='10px monospace';
+    ctx.fillText(((cell.v/total)*100).toFixed(1)+'%',x+CW/2,y+CH/2+14);
+    // Label
+    ctx.fillStyle=cell.border;ctx.font='bold 10px monospace';
+    ctx.fillText(cell.label,x+CW/2,y+CH-8);
+  });
+
+  // Divider lines
+  ctx.strokeStyle='#30363d';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(LM,TM);ctx.lineTo(LM+2*CW,TM);
+  ctx.moveTo(LM,TM+CH);ctx.lineTo(LM+2*CW,TM+CH);
+  ctx.moveTo(LM,TM+2*CH);ctx.lineTo(LM+2*CW,TM+2*CH);
+  ctx.moveTo(LM,TM);ctx.lineTo(LM,TM+2*CH);
+  ctx.moveTo(LM+CW,TM);ctx.lineTo(LM+CW,TM+2*CH);
+  ctx.moveTo(LM+2*CW,TM);ctx.lineTo(LM+2*CW,TM+2*CH);
+  ctx.stroke();
+}
+
+// -------- MULTICLASS --------
+function renderMulti(){
+  // 3 classes: 0=Ham, 1=Promo, 2=Spam
+  const classNames=['Ham','Promo','Spam'];
+  const n=3;
+  // Predict = argmax of probs
+  const mat=Array.from({length:n},()=>new Array(n).fill(0));
+  multiData.forEach(p=>{
+    const pred=p.probs.indexOf(Math.max(...p.probs));
+    mat[p.label][pred]++;
+  });
+
+  // metrics for display (macro-average)
+  let totAcc=0;
+  multiData.forEach(p=>{const pred=p.probs.indexOf(Math.max(...p.probs));if(pred===p.label)totAcc++;});
+  const acc=totAcc/multiData.length;
+  let macroP=0,macroR=0,macroF1=0;
+  for(let c=0;c<n;c++){
+    const tp=mat[c][c];
+    const fp=mat.reduce((s,row,r)=>r!==c?s+row[c]:s,0);
+    const fn=mat[c].reduce((s,v,j)=>j!==c?s+v:s,0);
+    const p=tp+fp>0?tp/(tp+fp):0;
+    const r=tp+fn>0?tp/(tp+fn):0;
+    const f=p+r>0?2*p*r/(p+r):0;
+    macroP+=p;macroR+=r;macroF1+=f;
+  }
+  macroP/=n;macroR/=n;macroF1/=n;
+
+  document.getElementById('mAcc').textContent=(acc*100).toFixed(1)+'%';
+  document.getElementById('mPre').textContent=(macroP*100).toFixed(1)+'%';
+  document.getElementById('mRec').textContent=(macroR*100).toFixed(1)+'%';
+  document.getElementById('mF1').textContent=macroF1.toFixed(3);
+  document.getElementById('mSpec').textContent='—';
+
+  drawMultiScatter();
+  drawMultiMatrix(mat,classNames);
+}
+
+function drawMultiScatter(){
+  const canvas=document.getElementById('scatterCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=28;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const toX=v=>PAD+v*(W-2*PAD);
+  const toY=v=>H-PAD-v*(H-2*PAD);
+
+  ctx.strokeStyle='#30363d';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
+
+  const cols=['#58a6ff','#3fb950','#f85149'];
+  const lbls=['Ham','Promo','Spam'];
+  multiData.forEach(p=>{
+    const pred=p.probs.indexOf(Math.max(...p.probs));
+    const correct=pred===p.label;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),correct?3.5:4,0,Math.PI*2);
+    ctx.fillStyle=cols[p.label];
+    ctx.globalAlpha=correct?0.85:0.4;
+    ctx.fill();
+    if(!correct){ctx.strokeStyle='#f85149';ctx.lineWidth=1.5;ctx.stroke();}
+    ctx.globalAlpha=1;ctx.lineWidth=1;
+  });
+
+  cols.forEach((c,i)=>{
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(PAD+8,PAD+8+i*14,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8b949e';ctx.font='9px monospace';ctx.textAlign='left';
+    ctx.fillText(lbls[i],PAD+16,PAD+12+i*14);
+  });
+}
+
+function drawMultiMatrix(mat,names){
+  const canvas=document.getElementById('matrixCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const n=mat.length;
+  const LM=65,TM=55;
+  const CW=(W-LM-10)/n, CH=(H-TM-30)/n;
+  const maxVal=Math.max(...mat.flat());
+
+  ctx.fillStyle='#8b949e';ctx.font='bold 10px monospace';ctx.textAlign='center';
+  ctx.fillText('Predicho',LM+CW*n/2,16);
+  names.forEach((nm,j)=>{ctx.fillText(nm,LM+j*CW+CW/2,36);});
+  ctx.save();ctx.translate(10,TM+CH*n/2);ctx.rotate(-Math.PI/2);ctx.fillText('Real',0,0);ctx.restore();
+  names.forEach((nm,i)=>{
+    ctx.save();ctx.translate(LM-8,TM+i*CH+CH/2);ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';ctx.fillText(nm,0,0);ctx.restore();
+  });
+
+  mat.forEach((row,i)=>{
+    row.forEach((v,j)=>{
+      const x=LM+j*CW, y=TM+i*CH;
+      const intensity=maxVal>0?v/maxVal:0;
+      const diag=i===j;
+      let r,g,b;
+      if(diag){r=Math.round(15+intensity*48);g=Math.round(30+intensity*155);b=Math.round(15+intensity*50);}
+      else{r=Math.round(30+intensity*218);g=Math.round(15+intensity*66);b=Math.round(15+intensity*58);}
+      ctx.fillStyle=`rgba(${r},${g},${b},${0.15+intensity*0.75})`;
+      ctx.fillRect(x,y,CW,CH);
+      ctx.strokeStyle='#30363d';ctx.lineWidth=1;ctx.strokeRect(x,y,CW,CH);
+
+      ctx.fillStyle='#e6edf3';ctx.font=`bold ${Math.min(22,CW*0.35)}px monospace`;ctx.textAlign='center';
+      ctx.fillText(v,x+CW/2,y+CH/2+4);
+      ctx.fillStyle='#8b949e';ctx.font='9px monospace';
+      const rowTotal=row.reduce((a,b)=>a+b,0);
+      ctx.fillText(rowTotal>0?((v/rowTotal)*100).toFixed(0)+'%':'0%',x+CW/2,y+CH/2+16);
+    });
+  });
+}
+
+// Init
+setMode('binary');
+document.getElementById('btnBinary').classList.add('active');
+</script>
