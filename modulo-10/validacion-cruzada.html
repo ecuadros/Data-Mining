@@ -1,0 +1,254 @@
+---
+layout: default
+title: "Validación Cruzada"
+prev_url: /modulo-10/curvas-roc.html
+prev_title: Curvas ROC y AUC
+next_url: /modulo-10/bias-varianza.html
+next_title: Bias-Varianza
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.btn-g{border-color:rgba(63,185,80,.35);background:rgba(63,185,80,.1);color:var(--accent3);}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-10/' | relative_url }}">Módulo 10 — Evaluación de Modelos</a><span class="sep">›</span>
+  Validación Cruzada
+</nav>
+<header>
+  <div class="eyebrow">Módulo 10 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Validación Cruzada K-Fold</h1>
+  <p class="demo-lead">La validación cruzada estima el error de generalización de forma honesta. Cada fold actúa como test una vez. Compara con el error in-sample (train=test) para ver el sobreajuste.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Procedimiento</h3>
+    <ol style="padding-left:1.2rem;">
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.3rem;">Dividir datos en k folds iguales</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.3rem;">Para cada fold: entrenar con k-1, evaluar en el fold restante</li>
+      <li style="font-size:.88rem;color:var(--muted);">Promediar los k errores → estimación imparcial</li>
+    </ol>
+  </div>
+  <div class="tb">
+    <h3>Resultados CV</h3>
+    <div id="foldResults" style="font-size:.82rem;color:var(--muted);">Presiona "Siguiente fold".</div>
+  </div>
+  <div class="tb">
+    <h3>Comparativa</h3>
+    <div class="metric-row" style="margin:0;">
+      <div class="metric">
+        <div class="m-name">In-sample (train=test)</div>
+        <div class="m-val" id="inSampleAcc" style="color:var(--danger);">—</div>
+      </div>
+    </div>
+    <div class="metric-row" style="margin-top:.5rem;">
+      <div class="metric">
+        <div class="m-name">CV Media ± Std</div>
+        <div class="m-val" id="cvAcc" style="color:var(--accent);">—</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>k-folds = <span id="kDisp">5</span></label><br>
+      <input type="range" id="kRange" min="3" max="10" step="1" value="5" oninput="document.getElementById('kDisp').textContent=this.value;reset();">
+    </div>
+    <button class="btn" onclick="reset()">Reiniciar</button>
+    <button class="btn btn-g" id="stepBtn" onclick="nextFold()">Siguiente fold →</button>
+    <button class="btn" onclick="runAll()">Correr todo</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="m-name">Fold actual</div><div class="m-val" id="curFold" style="color:var(--accent);">—</div></div>
+    <div class="metric"><div class="m-name">Acc. fold actual</div><div class="m-val" id="foldAcc" style="color:var(--accent2);">—</div></div>
+  </div>
+
+  <!-- Scatter showing current fold split -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="scatterCanvas" width="530" height="240"></canvas>
+  </div>
+
+  <!-- Box plot / fold accuracies -->
+  <div class="cw">
+    <canvas id="boxCanvas" width="530" height="140"></canvas>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+const r=rng(33);
+const N=100;
+const PTS=Array.from({length:N},()=>({x:r(),y:r()}));
+const LABELS=PTS.map(p=>p.x+p.y+(r()-.5)*.4>1?1:0);
+
+function knn3(train,test){
+  return test.map(ti=>{
+    const dists=train.map(t=>({d:(PTS[ti].x-PTS[t].x)**2+(PTS[ti].y-PTS[t].y)**2,c:LABELS[t]}));
+    dists.sort((a,b)=>a.d-b.d);
+    const votes=[0,0];dists.slice(0,3).forEach(n=>votes[n.c]++);
+    return votes[1]>votes[0]?1:0;
+  });
+}
+
+let foldIdx=0,foldAccs=[];
+const FOLD_COLS=['#58a6ff','#3fb950','#f85149','#d29922','#bc8cff','#79c0ff','#56d364','#ff7b72','#ffa657','#e3b341'];
+
+function getFolds(k){
+  const indices=Array.from({length:N},(_,i)=>i);
+  const sz=Math.floor(N/k);
+  return Array.from({length:k},(_,i)=>indices.slice(i*sz,(i+1)*sz));
+}
+
+function reset(){
+  foldIdx=0;foldAccs=[];
+  document.getElementById('curFold').textContent='—';
+  document.getElementById('foldAcc').textContent='—';
+  document.getElementById('cvAcc').textContent='—';
+  document.getElementById('foldResults').innerHTML='Presiona "Siguiente fold".';
+  const k=parseInt(document.getElementById('kRange').value);
+
+  // In-sample
+  const allIdx=Array.from({length:N},(_,i)=>i);
+  const preds=knn3(allIdx,allIdx);
+  const inAcc=preds.filter((p,i)=>p===LABELS[i]).length/N;
+  document.getElementById('inSampleAcc').textContent=(inAcc*100).toFixed(1)+'%';
+
+  drawScatter(getFolds(k),-1);
+  drawBox([],k);
+}
+
+function nextFold(){
+  const k=parseInt(document.getElementById('kRange').value);
+  const folds=getFolds(k);
+  if(foldIdx>=k) return;
+
+  const testIdx=folds[foldIdx];
+  const trainIdx=Array.from({length:N},(_,i)=>i).filter(i=>!testIdx.includes(i));
+  const preds=knn3(trainIdx,testIdx);
+  const acc=preds.filter((p,i)=>p===LABELS[testIdx[i]]).length/testIdx.length;
+  foldAccs.push(acc);
+
+  document.getElementById('curFold').textContent=`${foldIdx+1} / ${k}`;
+  document.getElementById('foldAcc').textContent=(acc*100).toFixed(1)+'%';
+
+  const res=document.getElementById('foldResults');
+  res.innerHTML=(res.innerHTML==='Presiona "Siguiente fold".'?'':res.innerHTML)+
+    `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;"><span style="color:${FOLD_COLS[foldIdx]};font-family:var(--font-mono);font-size:.8rem;">Fold ${foldIdx+1}</span><span style="color:var(--text);font-family:var(--font-mono);font-size:.8rem;">${(acc*100).toFixed(1)}%</span></div>`;
+
+  if(foldAccs.length===k){
+    const mean=foldAccs.reduce((s,v)=>s+v,0)/k;
+    const std=Math.sqrt(foldAccs.reduce((s,v)=>s+(v-mean)**2,0)/k);
+    document.getElementById('cvAcc').textContent=`${(mean*100).toFixed(1)}% ± ${(std*100).toFixed(1)}%`;
+  }
+
+  drawScatter(folds,foldIdx);
+  drawBox(foldAccs,k);
+  foldIdx++;
+}
+
+function runAll(){const k=parseInt(document.getElementById('kRange').value);while(foldIdx<k) nextFold();}
+
+function drawScatter(folds,activeFold){
+  const cv=document.getElementById('scatterCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+
+  // Draw fold membership
+  const foldOf=new Array(N).fill(-1);
+  folds.forEach((f,fi)=>f.forEach(i=>foldOf[i]=fi));
+
+  PTS.forEach((p,i)=>{
+    const fi=foldOf[i];
+    const isTest=fi===activeFold;
+    const col=FOLD_COLS[fi%FOLD_COLS.length];
+    ctx.save();
+    ctx.fillStyle=isTest?col:col+'50';
+    ctx.strokeStyle=isTest?'#fff':LABELS[i]===1?'rgba(230,237,243,.3)':'rgba(0,0,0,.3)';
+    ctx.lineWidth=isTest?2:.5;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),isTest?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
+    if(LABELS[i]===1){ctx.fillStyle='rgba(255,255,255,.3)';ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),2,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  });
+
+  if(activeFold>=0){
+    ctx.save();ctx.font='11px JetBrains Mono,monospace';ctx.fillStyle=FOLD_COLS[activeFold];ctx.textAlign='left';
+    ctx.fillText(`Fold ${activeFold+1} (test) resaltado`,PAD,H-6);ctx.restore();
+  }
+}
+
+function drawBox(accs,k){
+  const cv=document.getElementById('boxCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=30;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(!accs.length) return;
+  const minA=Math.max(0,Math.min(...accs)-.05),maxA=Math.min(1,Math.max(...accs)+.05);
+  const toX=v=>PAD+(v-minA)/(maxA-minA)*(W-2*PAD);
+  const barH=20,cy=H/2;
+
+  // Bar per fold
+  accs.forEach((a,i)=>{
+    ctx.fillStyle=FOLD_COLS[i%FOLD_COLS.length]+'cc';
+    ctx.fillRect(PAD,cy-barH/2*(1+i*.3)+i*2,toX(a)-PAD,6);
+  });
+
+  // Individual points
+  accs.forEach((a,i)=>{
+    ctx.save();ctx.fillStyle=FOLD_COLS[i%FOLD_COLS.length];ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(toX(a),40,6,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(230,237,243,.7)';ctx.font='8px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(`F${i+1}`,toX(a),55);ctx.restore();
+  });
+
+  // Mean line
+  if(accs.length>0){
+    const mean=accs.reduce((s,v)=>s+v,0)/accs.length;
+    ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(toX(mean),25);ctx.lineTo(toX(mean),H-PAD);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#d29922';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(`μ=${(mean*100).toFixed(1)}%`,toX(mean),H-PAD+13);ctx.restore();
+  }
+
+  // X axis
+  ctx.save();ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';ctx.textAlign='center';
+  [minA,0.5*(minA+maxA),maxA].forEach(v=>ctx.fillText((v*100).toFixed(0)+'%',toX(v),H-6));ctx.restore();
+}
+
+reset();
+</script>
