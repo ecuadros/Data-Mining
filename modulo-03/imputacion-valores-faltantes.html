@@ -1,0 +1,650 @@
+---
+layout: default
+title: "Imputación de Valores Faltantes"
+next_url: /modulo-03/normalizacion-estandarizacion.html
+next_title: Normalización y Estandarización
+---
+<style>
+  .imp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 2.5rem;
+    align-items: start;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 960px) {
+    .imp-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Theory ── */
+  .theory-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .section-label {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    margin-bottom: .5rem;
+  }
+  .theory-body {
+    color: var(--muted);
+    font-size: .88rem;
+    line-height: 1.75;
+  }
+  .theory-body strong { color: var(--text); }
+
+  .concept-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    margin: .4rem 0 0;
+  }
+  .concept-list li {
+    display: flex;
+    gap: .55rem;
+    font-size: .85rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .concept-list li::before {
+    content: '›';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: .05rem;
+  }
+  .concept-list li strong { color: var(--text); }
+
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: var(--radius-sm);
+    padding: .7rem 1rem;
+    font-family: var(--font-mono);
+    font-size: .82rem;
+    color: var(--accent2);
+    line-height: 1.9;
+  }
+  .formula-box .fl { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; }
+
+  .insight-box {
+    background: rgba(63,185,80,.06);
+    border: 1px solid rgba(63,185,80,.2);
+    border-radius: var(--radius-sm);
+    padding: .7rem 1rem;
+    font-size: .83rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .insight-box strong { color: var(--accent3); }
+
+  .warn-box {
+    background: rgba(210,153,34,.07);
+    border: 1px solid rgba(210,153,34,.25);
+    border-radius: var(--radius-sm);
+    padding: .7rem 1rem;
+    font-size: .83rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .warn-box strong { color: var(--warn); }
+
+  /* ── Interactive ── */
+  .interactive-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .panel-title {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--font-mono);
+    margin: 0;
+  }
+
+  /* Table */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+  }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: .78rem;
+  }
+  table.data-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: .55rem .7rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.data-table td {
+    padding: .42rem .7rem;
+    border-bottom: 1px solid rgba(48,54,61,.5);
+    color: var(--text);
+    transition: background .25s, color .25s;
+    white-space: nowrap;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table td.missing {
+    color: var(--danger);
+    background: rgba(248,81,73,.08);
+    font-style: italic;
+  }
+  table.data-table td.imputed {
+    color: var(--accent);
+    background: rgba(63,185,80,.1);
+    font-weight: 700;
+  }
+  table.data-table td.pid {
+    color: var(--muted);
+    font-size: .72rem;
+  }
+
+  /* Controls */
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    align-items: center;
+  }
+  .ctrl-label {
+    font-size: .75rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+  select.ctrl-select {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: .35rem .6rem;
+    cursor: pointer;
+    outline: none;
+  }
+  select.ctrl-select:focus { border-color: var(--accent); }
+  input.ctrl-input {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: .35rem .6rem;
+    width: 120px;
+    outline: none;
+  }
+  input.ctrl-input:focus { border-color: var(--accent); }
+
+  .btn-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .4rem .85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 180ms ease;
+  }
+  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(88,166,255,.08); }
+  .btn.primary { color: var(--accent3); border-color: rgba(63,185,80,.4); background: rgba(63,185,80,.07); }
+  .btn.primary:hover { background: rgba(63,185,80,.14); border-color: var(--accent3); }
+  .btn.secondary { color: var(--muted); }
+
+  /* Stats panel */
+  .stats-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+  }
+  .stats-panel .sp-title {
+    font-size: .72rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: .75rem;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .5rem;
+  }
+  .stat-col {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+  }
+  .stat-col .sc-label {
+    font-size: .68rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+  }
+  .stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+  }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    color: var(--text);
+  }
+  .stat-change {
+    font-family: var(--font-mono);
+    font-size: .7rem;
+    color: var(--muted);
+  }
+  .stat-change.up { color: var(--warn); }
+  .stat-change.down { color: var(--accent3); }
+
+  #const-row { display: none; align-items: center; gap: .5rem; }
+</style>
+
+<div class="demo-page" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb" style="font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;">
+    <a href="{{ '/' | relative_url }}" style="color:var(--accent);">Inicio</a>
+    <span style="color:var(--accent);margin:0 .4rem;">›</span>
+    <a href="{{ '/modulo-03/' | relative_url }}" style="color:var(--accent);">Módulo 03 — Preprocesamiento y Limpieza</a>
+    <span style="color:var(--accent);margin:0 .4rem;">›</span>
+    Imputación de Valores Faltantes
+  </nav>
+
+  <header style="margin-bottom:2.5rem;">
+    <div style="display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);">Módulo 03 · Minería de Datos · Ciencia de la Computación</div>
+    <h1 style="font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Imputación de Valores Faltantes</h1>
+    <p style="font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;">Explora estrategias para tratar datos ausentes: desde la simple eliminación hasta la imputación por KNN. Visualiza cómo cada método afecta la distribución del dataset.</p>
+  </header>
+
+  <div class="imp-grid">
+    <!-- ══ TEORÍA ══ -->
+    <aside class="theory-panel">
+      <div>
+        <div class="section-label">¿Por qué existen valores faltantes?</div>
+        <ul class="concept-list">
+          <li><strong>Error de medición:</strong> fallo del sensor, mala transcripción, equipo descalibrado.</li>
+          <li><strong>No aplicable:</strong> el atributo no tiene sentido para esa instancia (p.ej. "dosis de insulina" en paciente no diabético).</li>
+          <li><strong>No registrado:</strong> el valor existía pero nunca se capturó (pérdida de seguimiento).</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="section-label">Estrategias de imputación</div>
+        <ul class="concept-list">
+          <li><strong>Eliminación (listwise/pairwise):</strong> descarta filas o pares con NA. Sencillo pero introduce sesgo si los datos no son MCAR.</li>
+          <li><strong>Media / Mediana / Moda:</strong> imputa con la estadística global. Rápido, pero comprime la varianza y puede distorsionar la distribución.</li>
+          <li><strong>Valor constante:</strong> útil para nominales — reemplazar con "Desconocido" o 0, preserva la semántica del dato ausente.</li>
+          <li><strong>Imputación por KNN:</strong> usa las <em>k</em> instancias más cercanas (distancia euclídea) para estimar el valor faltante mediante promedio ponderado.</li>
+          <li><strong>Imputación múltiple:</strong> genera varias versiones imputadas del dataset, corre el análisis en cada una y combina los resultados (Rubin's rules) para propagar la incertidumbre.</li>
+        </ul>
+      </div>
+
+      <div class="warn-box">
+        <strong>Regla práctica:</strong> si más del <strong>40 %</strong> de instancias tienen valor faltante en un atributo, considera <em>eliminar el atributo</em> en lugar de imputar — el sesgo introducido suele ser mayor que la información recuperada.
+      </div>
+
+      <div>
+        <div class="section-label">Mecanismos de datos faltantes</div>
+        <div class="formula-box">
+          <div class="fl">MCAR — Missing Completely At Random</div>
+          P(faltante | datos) = constante<br>
+          <div class="fl" style="margin-top:.5rem">MAR — Missing At Random</div>
+          P(faltante | X_obs) — depende de datos observados<br>
+          <div class="fl" style="margin-top:.5rem">MNAR — Missing Not At Random</div>
+          P(faltante | X_mis) — depende del valor ausente mismo
+        </div>
+        <div class="theory-body" style="margin-top:.5rem;">
+          Solo con <strong>MCAR</strong> la eliminación listwise es insesgada. En <strong>MAR</strong> la imputación múltiple funciona bien. <strong>MNAR</strong> requiere modelos específicos del mecanismo de pérdida.
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <strong>KNN imputation:</strong> calcula la distancia euclídea usando solo los atributos <em>observados</em> en ambas instancias. Para cada celda faltante, promedia los valores de los <em>k</em> vecinos más cercanos.
+      </div>
+    </aside>
+
+    <!-- ══ INTERACTIVO ══ -->
+    <div class="interactive-panel">
+      <p class="panel-title">Dataset: 12 Pacientes × 5 Atributos — Estrategias de Imputación</p>
+
+      <div class="controls-row">
+        <span class="ctrl-label">Estrategia:</span>
+        <select class="ctrl-select" id="strategy">
+          <option value="mean">Media</option>
+          <option value="median">Mediana</option>
+          <option value="mode">Moda</option>
+          <option value="knn">KNN (k = 3)</option>
+          <option value="constant">Constante</option>
+        </select>
+        <div id="const-row">
+          <span class="ctrl-label">Valor:</span>
+          <input class="ctrl-input" id="constVal" type="text" value="Desconocido" placeholder="valor constante">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="btnImpute">Imputar</button>
+        <button class="btn secondary" id="btnReset">Mostrar original</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Edad</th>
+              <th>Peso (kg)</th>
+              <th>Glucosa</th>
+              <th>Presión</th>
+              <th>Diagnóstico</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Stats panel -->
+      <div class="stats-panel">
+        <div class="sp-title">Estadísticas — Atributos numéricos</div>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+
+      <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-mono);line-height:1.5;">
+        Las celdas en <span style="color:var(--danger);">rojo</span> son valores faltantes originales. Tras imputar aparecen en <span style="color:var(--accent);">verde/azul</span> con el valor calculado.
+      </div>
+    </div>
+  </div>
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function () {
+  // ─── Dataset ───────────────────────────────────────────────────────────────
+  // null = valor faltante
+  const COLS = ['edad','peso','glucosa','presion','diagnostico'];
+  const HEADERS = ['Edad','Peso (kg)','Glucosa','Presión','Diagnóstico'];
+  const NUM_COLS = [0,1,2,3]; // indices numéricos
+  const CAT_COL = 4;
+
+  const ORIGINAL = [
+    [45, 78,  null, 120, 'Hipertensión'],
+    [null,65, 102,  null,'Diabetes'],
+    [52, null,130,  85,  'Sano'],
+    [38, 55,  null, 90,  null],
+    [60, 82,  145,  null,'Diabetes'],
+    [null,70, 98,   110, 'Sano'],
+    [34, null,null, 78,  'Sano'],
+    [48, 90,  160,  130, null],
+    [55, null,115,  null,'Hipertensión'],
+    [null,60, 88,   95,  'Sano'],
+    [42, 75,  null, 105, 'Diabetes'],
+    [50, null,122,  88,  null],
+  ];
+
+  let data = deepCopy(ORIGINAL);
+  let imputed = false;
+
+  function deepCopy(arr) {
+    return arr.map(r => r.slice());
+  }
+
+  // ─── Statistics helpers ────────────────────────────────────────────────────
+  function colValues(d, ci) {
+    return d.map(r => r[ci]).filter(v => v !== null && !isNaN(v));
+  }
+  function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+  function std(arr) {
+    if (!arr.length) return 0;
+    const m = mean(arr);
+    return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/arr.length);
+  }
+  function median(arr) {
+    if (!arr.length) return 0;
+    const s = arr.slice().sort((a,b)=>a-b);
+    const m = Math.floor(s.length/2);
+    return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+  }
+  function mode(arr) {
+    if (!arr.length) return 0;
+    const freq = {};
+    arr.forEach(v=>{ freq[v]=(freq[v]||0)+1; });
+    return +Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+  function catMode(arr) {
+    if (!arr.length) return '?';
+    const freq = {};
+    arr.forEach(v=>{ freq[v]=(freq[v]||0)+1; });
+    return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  // ─── KNN imputation ────────────────────────────────────────────────────────
+  function euclidean(a, b) {
+    let sum = 0, cnt = 0;
+    for (let i = 0; i < NUM_COLS.length; i++) {
+      const ci = NUM_COLS[i];
+      if (a[ci] !== null && b[ci] !== null) {
+        sum += (a[ci] - b[ci]) ** 2;
+        cnt++;
+      }
+    }
+    return cnt > 0 ? Math.sqrt(sum / cnt) : Infinity;
+  }
+
+  function knnImpute(src, k) {
+    const result = deepCopy(src);
+    for (let ri = 0; ri < src.length; ri++) {
+      for (let ci = 0; ci < COLS.length; ci++) {
+        if (src[ri][ci] !== null) continue;
+        // find k nearest rows that have a value for this column
+        const neighbors = [];
+        for (let rj = 0; rj < src.length; rj++) {
+          if (rj === ri || src[rj][ci] === null) continue;
+          const dist = euclidean(src[ri], src[rj]);
+          if (dist < Infinity) neighbors.push({ dist, val: src[rj][ci] });
+        }
+        neighbors.sort((a,b) => a.dist - b.dist);
+        const top = neighbors.slice(0, k);
+        if (top.length === 0) continue;
+        if (ci === CAT_COL) {
+          result[ri][ci] = catMode(top.map(n => n.val));
+        } else {
+          result[ri][ci] = mean(top.map(n => n.val));
+        }
+      }
+    }
+    return result;
+  }
+
+  // ─── Imputation dispatcher ─────────────────────────────────────────────────
+  function imputeData() {
+    const strategy = document.getElementById('strategy').value;
+    const result = deepCopy(ORIGINAL);
+
+    if (strategy === 'knn') {
+      return knnImpute(ORIGINAL, 3);
+    }
+
+    for (let ci = 0; ci < COLS.length; ci++) {
+      const observed = ORIGINAL.map(r => r[ci]).filter(v => v !== null);
+      let fillVal;
+
+      if (ci === CAT_COL) {
+        if (strategy === 'constant') {
+          fillVal = document.getElementById('constVal').value || 'Desconocido';
+        } else {
+          fillVal = catMode(observed.filter(v => typeof v === 'string'));
+        }
+      } else {
+        const nums = observed.filter(v => typeof v === 'number');
+        if (strategy === 'mean')     fillVal = mean(nums);
+        else if (strategy === 'median') fillVal = median(nums);
+        else if (strategy === 'mode')   fillVal = mode(nums);
+        else if (strategy === 'constant') {
+          const cv = parseFloat(document.getElementById('constVal').value);
+          fillVal = isNaN(cv) ? 0 : cv;
+        }
+      }
+
+      for (let ri = 0; ri < result.length; ri++) {
+        if (result[ri][ci] === null) result[ri][ci] = fillVal;
+      }
+    }
+    return result;
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+  function fmt(v) {
+    if (v === null) return '—';
+    if (typeof v === 'number') return Number.isInteger(v) ? String(v) : v.toFixed(1);
+    return String(v);
+  }
+
+  function renderTable(displayData, imputedFlags) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    for (let ri = 0; ri < displayData.length; ri++) {
+      const tr = document.createElement('tr');
+      // row number
+      const tdNum = document.createElement('td');
+      tdNum.className = 'pid';
+      tdNum.textContent = 'P' + String(ri+1).padStart(2,'0');
+      tr.appendChild(tdNum);
+
+      for (let ci = 0; ci < COLS.length; ci++) {
+        const td = document.createElement('td');
+        const origNull = ORIGINAL[ri][ci] === null;
+        if (origNull && !imputedFlags) {
+          td.className = 'missing';
+          td.textContent = '—';
+        } else if (origNull && imputedFlags) {
+          td.className = 'imputed';
+          td.textContent = fmt(displayData[ri][ci]);
+        } else {
+          td.textContent = fmt(displayData[ri][ci]);
+        }
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderStats(beforeData, afterData) {
+    const grid = document.getElementById('statsGrid');
+    grid.innerHTML = '';
+    const numericAttrs = NUM_COLS.map(ci => ({
+      label: HEADERS[ci],
+      before: colValues(beforeData, ci).filter(v=>typeof v==='number'),
+      after: colValues(afterData, ci).filter(v=>typeof v==='number'),
+    }));
+    numericAttrs.forEach(attr => {
+      const col = document.createElement('div');
+      col.className = 'stat-col';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'sc-label';
+      lbl.textContent = attr.label;
+      col.appendChild(lbl);
+
+      const bMean = mean(attr.before), aMean = mean(attr.after);
+      const bStd  = std(attr.before),  aStd  = std(attr.after);
+
+      function row(label, bVal, aVal) {
+        const div = document.createElement('div');
+        div.className = 'stat-row';
+        const v = document.createElement('div');
+        v.className = 'stat-val';
+        v.textContent = `${label}: ${aVal.toFixed(1)}`;
+        const ch = document.createElement('div');
+        const delta = aVal - bVal;
+        ch.className = 'stat-change' + (Math.abs(delta) < 0.01 ? '' : delta > 0 ? ' up' : ' down');
+        ch.textContent = `Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(1)} vs orig`;
+        div.appendChild(v);
+        div.appendChild(ch);
+        col.appendChild(div);
+      }
+      row('μ', bMean, aMean);
+      row('σ', bStd,  aStd);
+
+      grid.appendChild(col);
+    });
+  }
+
+  // ─── Animated cell fill ────────────────────────────────────────────────────
+  function animateImpute(newData) {
+    // First render imputed table
+    renderTable(newData, true);
+    renderStats(ORIGINAL, newData);
+
+    // Flash animation on imputed cells
+    const tds = document.querySelectorAll('#tableBody td.imputed');
+    tds.forEach((td, i) => {
+      td.style.opacity = '0';
+      td.style.transform = 'scale(0.85)';
+      td.style.transition = `opacity 0.25s ease ${i*25}ms, transform 0.25s ease ${i*25}ms`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          td.style.opacity = '1';
+          td.style.transform = 'scale(1)';
+        });
+      });
+    });
+  }
+
+  // ─── Event listeners ───────────────────────────────────────────────────────
+  document.getElementById('strategy').addEventListener('change', function() {
+    const constRow = document.getElementById('const-row');
+    constRow.style.display = this.value === 'constant' ? 'flex' : 'none';
+  });
+
+  document.getElementById('btnImpute').addEventListener('click', function() {
+    data = imputeData();
+    imputed = true;
+    animateImpute(data);
+  });
+
+  document.getElementById('btnReset').addEventListener('click', function() {
+    data = deepCopy(ORIGINAL);
+    imputed = false;
+    renderTable(ORIGINAL, false);
+    renderStats(ORIGINAL, ORIGINAL);
+  });
+
+  // ─── Init ──────────────────────────────────────────────────────────────────
+  renderTable(ORIGINAL, false);
+  renderStats(ORIGINAL, ORIGINAL);
+})();
+</script>
