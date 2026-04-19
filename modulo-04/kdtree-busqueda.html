@@ -1,0 +1,715 @@
+---
+layout: default
+title: "KD-Tree y Búsqueda Eficiente"
+prev_url: /modulo-04/diagrama-voronoi.html
+prev_title: Diagrama de Voronoi
+next_url: /modulo-04/maldicion-dimensionalidad.html
+next_title: La Maldición de la Dimensionalidad
+---
+<style>
+.demo-page { max-width:1200px; margin:0 auto; padding:1.5rem; }
+
+.breadcrumb {
+  display:flex; align-items:center; gap:.4rem;
+  font-size:.82rem; color:var(--muted); margin-bottom:2rem; flex-wrap:wrap;
+}
+.breadcrumb a { color:var(--muted); text-decoration:none; }
+.breadcrumb a:hover { color:var(--accent); }
+.breadcrumb .sep { color:var(--border); }
+
+.demo-header { margin-bottom:2.5rem; }
+.module-eyebrow {
+  display:inline-block; font-family:var(--font-mono); font-size:.72rem;
+  font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); background:rgba(88,166,255,.08);
+  border:1px solid rgba(88,166,255,.2); border-radius:20px;
+  padding:.2rem .85rem; margin-bottom:.9rem;
+}
+.demo-header h1 {
+  font-size:clamp(1.8rem,4vw,2.8rem); font-weight:700;
+  letter-spacing:-.03em; color:var(--text); margin-bottom:.6rem;
+}
+.demo-lead { font-size:1.05rem; color:var(--muted); line-height:1.7; max-width:680px; }
+
+.demo-layout {
+  display:grid; grid-template-columns:1fr 1.4fr;
+  gap:2.5rem; align-items:start; margin-bottom:3rem;
+}
+
+.demo-theory { display:flex; flex-direction:column; gap:1.5rem; }
+
+.theory-block {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1.4rem;
+}
+.theory-block h2 {
+  font-size:1rem; font-weight:700; color:var(--accent);
+  margin-bottom:.75rem; letter-spacing:-.01em;
+  display:flex; align-items:center; gap:.5rem;
+}
+.theory-block h2::before {
+  content:''; display:inline-block; width:3px; height:1em;
+  background:var(--accent); border-radius:2px; flex-shrink:0;
+}
+.theory-block p { font-size:.9rem; color:var(--muted); line-height:1.75; }
+.theory-block p strong { color:var(--text); font-weight:600; }
+.theory-block ul {
+  font-size:.88rem; color:var(--muted); line-height:1.8;
+  padding-left:1.2rem; margin:.4rem 0;
+}
+.theory-block ul li { margin-bottom:.3rem; }
+.theory-block ul li strong { color:var(--text); }
+
+.complexity-box {
+  background:rgba(88,166,255,.06); border:1px solid rgba(88,166,255,.2);
+  border-radius:var(--radius-md); padding:.9rem 1.1rem;
+  margin-top:.8rem; font-size:.85rem;
+}
+.complexity-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:.3rem 0; border-bottom:1px solid rgba(48,54,61,.5);
+}
+.complexity-row:last-child { border-bottom:none; }
+.complexity-label { color:var(--muted); font-size:.82rem; }
+.complexity-val {
+  font-family:var(--font-mono); font-weight:700;
+  font-size:.82rem; color:var(--accent);
+}
+.complexity-val.warn { color:var(--warn); }
+
+.alt-pills { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem; }
+.alt-pill {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:.25rem .65rem;
+  font-size:.78rem; color:var(--muted);
+  font-family:var(--font-mono);
+}
+
+/* ── Interactive panel ── */
+.demo-interactive { display:flex; flex-direction:column; gap:1rem; }
+
+.interactive-label {
+  font-family:var(--font-mono); font-size:.72rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.1em; color:var(--accent2);
+}
+
+.canvas-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); overflow:hidden;
+}
+
+.canvas-toolbar {
+  display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+  padding:.9rem 1.1rem; border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
+
+.ctrl-group { display:flex; align-items:center; gap:.5rem; }
+.ctrl-label {
+  font-family:var(--font-mono); font-size:.72rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+  white-space:nowrap;
+}
+.ctrl-val {
+  font-family:var(--font-mono); font-size:.82rem; font-weight:700;
+  color:var(--accent); min-width:1.4rem; text-align:center;
+}
+
+input[type=range] {
+  -webkit-appearance:none; height:4px; border-radius:2px;
+  background:var(--border); outline:none; cursor:pointer; width:100px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px;
+  border-radius:50%; background:var(--accent); cursor:pointer;
+}
+
+.btn {
+  font-family:var(--font-sans); font-size:.8rem; font-weight:600;
+  padding:.4rem .9rem; border-radius:var(--radius-sm); cursor:pointer;
+  border:1px solid var(--border); background:var(--surface2);
+  color:var(--text); transition:background 150ms,border-color 150ms;
+}
+.btn:hover { background:var(--surface); border-color:var(--accent); color:var(--accent); }
+.btn-primary { background:rgba(88,166,255,.12); border-color:rgba(88,166,255,.35); color:var(--accent); }
+.btn-primary:hover { background:rgba(88,166,255,.22); border-color:var(--accent); }
+
+.canvas-wrap {
+  position:relative; background:#0d1117;
+}
+#kdCanvas {
+  display:block; width:100%; cursor:crosshair;
+}
+
+.canvas-hint {
+  position:absolute; bottom:.6rem; right:.75rem;
+  font-size:.7rem; color:var(--muted); font-family:var(--font-mono);
+  pointer-events:none;
+}
+
+/* ── Legend ── */
+.legend-row {
+  display:flex; gap:1.2rem; flex-wrap:wrap;
+  padding:.7rem 1.1rem; border-top:1px solid var(--border);
+  background:var(--surface2);
+}
+.legend-item { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:var(--muted); }
+.legend-swatch { width:22px; height:3px; border-radius:2px; flex-shrink:0; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* ── Search log ── */
+.search-log {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1.1rem;
+  font-family:var(--font-mono); font-size:.78rem; line-height:1.8;
+  min-height:90px; color:var(--muted);
+}
+.log-step { animation:fadeIn .25s ease both; }
+.log-step .tag {
+  display:inline-block; font-size:.68rem; font-weight:700;
+  padding:.05rem .4rem; border-radius:3px; margin-right:.5rem;
+  text-transform:uppercase;
+}
+.tag-down { background:rgba(88,166,255,.15); color:var(--accent); }
+.tag-check { background:rgba(63,185,80,.15); color:var(--accent3); }
+.tag-prune { background:rgba(248,81,73,.15); color:var(--danger); }
+.tag-found { background:rgba(210,153,34,.15); color:var(--warn); }
+
+/* ── Tree panel ── */
+.tree-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1.1rem;
+}
+.tree-card h3 {
+  font-size:.85rem; font-weight:700; color:var(--text);
+  margin-bottom:.8rem; display:flex; align-items:center; gap:.5rem;
+}
+.tree-list { list-style:none; padding:0; margin:0; font-family:var(--font-mono); font-size:.75rem; }
+.tree-list li { padding:.15rem 0; color:var(--muted); }
+.tree-list li.active { color:var(--accent); }
+.tree-list li.found  { color:var(--warn); }
+.tree-node-line {
+  display:flex; align-items:center; gap:.4rem; cursor:pointer;
+  user-select:none; border-radius:4px; padding:.1rem .3rem;
+  transition:background 120ms;
+}
+.tree-node-line:hover { background:rgba(88,166,255,.07); }
+.tree-toggle { color:var(--muted); font-size:.85rem; width:1rem; text-align:center; flex-shrink:0; }
+.tree-children { padding-left:1.2rem; }
+.tree-children.collapsed { display:none; }
+.node-badge {
+  font-size:.65rem; font-weight:700; padding:.05rem .35rem;
+  border-radius:3px; margin-left:.3rem;
+}
+.badge-x { background:rgba(88,166,255,.15); color:var(--accent); }
+.badge-y { background:rgba(188,140,255,.15); color:var(--accent2); }
+
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+@media(max-width:900px){
+  .demo-layout { grid-template-columns:1fr; }
+}
+</style>
+
+<div class="demo-page">
+  {% include demo-nav.html %}
+
+  <nav class="breadcrumb">
+    <a href="{{ '/' | relative_url }}">Inicio</a>
+    <span class="sep">›</span>
+    <a href="{{ '/modulo-04/' | relative_url }}">Módulo 04 — Clasificación: Métodos por Instancias</a>
+    <span class="sep">›</span>
+    KD-Tree y Búsqueda Eficiente
+  </nav>
+
+  <header class="demo-header">
+    <div class="module-eyebrow">Módulo 04 · Minería de Datos · Ciencia de la Computación</div>
+    <h1>KD-Tree y Búsqueda Eficiente</h1>
+    <p class="demo-lead">El KNN ingenuo examina todos los puntos en cada consulta. El KD-Tree particiona el espacio para descartar regiones completas, logrando búsquedas en tiempo sublineal.</p>
+  </header>
+
+  <div class="demo-layout">
+
+    <!-- ── Teoría ── -->
+    <aside class="demo-theory">
+
+      <div class="theory-block">
+        <h2>El Problema con KNN Ingenuo</h2>
+        <p>Para cada consulta, KNN naive calcula la distancia a <strong>todos los n puntos</strong> de entrenamiento. Con d dimensiones, el costo es <strong>O(n · d)</strong> por consulta — inviable para grandes datasets en producción.</p>
+      </div>
+
+      <div class="theory-block">
+        <h2>KD-Tree: Partición Recursiva</h2>
+        <p>Un <strong>KD-Tree</strong> (k-dimensional tree) es un árbol binario que organiza puntos en el espacio particionando recursivamente con hiperplanos alineados a los ejes.</p>
+        <ul>
+          <li><strong>Construcción:</strong> elegir la dimensión con mayor varianza, dividir por la mediana</li>
+          <li><strong>Cada nodo</strong> almacena un punto y una línea de corte (dimensión + valor)</li>
+          <li><strong>Subárboles</strong> izquierdo / derecho contienen puntos a cada lado del hiperplano</li>
+          <li><strong>Profundidad:</strong> O(log n) — árbol balanceado por construcción mediana</li>
+        </ul>
+      </div>
+
+      <div class="theory-block">
+        <h2>Búsqueda del Vecino Más Cercano</h2>
+        <p>El algoritmo explota la estructura para podar subespacios imposibles:</p>
+        <ul>
+          <li><strong>Descenso:</strong> navegar el árbol hacia la hoja más probable</li>
+          <li><strong>Backtrack:</strong> al subir, verificar si el otro subárbol puede contener un punto más cercano</li>
+          <li><strong>Poda:</strong> si dist(query, hiperplano) ≥ mejor distancia actual → descartar subárbol completo</li>
+        </ul>
+      </div>
+
+      <div class="theory-block">
+        <h2>Complejidades</h2>
+        <div class="complexity-box">
+          <div class="complexity-row">
+            <span class="complexity-label">Construcción</span>
+            <span class="complexity-val">O(n log n)</span>
+          </div>
+          <div class="complexity-row">
+            <span class="complexity-label">Búsqueda (caso ideal 2D)</span>
+            <span class="complexity-val">O(log n)</span>
+          </div>
+          <div class="complexity-row">
+            <span class="complexity-label">Búsqueda (alta dimensión)</span>
+            <span class="complexity-val warn">O(n) — degrada</span>
+          </div>
+          <div class="complexity-row">
+            <span class="complexity-label">Espacio en memoria</span>
+            <span class="complexity-val">O(n)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-block">
+        <h2>Limitaciones y Alternativas</h2>
+        <p>El KD-Tree <strong>degrada con alta dimensión</strong> (d &gt; 20). Cuando d crece, los hiperplanos se intersectan con casi todas las esferas de búsqueda y la poda pierde efectividad.</p>
+        <div class="alt-pills">
+          <span class="alt-pill">Ball Tree</span>
+          <span class="alt-pill">LSH</span>
+          <span class="alt-pill">Annoy</span>
+          <span class="alt-pill">HNSW</span>
+          <span class="alt-pill">Faiss</span>
+        </div>
+        <p style="margin-top:.7rem;font-size:.82rem"><strong>Ball Tree</strong> usa hiperesperas en lugar de hiperplanos — mejor para distribuciones no uniformes. <strong>LSH</strong> ofrece aproximación sub-lineal garantizada.</p>
+      </div>
+
+    </aside>
+
+    <!-- ── Interactivo ── -->
+    <div class="demo-interactive">
+      <div>
+        <div class="interactive-label">Visualización Interactiva</div>
+      </div>
+
+      <div class="canvas-card">
+        <div class="canvas-toolbar">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Profundidad</span>
+            <input type="range" id="depthSlider" min="0" max="5" value="3" step="1">
+            <span class="ctrl-val" id="depthVal">3</span>
+          </div>
+          <button class="btn btn-primary" id="regenBtn">Regenerar puntos</button>
+          <span style="font-size:.75rem;color:var(--muted);margin-left:auto">Clic en el canvas → buscar vecino</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="kdCanvas" width="680" height="430"></canvas>
+          <div class="canvas-hint">30 puntos · KD-Tree 2D</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-item">
+            <div class="legend-swatch" style="background:#58a6ff"></div> Corte en X (azul)
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background:#bc8cff"></div> Corte en Y (violeta)
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background:rgba(88,166,255,.4);height:2px"></div> Camino visitado
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#ffd700"></div> Consulta
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#ff8c00"></div> Vecino encontrado
+          </div>
+        </div>
+      </div>
+
+      <!-- Search log -->
+      <div class="search-log" id="searchLog">
+        <span style="color:var(--muted)">Haz clic en el canvas para colocar un punto de consulta y ver el proceso de búsqueda.</span>
+      </div>
+
+      <!-- Tree panel -->
+      <div class="tree-card">
+        <h3>
+          <span style="color:var(--accent)">&#9651;</span>
+          Estructura del Árbol
+        </h3>
+        <div id="treePanel" style="font-size:.78rem;color:var(--muted)">Generando árbol…</div>
+      </div>
+
+    </div><!-- .demo-interactive -->
+  </div><!-- .demo-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Canvas setup ─────────────────────────────────── */
+  const canvas  = document.getElementById('kdCanvas');
+  const ctx     = canvas.getContext('2d');
+  const PAD     = 32;
+  let W, H;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width || 680;
+    H = Math.round(W * 0.63);
+    canvas.width  = W;
+    canvas.height = H;
+    draw();
+  }
+  window.addEventListener('resize', resize);
+
+  /* ── State ────────────────────────────────────────── */
+  let points    = [];    // [{x,y}] normalised 0-1
+  let kdRoot    = null;
+  let maxDepth  = 3;
+  let queryPt   = null;  // {x,y} normalised 0-1
+  let searchPath = [];   // nodes visited
+  let nearestNode = null;
+
+  /* ── KD-Tree ──────────────────────────────────────── */
+  function buildKD(pts, depth) {
+    if (pts.length === 0) return null;
+    const dim = depth % 2; // 0=x, 1=y
+    const axis = dim === 0 ? 'x' : 'y';
+
+    const sorted = pts.slice().sort(function(a, b){ return a[axis] - b[axis]; });
+    const mid    = Math.floor(sorted.length / 2);
+    const pivot  = sorted[mid];
+
+    return {
+      point : pivot,
+      dim   : dim,
+      split : pivot[axis],
+      left  : buildKD(sorted.slice(0, mid), depth + 1),
+      right : buildKD(sorted.slice(mid + 1), depth + 1),
+      depth : depth,
+    };
+  }
+
+  function dist2(a, b) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+  }
+
+  /* ── NN search with path recording ───────────────── */
+  function searchNN(node, query, best, path) {
+    if (!node) return best;
+
+    path.push(node);
+
+    const d = dist2(node.point, query);
+    if (!best || d < best.d) {
+      best = { node: node, d: d };
+    }
+
+    // Choose side to descend first
+    const axis = node.dim === 0 ? 'x' : 'y';
+    const diff = query[axis] - node.split;
+    const first  = diff <= 0 ? node.left : node.right;
+    const second = diff <= 0 ? node.right : node.left;
+
+    best = searchNN(first, query, best, path);
+
+    // Check if other side could have closer point
+    if (diff * diff < best.d) {
+      best = searchNN(second, query, best, path);
+    }
+
+    return best;
+  }
+
+  /* ── Coordinate helpers ───────────────────────────── */
+  function toCanvas(p) {
+    return {
+      x: PAD + p.x * (W - 2 * PAD),
+      y: PAD + p.y * (H - 2 * PAD),
+    };
+  }
+
+  /* ── Draw ─────────────────────────────────────────── */
+  function drawNode(node, xMin, xMax, yMin, yMax, depth) {
+    if (!node || depth > maxDepth) return;
+
+    const isActive = searchPath.indexOf(node) !== -1;
+
+    if (node.dim === 0) {
+      // Vertical split line
+      const cx = PAD + node.split * (W - 2 * PAD);
+      const y0 = PAD + yMin * (H - 2 * PAD);
+      const y1 = PAD + yMax * (H - 2 * PAD);
+      const lw = Math.max(0.8, 3.5 - depth * 0.55);
+
+      ctx.beginPath();
+      ctx.moveTo(cx, y0);
+      ctx.lineTo(cx, y1);
+      ctx.strokeStyle = isActive ? 'rgba(88,166,255,0.85)' : 'rgba(88,166,255,' + (0.55 - depth * 0.07).toFixed(2) + ')';
+      ctx.lineWidth   = isActive ? lw + 1.5 : lw;
+      ctx.setLineDash(isActive ? [] : (depth > 2 ? [4, 4] : []));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawNode(node.left,  xMin, node.split, yMin, yMax, depth + 1);
+      drawNode(node.right, node.split, xMax, yMin, yMax, depth + 1);
+    } else {
+      // Horizontal split line
+      const cy = PAD + node.split * (H - 2 * PAD);
+      const x0 = PAD + xMin * (W - 2 * PAD);
+      const x1 = PAD + xMax * (W - 2 * PAD);
+      const lw = Math.max(0.8, 3.5 - depth * 0.55);
+
+      ctx.beginPath();
+      ctx.moveTo(x0, cy);
+      ctx.lineTo(x1, cy);
+      ctx.strokeStyle = isActive ? 'rgba(188,140,255,0.85)' : 'rgba(188,140,255,' + (0.55 - depth * 0.07).toFixed(2) + ')';
+      ctx.lineWidth   = isActive ? lw + 1.5 : lw;
+      ctx.setLineDash(isActive ? [] : (depth > 2 ? [4, 4] : []));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawNode(node.left,  xMin, xMax, yMin, node.split, depth + 1);
+      drawNode(node.right, xMin, xMax, node.split, yMax, depth + 1);
+    }
+  }
+
+  function drawPoints() {
+    points.forEach(function(p) {
+      const c = toCanvas(p);
+      const isNearest = nearestNode && nearestNode.node.point === p;
+
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, isNearest ? 8 : 5.5, 0, Math.PI * 2);
+      ctx.fillStyle   = isNearest ? '#ff8c00' : 'rgba(88,166,255,0.75)';
+      ctx.strokeStyle = isNearest ? '#ffd700' : 'rgba(88,166,255,0.25)';
+      ctx.lineWidth   = isNearest ? 2.5 : 1;
+      ctx.fill();
+      ctx.stroke();
+    });
+  }
+
+  function drawQuery() {
+    if (!queryPt) return;
+    const c = toCanvas(queryPt);
+
+    // Draw circle to nearest if found
+    if (nearestNode) {
+      const nc = toCanvas(nearestNode.node.point);
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y);
+      ctx.lineTo(nc.x, nc.y);
+      ctx.strokeStyle = 'rgba(255,200,0,0.3)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw search radius circle
+      const r = Math.sqrt(nearestNode.d) * (W - 2 * PAD);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,200,0,0.18)';
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+    }
+
+    // Draw star
+    drawStar(c.x, c.y, 10, 5, '#ffd700');
+  }
+
+  function drawStar(cx, cy, outerR, innerR, color) {
+    const points6 = 5;
+    ctx.beginPath();
+    for (let i = 0; i < points6 * 2; i++) {
+      const angle = (i * Math.PI) / points6 - Math.PI / 2;
+      const r     = i % 2 === 0 ? outerR : innerR;
+      const x     = cx + Math.cos(angle) * r;
+      const y     = cy + Math.sin(angle) * r;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle   = color;
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth   = 1.5;
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background grid
+    ctx.strokeStyle = 'rgba(48,54,61,0.35)';
+    ctx.lineWidth   = 0.5;
+    for (let i = 0; i <= 10; i++) {
+      const x = PAD + (i / 10) * (W - 2 * PAD);
+      const y = PAD + (i / 10) * (H - 2 * PAD);
+      ctx.beginPath(); ctx.moveTo(x, PAD);     ctx.lineTo(x, H - PAD); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PAD, y);     ctx.lineTo(W - PAD, y); ctx.stroke();
+    }
+
+    if (kdRoot) drawNode(kdRoot, 0, 1, 0, 1, 0);
+    drawPoints();
+    drawQuery();
+  }
+
+  /* ── Log panel ────────────────────────────────────── */
+  function updateLog(path, nearest) {
+    const log = document.getElementById('searchLog');
+    if (!path || path.length === 0) {
+      log.innerHTML = '<span style="color:var(--muted)">Haz clic en el canvas para colocar un punto de consulta y ver el proceso de búsqueda.</span>';
+      return;
+    }
+
+    let html = '';
+    path.forEach(function(node, i) {
+      const tag  = i === 0 ? 'down' : (i < path.length - 1 ? 'check' : 'check');
+      const axis = node.dim === 0 ? 'X' : 'Y';
+      const isNN = nearest && nearest.node === node;
+      const stepClass = isNN ? 'log-step' : 'log-step';
+      const splitFmt  = node.split.toFixed(3);
+      let line;
+
+      if (i === 0) {
+        line = '<span class="tag tag-down">Descenso</span>Raíz: divide en ' + axis + ' = ' + splitFmt;
+      } else if (isNN) {
+        const d = Math.sqrt(nearest.d).toFixed(4);
+        line = '<span class="tag tag-found">Encontrado</span>Vecino más cercano — d = ' + d + ' (nodo nivel ' + node.depth + ')';
+      } else {
+        line = '<span class="tag tag-check">Verificar</span>Hiperplano ' + axis + ' = ' + splitFmt + ' (profundidad ' + node.depth + ')';
+      }
+
+      html += '<div class="' + stepClass + '">' + line + '</div>';
+    });
+
+    // Pruning info
+    html += '<div class="log-step"><span class="tag tag-prune">Poda</span>' +
+            (path.length) + ' nodos visitados de ' + points.length + ' totales' +
+            ' (' + Math.round(path.length / points.length * 100) + '%)</div>';
+
+    log.innerHTML = html;
+  }
+
+  /* ── Tree DOM render ──────────────────────────────── */
+  function renderTree(node) {
+    const panel = document.getElementById('treePanel');
+    if (!node) { panel.textContent = 'Árbol vacío.'; return; }
+    const ul = document.createElement('ul');
+    ul.className = 'tree-list';
+    buildTreeDOM(node, ul, 0);
+    panel.innerHTML = '';
+    panel.appendChild(ul);
+  }
+
+  function buildTreeDOM(node, parentUl, depth) {
+    if (!node || depth > 6) return;
+
+    const li   = document.createElement('li');
+    const axis = node.dim === 0 ? 'X' : 'Y';
+    const badgeCls = node.dim === 0 ? 'badge-x' : 'badge-y';
+    const isPath   = searchPath.indexOf(node) !== -1;
+    const isFound  = nearestNode && nearestNode.node === node;
+
+    if (isFound) li.classList.add('found');
+    else if (isPath) li.classList.add('active');
+
+    const indent = '  '.repeat(depth);
+    const px = node.point.x.toFixed(3);
+    const py = node.point.y.toFixed(3);
+
+    const line = document.createElement('div');
+    line.className = 'tree-node-line';
+    line.innerHTML =
+      '<span class="tree-toggle">' + (node.left || node.right ? '▾' : '·') + '</span>' +
+      indent +
+      '<span class="node-badge ' + badgeCls + '">' + axis + '</span>' +
+      '<span style="margin-left:.3rem">(' + px + ', ' + py + ')</span>' +
+      (isFound ? '<span style="color:var(--warn);margin-left:.5rem">← NN</span>' : '');
+
+    li.appendChild(line);
+
+    if (node.left || node.right) {
+      const children = document.createElement('ul');
+      children.className = 'tree-children';
+      if (node.left)  buildTreeDOM(node.left,  children, depth + 1);
+      if (node.right) buildTreeDOM(node.right, children, depth + 1);
+      li.appendChild(children);
+
+      line.addEventListener('click', function() {
+        children.classList.toggle('collapsed');
+        line.querySelector('.tree-toggle').textContent =
+          children.classList.contains('collapsed') ? '▸' : '▾';
+      });
+    }
+
+    parentUl.appendChild(li);
+  }
+
+  /* ── Generate points ──────────────────────────────── */
+  function generatePoints() {
+    points = [];
+    for (let i = 0; i < 30; i++) {
+      points.push({ x: Math.random(), y: Math.random() });
+    }
+    kdRoot      = buildKD(points, 0);
+    queryPt     = null;
+    searchPath  = [];
+    nearestNode = null;
+    updateLog([], null);
+    renderTree(kdRoot);
+    draw();
+  }
+
+  /* ── Interaction ──────────────────────────────────── */
+  document.getElementById('depthSlider').addEventListener('input', function() {
+    maxDepth = parseInt(this.value, 10);
+    document.getElementById('depthVal').textContent = maxDepth;
+    draw();
+  });
+
+  document.getElementById('regenBtn').addEventListener('click', generatePoints);
+
+  canvas.addEventListener('click', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const cx = (e.clientX - rect.left) * scaleX;
+    const cy = (e.clientY - rect.top)  * scaleY;
+
+    queryPt = {
+      x: (cx - PAD) / (W - 2 * PAD),
+      y: (cy - PAD) / (H - 2 * PAD),
+    };
+    queryPt.x = Math.max(0, Math.min(1, queryPt.x));
+    queryPt.y = Math.max(0, Math.min(1, queryPt.y));
+
+    searchPath  = [];
+    nearestNode = null;
+
+    const result = searchNN(kdRoot, queryPt, null, searchPath);
+    nearestNode  = result;
+
+    updateLog(searchPath, nearestNode);
+    renderTree(kdRoot);
+    draw();
+  });
+
+  /* ── Init ─────────────────────────────────────────── */
+  generatePoints();
+  resize();
+}());
+</script>
