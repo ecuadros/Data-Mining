@@ -1,0 +1,316 @@
+---
+layout: default
+title: "K-Means Interactivo"
+next_url: /modulo-06/dbscan.html
+next_title: DBSCAN
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.btn-g{border-color:rgba(63,185,80,.35);background:rgba(63,185,80,.1);color:var(--accent3);}
+.btn-g:hover{background:rgba(63,185,80,.2);}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.hint{font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-06/' | relative_url }}">Módulo 06 — Clustering</a><span class="sep">›</span>
+  K-Means Interactivo
+</nav>
+<header>
+  <div class="eyebrow">Módulo 06 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">K-Means Interactivo</h1>
+  <p class="demo-lead">Observa cómo K-Means converge iterativamente. Avanza paso a paso: primero se asignan los puntos al centroide más cercano, luego se recalculan los centroides.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Algoritmo K-Means</h3>
+    <ol style="padding-left:1.2rem;">
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;"><strong style="color:var(--accent)">Inicializar</strong> k centroides (aleatorio o K-Means++)</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;"><strong style="color:var(--accent)">Asignar</strong> cada punto al centroide más cercano</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;"><strong style="color:var(--accent)">Recalcular</strong> centroides como la media de su cluster</li>
+      <li style="font-size:.88rem;color:var(--muted);">Repetir 2-3 hasta convergencia (sin cambios en asignaciones)</li>
+    </ol>
+  </div>
+  <div class="tb">
+    <h3>Función objetivo</h3>
+    <p style="font-family:var(--font-mono);font-size:.82rem;color:var(--accent);background:#0d1117;padding:.6rem .9rem;border-radius:6px;border:1px solid rgba(88,166,255,.3);">WCSS = Σₖ Σᵢ∈Cₖ ‖xᵢ − μₖ‖²</p>
+    <p>K-Means minimiza la inercia intra-cluster (WCSS). Garantiza convergencia pero puede quedar en mínimos locales.</p>
+  </div>
+  <div class="tb">
+    <h3>Limitaciones</h3>
+    <ul>
+      <li>Requiere especificar k a priori</li>
+      <li>Clusters esféricos y de tamaño similar</li>
+      <li>Sensible a outliers y a la inicialización</li>
+      <li>Solución: K-Means++ (inicialización inteligente)</li>
+    </ul>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>k = <span id="kDisp">3</span></label><br>
+      <input type="range" id="kRange" min="2" max="8" step="1" value="3" oninput="document.getElementById('kDisp').textContent=this.value;initKMeans();">
+    </div>
+    <button class="btn" onclick="initKMeans()">Reiniciar</button>
+    <button class="btn btn-g" onclick="stepKMeans()">Siguiente paso →</button>
+    <button class="btn" onclick="runAll()">Converger</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Iteración</div>
+      <div class="m-val" id="iterVal" style="color:var(--accent);">0</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Fase</div>
+      <div class="m-val" id="phaseVal" style="color:var(--accent2);font-size:.8rem;margin-top:.3rem;">Inicialización</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">WCSS</div>
+      <div class="m-val" id="wcssVal" style="color:var(--warn);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Cambios</div>
+      <div class="m-val" id="changesVal" style="color:var(--accent3);">—</div>
+    </div>
+  </div>
+
+  <div class="cw">
+    <canvas id="mainCanvas" width="520" height="400"></canvas>
+  </div>
+  <p class="hint">Los centroides se muestran como estrellas ★ · Las líneas conectan puntos con su centroide durante la asignación</p>
+
+  <!-- Elbow chart -->
+  <div class="tb" style="margin-top:.5rem;">
+    <h3>Curva del codo — WCSS vs k</h3>
+    <div class="cw" style="margin:0;padding:.75rem;">
+      <canvas id="elbowCanvas" width="520" height="130"></canvas>
+    </div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+const r=rng(55);
+const N=120;
+const POINTS=[];
+const BLOB_CENTERS=[[.2,.25],[.75,.2],[.5,.75],[.2,.75],[.8,.65]];
+BLOB_CENTERS.forEach((c,ci)=>{
+  const n=ci<3?30:15;
+  for(let i=0;i<n;i++){
+    POINTS.push({x:Math.max(.02,Math.min(.98,c[0]+(r()-.5)*.28)),
+                 y:Math.max(.02,Math.min(.98,c[1]+(r()-.5)*.28))});
+  }
+});
+
+const PALETTE=['#58a6ff','#3fb950','#f85149','#d29922','#bc8cff','#79c0ff','#56d364','#ff7b72'];
+
+let centroids=[], assignments=[], iteration=0, phase='init', converged=false;
+
+function dist2(a,b){return (a.x-b.x)**2+(a.y-b.y)**2;}
+
+function initKMeans(){
+  const k=parseInt(document.getElementById('kRange').value);
+  const sr=rng(Date.now()%9999);
+  // K-Means++ init
+  centroids=[{...POINTS[Math.floor(sr()*POINTS.length)]}];
+  while(centroids.length<k){
+    const dists=POINTS.map(p=>Math.min(...centroids.map(c=>dist2(p,c))));
+    const total=dists.reduce((s,d)=>s+d,0);
+    let pick=sr()*total,acc=0;
+    for(let i=0;i<POINTS.length;i++){acc+=dists[i];if(acc>=pick){centroids.push({...POINTS[i]});break;}}
+  }
+  assignments=new Array(POINTS.length).fill(-1);
+  iteration=0;phase='assign';converged=false;
+  document.getElementById('phaseVal').textContent='Asignar puntos';
+  document.getElementById('iterVal').textContent='0';
+  document.getElementById('wcssVal').textContent='—';
+  document.getElementById('changesVal').textContent='—';
+  draw();
+  drawElbow();
+}
+
+function assign(){
+  let changes=0;
+  POINTS.forEach((p,i)=>{
+    let minD=Infinity,cls=0;
+    centroids.forEach((c,j)=>{const d=dist2(p,c);if(d<minD){minD=d;cls=j;}});
+    if(assignments[i]!==cls){changes++;assignments[i]=cls;}
+  });
+  return changes;
+}
+
+function updateCentroids(){
+  const k=centroids.length;
+  const sums=Array.from({length:k},()=>({x:0,y:0,n:0}));
+  POINTS.forEach((p,i)=>{const cl=assignments[i];sums[cl].x+=p.x;sums[cl].y+=p.y;sums[cl].n++;});
+  centroids=sums.map((s,i)=>s.n>0?{x:s.x/s.n,y:s.y/s.n}:centroids[i]);
+}
+
+function computeWCSS(){
+  return POINTS.reduce((s,p,i)=>s+dist2(p,centroids[assignments[i]]),0);
+}
+
+function stepKMeans(){
+  if(converged) return;
+  if(phase==='assign'||phase==='init'){
+    const ch=assign();
+    document.getElementById('changesVal').textContent=ch;
+    document.getElementById('phaseVal').textContent='Recalcular centroides';
+    document.getElementById('wcssVal').textContent=computeWCSS().toFixed(2);
+    if(ch===0){converged=true;document.getElementById('phaseVal').textContent='Convergido ✓';}
+    phase='update';
+    iteration++;
+    document.getElementById('iterVal').textContent=iteration;
+  } else {
+    updateCentroids();
+    document.getElementById('phaseVal').textContent='Asignar puntos';
+    phase='assign';
+  }
+  draw();
+}
+
+function runAll(){
+  let guard=0;
+  while(!converged&&guard<50){stepKMeans();if(phase==='assign')guard++;}
+}
+
+function draw(){
+  const canvas=document.getElementById('mainCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+
+  // Voronoi-like background
+  const step=6;
+  if(assignments.some(a=>a>=0)){
+    for(let py=PAD;py<H-PAD;py+=step){
+      for(let px=PAD;px<W-PAD;px+=step){
+        const nx=(px-PAD)/(W-2*PAD),ny=(py-PAD)/(H-2*PAD);
+        let minD=Infinity,cls=0;
+        centroids.forEach((c,j)=>{const d=(nx-c.x)**2+(ny-c.y)**2;if(d<minD){minD=d;cls=j;}});
+        ctx.fillStyle=PALETTE[cls%PALETTE.length]+'22';
+        ctx.fillRect(px,py,step,step);
+      }
+    }
+  }
+
+  // Connection lines (assign phase)
+  if(phase==='assign'&&assignments.some(a=>a>=0)){
+    POINTS.forEach((p,i)=>{
+      if(assignments[i]<0) return;
+      const c=centroids[assignments[i]];
+      ctx.save();ctx.strokeStyle=PALETTE[assignments[i]%PALETTE.length]+'40';ctx.lineWidth=.5;
+      ctx.beginPath();ctx.moveTo(toX(p.x),toY(p.y));ctx.lineTo(toX(c.x),toY(c.y));ctx.stroke();ctx.restore();
+    });
+  }
+
+  // Points
+  POINTS.forEach((p,i)=>{
+    const col=assignments[i]>=0?PALETTE[assignments[i]%PALETTE.length]:'#8b949e';
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),4,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+
+  // Centroids (stars)
+  centroids.forEach((c,i)=>{
+    const col=PALETTE[i%PALETTE.length];
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=2;
+    drawStar(ctx,toX(c.x),toY(c.y),10,5,5);
+    ctx.restore();
+  });
+}
+
+function drawStar(ctx,cx,cy,outer,inner,pts){
+  ctx.beginPath();
+  for(let i=0;i<pts*2;i++){
+    const r=i%2===0?outer:inner;
+    const angle=(i/pts)*Math.PI-Math.PI/2;
+    const x=cx+Math.cos(angle)*r,y=cy+Math.sin(angle)*r;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.closePath();ctx.fill();ctx.stroke();
+}
+
+function runKMeansFor(k,seed){
+  const sr=rng(seed);
+  let cents=[{...POINTS[Math.floor(sr()*POINTS.length)]}];
+  while(cents.length<k){
+    const dists=POINTS.map(p=>Math.min(...cents.map(c=>dist2(p,c))));
+    const total=dists.reduce((s,d)=>s+d,0);
+    let pick=sr()*total,acc=0;
+    for(let i=0;i<POINTS.length;i++){acc+=dists[i];if(acc>=pick){cents.push({...POINTS[i]});break;}}
+  }
+  let asgn=new Array(POINTS.length).fill(0);
+  for(let iter=0;iter<50;iter++){
+    let ch=0;
+    POINTS.forEach((p,i)=>{let minD=Infinity,cls=0;cents.forEach((c,j)=>{const d=dist2(p,c);if(d<minD){minD=d;cls=j;}});if(asgn[i]!==cls){ch++;asgn[i]=cls;}});
+    if(ch===0) break;
+    const sums=Array.from({length:k},()=>({x:0,y:0,n:0}));
+    POINTS.forEach((p,i)=>{sums[asgn[i]].x+=p.x;sums[asgn[i]].y+=p.y;sums[asgn[i]].n++;});
+    cents=sums.map((s,i)=>s.n>0?{x:s.x/s.n,y:s.y/s.n}:cents[i]);
+  }
+  return POINTS.reduce((s,p,i)=>s+dist2(p,cents[asgn[i]]),0);
+}
+
+function drawElbow(){
+  const cc=document.getElementById('elbowCanvas');
+  const ctx=cc.getContext('2d');
+  const W=cc.width,H=cc.height,PAD=30;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const KS=[2,3,4,5,6,7,8];
+  const wcss=KS.map(k=>runKMeansFor(k,42));
+  const maxW=Math.max(...wcss);
+  const cx=i=>PAD+i*(W-2*PAD)/(KS.length-1);
+  const cy=v=>H-PAD-(v/maxW)*(H-2*PAD);
+
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();ctx.restore();
+
+  ctx.save();ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.beginPath();wcss.forEach((v,i)=>{if(i===0)ctx.moveTo(cx(i),cy(v));else ctx.lineTo(cx(i),cy(v));});ctx.stroke();
+  wcss.forEach((v,i)=>{ctx.fillStyle='#58a6ff';ctx.beginPath();ctx.arc(cx(i),cy(v),4,0,Math.PI*2);ctx.fill();});
+  ctx.restore();
+
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';
+  KS.forEach((k,i)=>ctx.fillText('k='+k,cx(i),H-PAD+13));
+  ctx.restore();
+}
+
+initKMeans();
+</script>
