@@ -1,0 +1,235 @@
+---
+layout: default
+title: "La Maldición de la Dimensionalidad"
+prev_url: /modulo-04/kdtree-busqueda.html
+prev_title: KD-Tree y Búsqueda Eficiente
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.82rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+canvas{display:block;background:#0d1117;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem 1.25rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:110px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+/* Volume table */
+.vol-tbl{width:100%;border-collapse:collapse;font-size:.8rem;}
+.vol-tbl th{background:var(--surface2);color:var(--muted);font-family:var(--font-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;padding:.4rem .6rem;border:1px solid var(--border);}
+.vol-tbl td{padding:.35rem .6rem;border:1px solid var(--border);}
+.frac-bar{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-top:3px;width:100%;}
+.frac-fill{height:100%;border-radius:4px;transition:width .4s;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-04/' | relative_url }}">Módulo 04 — Clasificación: Métodos por Instancias</a><span class="sep">›</span>
+  La Maldición de la Dimensionalidad
+</nav>
+<header>
+  <div class="eyebrow">Módulo 04 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">La Maldición de la Dimensionalidad</h1>
+  <p class="demo-lead">Con más dimensiones, el espacio crece exponencialmente y los datos se vuelven cada vez más escasos. Los vecinos más cercanos dejan de ser "cercanos".</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Fenómenos clave</h3>
+    <ul>
+      <li><strong style="color:var(--danger)">Espacio vacío</strong>: con d dimensiones, n puntos uniformes cubren una fracción 1/2ᵈ del hipercubo unitario</li>
+      <li><strong style="color:var(--warn)">Distancias se homogenizan</strong>: la diferencia entre el vecino más cercano y el más lejano colapsa a medida que d crece</li>
+      <li><strong style="color:var(--accent2)">Volumen en la superficie</strong>: en alta dimensión, casi todo el volumen de una hiperesfera está cerca de la superficie</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Impacto en KNN</h3>
+    <p>Cuando dist_max ≈ dist_min, todos los puntos están "igualmente lejos". El concepto de vecino más cercano pierde significado estadístico.</p>
+    <div class="formula-box">ratio = (dist_max − dist_min) / dist_min → 0</div>
+    <p>Estudio de Beyer et al. (1999): bajo ciertas condiciones, KNN se vuelve inútil para d&nbsp;→&nbsp;∞.</p>
+  </div>
+  <div class="tb">
+    <h3>Soluciones</h3>
+    <ul>
+      <li>Reducción de dimensionalidad (PCA, t-SNE — Módulo 8)</li>
+      <li>Selección de features (Módulo 3)</li>
+      <li>Métricas especializadas para alta dimensión</li>
+      <li>Algoritmos aproximados (LSH, HNSW)</li>
+    </ul>
+  </div>
+</aside>
+
+<div>
+  <!-- Demo 1: Distance convergence -->
+  <div class="ctrl">
+    <div>
+      <label>n puntos = <span id="nDisp">200</span></label><br>
+      <input type="range" id="nRange" min="50" max="500" step="50" value="200" oninput="document.getElementById('nDisp').textContent=this.value;">
+    </div>
+    <button class="btn" onclick="recompute()">Recalcular</button>
+  </div>
+  <div class="tb" style="margin-bottom:.5rem;">
+    <h3>Convergencia de distancias por dimensión</h3>
+    <p style="font-size:.8rem;">Observa cómo dist_mín (rojo) y dist_máx (verde) se acercan entre sí — todos los puntos quedan a distancias similares.</p>
+  </div>
+  <div class="cw">
+    <canvas id="distCanvas" width="520" height="240"></canvas>
+  </div>
+
+  <!-- Demo 2: Hypersphere volume -->
+  <div class="tb" style="margin-top:1rem;">
+    <h3>Volumen de la hiperesfera unitaria V(d)</h3>
+    <p style="font-size:.8rem;">Fracción del hipercubo unitario [0,1]ᵈ ocupada por la hiperesfera inscrita.</p>
+    <table class="vol-tbl" id="volTbl"></table>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// PRNG Mulberry32
+function rng(seed){let s=seed;return()=>{s+=0x6D2B79F5;let t=Math.imul(s^s>>>15,1|s);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;};}
+
+function uniformPoint(d,rand){ return Array.from({length:d},()=>rand()); }
+
+function euclidean(a,b){ return Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0)); }
+
+function computeDistStats(n,d,seed){
+  const rand=rng(seed);
+  const pts=Array.from({length:n},()=>uniformPoint(d,rand));
+  // For each point, find min distance to any other point
+  let allMins=[];
+  // sample 30 query points for speed
+  const qs=Math.min(n,30);
+  for(let i=0;i<qs;i++){
+    let mn=Infinity,mx=0;
+    for(let j=0;j<n;j++){
+      if(i===j) continue;
+      const dd=euclidean(pts[i],pts[j]);
+      if(dd<mn) mn=dd;
+      if(dd>mx) mx=dd;
+    }
+    allMins.push({mn,mx});
+  }
+  return {
+    minD: allMins.reduce((s,v)=>s+v.mn,0)/allMins.length,
+    maxD: allMins.reduce((s,v)=>s+v.mx,0)/allMins.length,
+    meanD:(allMins.reduce((s,v)=>s+(v.mn+v.mx)/2,0)/allMins.length)
+  };
+}
+
+function drawDistCanvas(results){
+  const canvas=document.getElementById('distCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=45;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const maxVal=Math.max(...results.map(r=>r.maxD));
+  const dims=results.map((_,i)=>i+1);
+  const cx=i=>PAD+(i/(results.length-1))*(W-2*PAD);
+  const cy=v=>H-PAD-(v/maxVal)*(H-2*PAD);
+
+  // Grid
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=PAD+i*(H-2*PAD)/4;
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();
+    ctx.fillStyle='rgba(139,148,158,.6)';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';
+    ctx.fillText((maxVal*(1-i/4)).toFixed(2),PAD-4,y+3);
+  }
+  ctx.restore();
+
+  function drawLine(vals,color,label){
+    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';
+    ctx.beginPath();vals.forEach((v,i)=>{if(i===0)ctx.moveTo(cx(i),cy(v));else ctx.lineTo(cx(i),cy(v));});
+    ctx.stroke();
+    // dot at end
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(cx(vals.length-1),cy(vals[vals.length-1]),4,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  drawLine(results.map(r=>r.minD),'#f85149','dist_min');
+  drawLine(results.map(r=>r.meanD),'#58a6ff','dist_media');
+  drawLine(results.map(r=>r.maxD),'#3fb950','dist_max');
+
+  // X axis
+  ctx.save();ctx.strokeStyle='rgba(139,148,158,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
+  ctx.fillStyle='rgba(139,148,158,.7)';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+  [1,5,10,15,20,25,30].forEach(d=>{
+    if(d<=results.length){const x=cx(d-1);ctx.fillText('d='+d,x,H-PAD+13);}
+  });
+  ctx.restore();
+
+  // Legend
+  ctx.save();ctx.font='10px Inter,system-ui';
+  [['#f85149','dist_min'],['#58a6ff','dist_media'],['#3fb950','dist_max']].forEach(([c,l],i)=>{
+    ctx.fillStyle=c;ctx.fillRect(W-90,12+i*16,10,10);
+    ctx.fillStyle='rgba(230,237,243,.8)';ctx.fillText(l,W-76,21+i*16);
+  });
+  ctx.restore();
+}
+
+function recompute(){
+  const n=parseInt(document.getElementById('nRange').value);
+  const DIMS=[1,2,3,5,8,10,15,20,25,30];
+  const seed=Math.floor(Math.random()*9999);
+  const results=DIMS.map(d=>computeDistStats(n,d,seed));
+  drawDistCanvas(results);
+}
+
+// Gamma function (Lanczos approximation)
+function gamma(z){
+  if(z<0.5) return Math.PI/(Math.sin(Math.PI*z)*gamma(1-z));
+  z-=1;
+  const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let x=c[0];
+  for(let i=1;i<g+2;i++) x+=c[i]/(z+i);
+  const t=z+g+0.5;
+  return Math.sqrt(2*Math.PI)*Math.pow(t,z+0.5)*Math.exp(-t)*x;
+}
+
+function sphereVolume(d){ return Math.pow(Math.PI,d/2)/gamma(d/2+1); }
+
+function renderVolTable(){
+  const DIMS=[1,2,3,4,5,10,20,50,100];
+  let html='<tr><th>d</th><th>V(d) hiperesfera</th><th>Fracción del hipercubo (V(d)/2ᵈ)</th></tr>';
+  const maxFrac=sphereVolume(1)/2;
+  DIMS.forEach(d=>{
+    const vol=sphereVolume(d);
+    const frac=vol/Math.pow(2,d);
+    const pct=Math.min(100,frac/maxFrac*100);
+    const col=frac>0.01?'#3fb950':(frac>0.001?'#d29922':'#f85149');
+    const fracStr=frac<1e-10?frac.toExponential(2):frac.toFixed(6);
+    html+=`<tr>
+      <td style="font-family:var(--font-mono);font-weight:700;color:var(--text);">${d}</td>
+      <td style="font-family:var(--font-mono);font-size:.78rem;color:var(--accent);">${vol<0.001?vol.toExponential(3):vol.toFixed(4)}</td>
+      <td>
+        <div style="font-family:var(--font-mono);font-size:.78rem;color:${col};">${fracStr}</div>
+        <div class="frac-bar"><div class="frac-fill" style="width:${pct}%;background:${col};"></div></div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('volTbl').innerHTML=html;
+}
+
+recompute();
+renderVolTable();
+</script>
