@@ -1,0 +1,215 @@
+---
+layout: default
+title: "Análisis de Sentimiento"
+prev_url: /modulo-09/word-embeddings.html
+prev_title: Word Embeddings
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.3fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.85rem;padding:.6rem .8rem;font-family:var(--font-sans);resize:vertical;min-height:90px;box-sizing:border-box;}
+.preset-btn{display:inline-block;font-size:.72rem;font-family:var(--font-mono);padding:.2rem .5rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;margin:.15rem;}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent);}
+.score-pill{display:inline-block;font-size:.82rem;font-weight:700;font-family:var(--font-mono);padding:.25rem .75rem;border-radius:20px;margin-top:.4rem;}
+.word-breakdown{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem;}
+.word-chip{display:inline-block;font-size:.75rem;font-family:var(--font-mono);padding:.15rem .4rem;border-radius:6px;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-09/' | relative_url }}">Módulo 09 — Minería de Texto</a><span class="sep">›</span>
+  Análisis de Sentimiento
+</nav>
+<header>
+  <div class="eyebrow">Módulo 09 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Análisis de Sentimiento</h1>
+  <p class="demo-lead">Enfoque basado en léxico: cada palabra tiene una puntuación positiva o negativa. Escribe un texto o selecciona un preset y observa el desglose palabra por palabra.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Método léxico</h3>
+    <p>Asignamos un score a cada palabra del léxico. El score del texto es la suma ponderada normalizada por longitud.</p>
+    <p>Ventaja: transparente e interpretable. Limitación: no capta ironía, contexto ni negaciones complejas.</p>
+  </div>
+  <div class="tb">
+    <h3>Ingresar texto</h3>
+    <textarea id="inputText" oninput="analyze()" placeholder="Escribe tu texto aquí..."></textarea>
+    <p style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;">Textos de ejemplo:</p>
+    <div id="presets"></div>
+  </div>
+  <div class="tb">
+    <h3>Resultado</h3>
+    <div id="scoreDisplay"></div>
+    <div class="word-breakdown" id="wordBreakdown"></div>
+  </div>
+</aside>
+
+<div>
+  <!-- Gauge -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="gaugeCanvas" width="530" height="200"></canvas>
+  </div>
+  <!-- Word cloud canvas -->
+  <div class="cw">
+    <canvas id="cloudCanvas" width="530" height="260"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Verde = positivo · Rojo = negativo · Gris = neutro · Tamaño = |score|</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+const LEXICON={
+  // Positivos
+  'excelente':1.0,'bueno':0.7,'genial':0.9,'fantástico':1.0,'increíble':0.9,'maravilloso':1.0,
+  'feliz':0.8,'alegre':0.8,'contento':0.7,'satisfecho':0.7,'perfecto':1.0,'magnífico':0.9,
+  'útil':0.6,'fácil':0.5,'rápido':0.4,'eficiente':0.7,'recomendable':0.8,'exquisito':0.9,
+  'amor':0.9,'hermoso':0.8,'brillante':0.8,'éxito':0.8,'esperanza':0.7,'confiable':0.7,
+  'innovador':0.7,'poderoso':0.6,'robusto':0.6,'preciso':0.5,'completo':0.5,'limpio':0.4,
+  'agradable':0.7,'positivo':0.6,'optimista':0.7,'progreso':0.6,'mejora':0.6,'beneficio':0.6,
+  'disfrutar':0.7,'celebrar':0.8,'triunfo':0.9,'sorprendente':0.7,'impresionante':0.8,
+  'amable':0.7,'generoso':0.8,'honesto':0.6,'leal':0.7,'valioso':0.7,
+  // Negativos
+  'malo':-.7,'horrible':-.9,'terrible':-.9,'pésimo':-1.0,'deficiente':-.7,'inútil':-.7,
+  'lento':-.4,'complicado':-.5,'difícil':-.4,'fallido':-.8,'error':-.6,'problema':-.5,
+  'triste':-.7,'enojado':-.7,'frustrado':-.7,'decepcionado':-.8,'preocupante':-.6,
+  'peligroso':-.8,'riesgoso':-.6,'costoso':-.4,'caro':-.4,'lamentable':-.8,'vergonzoso':-.8,
+  'fracaso':-.9,'pérdida':-.7,'daño':-.7,'dolor':-.8,'miedo':-.6,'crisis':-.7,
+  'desastre':-.9,'ineficiente':-.6,'complicado':-.5,'confuso':-.5,'engañoso':-.8,
+  'negativo':-.6,'pesimista':-.6,'conflicto':-.6,'desacuerdo':-.4,'incompleto':-.5,
+  'insatisfecho':-.7,'queja':-.6,'rechazo':-.7,'abandono':-.6,'negligencia':-.7,
+};
+
+const PRESETS=[
+  {label:'Reseña positiva',text:'Este producto es excelente y muy útil. Estoy completamente satisfecho con la compra. El servicio fue rápido y el equipo muy amable. Lo recomiendo sin dudas.'},
+  {label:'Reseña negativa',text:'El producto es pésimo y llegó con daños. El servicio fue lento y el equipo confuso. Estoy muy decepcionado con esta experiencia terrible. No lo recomiendo.'},
+  {label:'Texto neutro',text:'La empresa lanzó un nuevo producto en el mercado. El dispositivo cuenta con varias características técnicas. Los usuarios pueden acceder a la plataforma en línea.'},
+  {label:'Mezcla',text:'El producto tiene buenas características pero el precio es demasiado caro. El soporte técnico fue amable aunque el proceso fue complicado y lento.'},
+];
+
+function buildPresets(){
+  document.getElementById('presets').innerHTML=PRESETS.map((p,i)=>
+    `<span class="preset-btn" onclick="loadPreset(${i})">${p.label}</span>`
+  ).join('');
+}
+
+function loadPreset(i){
+  document.getElementById('inputText').value=PRESETS[i].text;
+  analyze();
+}
+
+function tokenize(text){return text.toLowerCase().replace(/[^a-záéíóúüñ\s]/g,' ').split(/\s+/).filter(w=>w.length>2);}
+
+function analyze(){
+  const text=document.getElementById('inputText').value;
+  const tokens=tokenize(text);
+  if(!tokens.length){
+    drawGauge(0);drawCloud([]);
+    document.getElementById('scoreDisplay').innerHTML='';
+    document.getElementById('wordBreakdown').innerHTML='';return;
+  }
+
+  const scored=tokens.map(w=>({w,score:LEXICON[w]||0}));
+  const sentimentWords=scored.filter(s=>s.score!==0);
+  const total=sentimentWords.length?sentimentWords.reduce((s,w)=>s+w.score,0)/tokens.length:0;
+
+  const col=total>0.1?'#3fb950':total<-0.1?'#f85149':'#d29922';
+  const label=total>0.5?'Muy positivo':total>0.1?'Positivo':total<-0.5?'Muy negativo':total<-0.1?'Negativo':'Neutro';
+  document.getElementById('scoreDisplay').innerHTML=
+    `Score: <span class="score-pill" style="background:${col}20;color:${col};border:1px solid ${col}50;">${total.toFixed(3)}</span> — ${label}`;
+
+  document.getElementById('wordBreakdown').innerHTML=scored.filter(s=>s.score!==0).map(({w,score})=>{
+    const c=score>0?'#3fb950':'#f85149';
+    return `<span class="word-chip" style="background:${c}20;color:${c};border:1px solid ${c}30;">${w} ${score>0?'+':''}${score.toFixed(1)}</span>`;
+  }).join('');
+
+  drawGauge(total);
+  drawCloud(scored);
+}
+
+function drawGauge(score){
+  const cv=document.getElementById('gaugeCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const cx=W/2,cy=H-30,r=110;
+  // Background arc
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.8)';ctx.lineWidth=20;ctx.lineCap='butt';
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.stroke();ctx.restore();
+
+  // Gradient arc (neg to pos)
+  const grad=ctx.createLinearGradient(cx-r,cy,cx+r,cy);
+  grad.addColorStop(0,'#f85149');grad.addColorStop(0.5,'#d29922');grad.addColorStop(1,'#3fb950');
+  ctx.save();ctx.strokeStyle=grad;ctx.lineWidth=18;ctx.lineCap='butt';
+  ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.stroke();ctx.restore();
+
+  // Needle
+  const angle=Math.PI+((score+1)/2)*Math.PI;
+  ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx,cy);
+  ctx.lineTo(cx+Math.cos(angle)*(r-15),cy+Math.sin(angle)*(r-15));ctx.stroke();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // Labels
+  ctx.save();ctx.font='11px JetBrains Mono,monospace';ctx.fillStyle='#f85149';ctx.textAlign='left';ctx.fillText('-1.0',cx-r-5,cy+18);
+  ctx.fillStyle='#d29922';ctx.textAlign='center';ctx.fillText('0',cx,cy-r-8);
+  ctx.fillStyle='#3fb950';ctx.textAlign='right';ctx.fillText('+1.0',cx+r+5,cy+18);
+  ctx.fillStyle='rgba(230,237,243,.7)';ctx.font='bold 18px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(score.toFixed(3),cx,cy-30);ctx.restore();
+}
+
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+function drawCloud(tokens){
+  const cv=document.getElementById('cloudCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(!tokens.length){ctx.fillStyle='rgba(139,148,158,.4)';ctx.font='13px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Escribe texto para ver la nube',W/2,H/2);return;}
+
+  const maxScore=Math.max(...tokens.map(t=>Math.abs(t.score)||0.01),0.1);
+  const r=rng(42);
+  const placed=[];
+
+  tokens.forEach(({w,score})=>{
+    const fs=score!==0?Math.round(10+Math.abs(score)/maxScore*22):10;
+    const col=score>0?`rgba(63,185,80,${0.5+Math.abs(score)*0.5})`:score<0?`rgba(248,81,73,${0.5+Math.abs(score)*0.5})`:'rgba(139,148,158,.5)';
+    ctx.font=`${fs}px JetBrains Mono,monospace`;
+    const tw=ctx.measureText(w).width;
+
+    for(let attempt=0;attempt<30;attempt++){
+      const px=PAD(tw)+r()*(W-PAD(tw)*2);
+      const py=20+r()*(H-40);
+      const box={x:px-tw/2-2,y:py-fs-2,w:tw+4,h:fs+4};
+      if(placed.every(b=>box.x>b.x+b.w||box.x+box.w<b.x||box.y>b.y+b.h||box.y+box.h<b.y)){
+        ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(w,px,py);placed.push(box);break;
+      }
+    }
+  });
+}
+function PAD(tw){return Math.max(20,tw/2+5);}
+
+buildPresets();
+document.getElementById('inputText').value=PRESETS[0].text;
+analyze();
+</script>
