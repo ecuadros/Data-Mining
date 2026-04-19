@@ -1,0 +1,307 @@
+---
+layout: default
+title: "Selección de Features Avanzada"
+prev_url: /modulo-08/varianza-explicada.html
+prev_title: Varianza Explicada
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:1rem;}
+.feat-cb{display:flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.35rem .5rem;cursor:pointer;}
+.feat-cb.selected{border-color:var(--accent);background:rgba(88,166,255,.1);}
+.feat-cb input{accent-color:var(--accent);}
+.feat-cb label{font-size:.72rem;font-family:var(--font-mono);cursor:pointer;color:var(--muted);}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);margin-bottom:.5rem;}
+.btn:hover{background:rgba(88,166,255,.2);}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-08/' | relative_url }}">Módulo 08 — Reducción de Dimensionalidad</a><span class="sep">›</span>
+  Selección de Features Avanzada
+</nav>
+<header>
+  <div class="eyebrow">Módulo 08 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Selección de Features Avanzada</h1>
+  <p class="demo-lead">Compara 4 métodos de ranking de features sobre un dataset de churn. Selecciona features manualmente y observa cómo cambia la precisión de KNN (k=3) y la proyección 2D.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Métodos de selección</h3>
+    <ul>
+      <li><strong style="color:var(--accent)">Varianza</strong>: descarta features con poca variación (casi constantes)</li>
+      <li><strong style="color:var(--accent2)">Correlación con target</strong>: Pearson r entre feature y clase</li>
+      <li><strong style="color:var(--accent3)">Información mutua</strong>: aprox. por discretización en bins</li>
+      <li><strong style="color:var(--warn)">RFE score</strong>: importancia estimada por eliminación recursiva</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Features del dataset</h3>
+    <div class="feat-grid" id="featGrid"></div>
+    <button class="btn" onclick="selectTop(5)">Top-5 automático</button>
+    <button class="btn" onclick="selectAll()">Todas</button>
+  </div>
+</aside>
+
+<div>
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Acc. con selección</div>
+      <div class="m-val" id="accSel" style="color:var(--accent);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Acc. con todas</div>
+      <div class="m-val" id="accAll" style="color:var(--muted);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Features</div>
+      <div class="m-val" id="featCount" style="color:var(--accent2);">0/10</div>
+    </div>
+  </div>
+
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="rankCanvas" width="530" height="220"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.2rem 0 .6rem;">Ranking de features por los 4 métodos · Features seleccionadas resaltadas</p>
+
+  <div class="cw">
+    <canvas id="scatterCanvas" width="530" height="220"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.2rem 0;">Proyección en las 2 primeras features seleccionadas · Azul=No churn · Rojo=Churn</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+const r=rng(99);
+const FEAT_NAMES=['edad','tenure','cargo_mensual','num_servicios','soporte_calls','retrasos_pago','antiguedad_contrato','uso_datos_GB','satisfaccion','precio_competidor'];
+const N=80;
+
+// Generate data with varying relevance
+function gen(){
+  const X=[],y=[];
+  for(let i=0;i<N;i++){
+    const churn=r()<0.4?1:0;
+    X.push([
+      25+r()*40,                              // edad (poco relevante)
+      churn?r()*18:12+r()*36,                 // tenure (relevante)
+      churn?60+r()*40:30+r()*30,              // cargo (muy relevante)
+      churn?r()*3+1:3+r()*5,                  // num servicios (relevante)
+      churn?3+r()*8:r()*4,                    // soporte calls (relevante)
+      churn?r()*3+1:r()*2,                    // retrasos (relevante)
+      churn?r()*12:12+r()*24,                 // antiguedad (relevante)
+      churn?2+r()*8:5+r()*20,                 // uso datos (poco)
+      churn?2+r()*4:5+r()*5,                  // satisfaccion (relevante)
+      r()*100,                                 // precio competidor (ruido)
+    ]);
+    y.push(churn);
+  }
+  return {X,y};
+}
+
+const {X,y}=gen();
+
+// Normalize each feature
+const mu=FEAT_NAMES.map((_,fi)=>X.reduce((s,p)=>s+p[fi],0)/N);
+const std_=FEAT_NAMES.map((_,fi)=>Math.sqrt(X.reduce((s,p)=>s+(p[fi]-mu[fi])**2,0)/N));
+const XN=X.map(p=>p.map((v,fi)=>(v-mu[fi])/(std_[fi]||1)));
+
+// Feature scores
+function variance(fi){return XN.reduce((s,p)=>s+p[fi]*p[fi],0)/N;}
+function pearson(fi){
+  const mx=XN.reduce((s,p)=>s+p[fi],0)/N,my=y.reduce((s,v)=>s+v,0)/N;
+  let num=0,sx=0,sy=0;
+  XN.forEach((p,i)=>{num+=(p[fi]-mx)*(y[i]-my);sx+=(p[fi]-mx)**2;sy+=(y[i]-my)**2;});
+  return Math.abs(num/Math.sqrt(sx*sy+1e-10));
+}
+function mutualInfo(fi){
+  const bins=5,vals=XN.map(p=>p[fi]);
+  const min=Math.min(...vals),max=Math.max(...vals)+1e-10;
+  const joint=Array.from({length:bins},()=>[0,0]);
+  const px=Array(bins).fill(0),py=[0,0];
+  vals.forEach((v,i)=>{
+    const b=Math.min(bins-1,Math.floor((v-min)/(max-min)*bins));
+    joint[b][y[i]]++;px[b]++;py[y[i]]++;
+  });
+  let mi=0;
+  joint.forEach((row,xi)=>row.forEach((c,yi)=>{
+    if(c>0) mi+=c/N*Math.log(c*N/((px[xi]||1)*(py[yi]||1)));
+  }));
+  return Math.max(0,mi);
+}
+// Approx RFE: use combined score
+function rfeScore(fi){return (pearson(fi)*0.4+mutualInfo(fi)*0.4+(1-1/(variance(fi)+1))*0.2);}
+
+const SCORES={
+  variance:FEAT_NAMES.map((_,fi)=>variance(fi)),
+  pearson:FEAT_NAMES.map((_,fi)=>pearson(fi)),
+  mi:FEAT_NAMES.map((_,fi)=>mutualInfo(fi)),
+  rfe:FEAT_NAMES.map((_,fi)=>rfeScore(fi)),
+};
+// Normalize to 0-1
+Object.keys(SCORES).forEach(k=>{const mx=Math.max(...SCORES[k]);SCORES[k]=SCORES[k].map(v=>v/mx);});
+
+// KNN k=3
+function knn(trainX,trainY,testX,k=3){
+  return testX.map(tp=>{
+    const dists=trainX.map((p,i)=>({d:p.reduce((s,v,fi)=>(s+(v-tp[fi])**2),0),c:trainY[i]}));
+    dists.sort((a,b)=>a.d-b.d);
+    const votes=[0,0];dists.slice(0,k).forEach(n=>votes[n.c]++);
+    return votes[1]>votes[0]?1:0;
+  });
+}
+
+function crossVal(feats){
+  if(!feats.length) return 0;
+  const Xsub=XN.map(p=>feats.map(fi=>p[fi]));
+  const folds=5,sz=Math.floor(N/folds);
+  let correct=0;
+  for(let f=0;f<folds;f++){
+    const testIdx=Array.from({length:sz},(_,i)=>f*sz+i);
+    const trainIdx=Array.from({length:N},(_,i)=>i).filter(i=>!testIdx.includes(i));
+    const preds=knn(trainIdx.map(i=>Xsub[i]),trainIdx.map(i=>y[i]),testIdx.map(i=>Xsub[i]));
+    preds.forEach((p,pi)=>{if(p===y[testIdx[pi]]) correct++;});
+  }
+  return correct/N;
+}
+
+const ACC_ALL=crossVal(FEAT_NAMES.map((_,i)=>i));
+document.getElementById('accAll').textContent=(ACC_ALL*100).toFixed(1)+'%';
+
+let selected=new Set([0,1,2,3,4]);
+
+function buildGrid(){
+  const grid=document.getElementById('featGrid');
+  FEAT_NAMES.forEach((name,fi)=>{
+    const div=document.createElement('div');
+    div.className=`feat-cb${selected.has(fi)?' selected':''}`;
+    div.id=`fcb-${fi}`;
+    div.innerHTML=`<input type="checkbox" id="fchk-${fi}" ${selected.has(fi)?'checked':''} onchange="toggleFeat(${fi})"><label for="fchk-${fi}">${name}</label>`;
+    div.addEventListener('click',e=>{if(e.target.tagName!=='INPUT') document.getElementById(`fchk-${fi}`).click();});
+    grid.appendChild(div);
+  });
+}
+
+function toggleFeat(fi){
+  const chk=document.getElementById(`fchk-${fi}`);
+  const div=document.getElementById(`fcb-${fi}`);
+  if(chk.checked){selected.add(fi);div.classList.add('selected');}
+  else{selected.delete(fi);div.classList.remove('selected');}
+  update();
+}
+
+function selectTop(k){
+  // Use combined score
+  const combined=FEAT_NAMES.map((_,fi)=>(SCORES.pearson[fi]+SCORES.mi[fi]+SCORES.rfe[fi])/3);
+  const ranked=[...combined.map((v,i)=>({v,i}))].sort((a,b)=>b.v-a.v);
+  selected=new Set(ranked.slice(0,k).map(x=>x.i));
+  FEAT_NAMES.forEach((_,fi)=>{
+    const chk=document.getElementById(`fchk-${fi}`);const div=document.getElementById(`fcb-${fi}`);
+    if(selected.has(fi)){chk.checked=true;div.classList.add('selected');}
+    else{chk.checked=false;div.classList.remove('selected');}
+  });
+  update();
+}
+
+function selectAll(){
+  FEAT_NAMES.forEach((_,fi)=>{
+    selected.add(fi);
+    document.getElementById(`fchk-${fi}`).checked=true;
+    document.getElementById(`fcb-${fi}`).classList.add('selected');
+  });update();
+}
+
+function update(){
+  const selArr=[...selected];
+  document.getElementById('featCount').textContent=`${selArr.length}/10`;
+  const acc=selArr.length?crossVal(selArr):0;
+  document.getElementById('accSel').textContent=(acc*100).toFixed(1)+'%';
+  drawRankChart();
+  drawScatter(selArr);
+}
+
+function drawRankChart(){
+  const cv=document.getElementById('rankCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD_L=110,PAD_R=10,PAD_T=25,PAD_B=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const methods=[['variance','#58a6ff'],['pearson','#3fb950'],['mi','#d29922'],['rfe','#bc8cff']];
+  const rowH=(H-PAD_T-PAD_B)/10;
+
+  FEAT_NAMES.forEach((name,fi)=>{
+    const y_=PAD_T+fi*rowH;
+    const sel=selected.has(fi);
+    if(sel){ctx.fillStyle='rgba(88,166,255,.07)';ctx.fillRect(PAD_L,y_,W-PAD_L-PAD_R,rowH);}
+    ctx.fillStyle=sel?'var(--text)':'rgba(139,148,158,.6)';
+    ctx.font=(sel?'bold ':'')+`9px JetBrains Mono,monospace`;ctx.textAlign='right';
+    ctx.fillText(name,PAD_L-5,y_+rowH/2+3);
+
+    methods.forEach(([mk,col],mi)=>{
+      const v=SCORES[mk][fi];
+      const bw=v*(W-PAD_L-PAD_R-methods.length*2)/methods.length;
+      const bx=PAD_L+mi*(W-PAD_L-PAD_R)/methods.length;
+      ctx.fillStyle=sel?col:col+'44';
+      ctx.fillRect(bx,y_+2,bw,rowH-4);
+    });
+  });
+
+  // Legend
+  ctx.save();ctx.font='9px Inter,system-ui';
+  methods.forEach(([mk,col],i)=>{
+    ctx.fillStyle=col;ctx.fillRect(PAD_L+i*120,6,8,8);
+    ctx.fillStyle='rgba(230,237,243,.7)';ctx.fillText(['Varianza','Pearson','Inf. Mutua','RFE'][i],PAD_L+i*120+12,14);
+  });ctx.restore();
+}
+
+function drawScatter(feats){
+  const cv=document.getElementById('scatterCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(feats.length<2){
+    ctx.fillStyle='rgba(139,148,158,.5)';ctx.font='13px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Selecciona al menos 2 features',W/2,H/2);return;
+  }
+  const fi=feats[0],fj=feats[1];
+  const xs=XN.map(p=>p[fi]),ys_=XN.map(p=>p[fj]);
+  const xMin=Math.min(...xs),xMax=Math.max(...xs),yMin=Math.min(...ys_),yMax=Math.max(...ys_);
+  const toX=v=>PAD+(v-xMin)/(xMax-xMin+1e-10)*(W-2*PAD);
+  const toY=v=>PAD+(v-yMin)/(yMax-yMin+1e-10)*(H-2*PAD);
+
+  XN.forEach((p,i)=>{
+    const col=y[i]===1?'#f85149':'#58a6ff';
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p[fi]),toY(p[fj]),5,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';
+  ctx.fillText(FEAT_NAMES[fi],W/2,H-3);ctx.restore();
+}
+
+buildGrid();update();
+</script>
