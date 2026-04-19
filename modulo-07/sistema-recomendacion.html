@@ -1,0 +1,267 @@
+---
+layout: default
+title: "Sistema de Recomendación"
+prev_url: /modulo-07/fp-growth.html
+prev_title: FP-Growth y FP-Tree
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100px;}
+.item-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem;}
+.item-cb{display:flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .6rem;cursor:pointer;transition:border-color .2s;}
+.item-cb.selected{border-color:var(--accent);background:rgba(88,166,255,.1);}
+.item-cb input{accent-color:var(--accent);}
+.item-cb label{font-size:.78rem;font-family:var(--font-mono);cursor:pointer;}
+.rec-row{display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);margin-bottom:.4rem;}
+.rec-rank{font-size:.7rem;font-family:var(--font-mono);color:var(--muted);width:20px;}
+.rec-item{font-size:.85rem;font-weight:600;flex:1;}
+.rec-bar-track{flex:2;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.rec-bar-fill{height:100%;border-radius:4px;}
+.rec-val{font-size:.7rem;font-family:var(--font-mono);color:var(--muted);width:55px;text-align:right;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-07/' | relative_url }}">Módulo 07 — Reglas de Asociación</a><span class="sep">›</span>
+  Sistema de Recomendación
+</nav>
+<header>
+  <div class="eyebrow">Módulo 07 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Sistema de Recomendación</h1>
+  <p class="demo-lead">Selecciona productos en tu carrito y el sistema aplica reglas de asociación para sugerirte artículos adicionales, ordenados por lift. El grafo muestra las conexiones entre carrito y recomendaciones.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Tu carrito</h3>
+    <div class="item-grid" id="cartGrid"></div>
+  </div>
+  <div class="ctrl">
+    <div>
+      <label>Min soporte = <span id="supDisp">25</span>%</label><br>
+      <input type="range" id="supRange" min="10" max="60" step="5" value="25" oninput="document.getElementById('supDisp').textContent=this.value;recommend();">
+    </div>
+    <div>
+      <label>Min confianza = <span id="confDisp">40</span>%</label><br>
+      <input type="range" id="confRange" min="20" max="90" step="10" value="40" oninput="document.getElementById('confDisp').textContent=this.value;recommend();">
+    </div>
+  </div>
+  <div class="tb">
+    <h3>Top recomendaciones</h3>
+    <div id="recsPanel"><p style="font-size:.82rem;color:var(--muted);">Selecciona ítems en tu carrito.</p></div>
+  </div>
+</aside>
+
+<div>
+  <div class="cw">
+    <canvas id="graphCanvas" width="540" height="400"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0 .8rem;">Izquierda = carrito · Derecha = recomendaciones · Grosor de arista = lift</p>
+  <div class="tb">
+    <h3>Reglas aplicadas</h3>
+    <div id="rulesPanel" style="font-size:.78rem;color:var(--muted);font-family:var(--font-mono);max-height:160px;overflow-y:auto;"></div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+const ITEMS=['pan','leche','huevos','cerveza','pañales','mantequilla','café','jugo'];
+const TRANSACTIONS=[
+  ['pan','leche','pañales','café'],['leche','huevos','mantequilla'],
+  ['pan','cerveza','pañales','jugo'],['leche','mantequilla','café'],
+  ['pan','leche','huevos','café'],['cerveza','pañales','jugo'],
+  ['pan','leche','pañales','mantequilla'],['leche','huevos','café','jugo'],
+  ['pan','cerveza'],['pan','leche','mantequilla','café'],
+  ['leche','huevos','pañales'],['pan','pañales','jugo'],
+  ['leche','café','mantequilla'],['pan','leche','café'],
+  ['huevos','leche','jugo'],['cerveza','pan','pañales'],
+];
+const N=TRANSACTIONS.length;
+
+const PALETTE={'pan':'#58a6ff','leche':'#3fb950','huevos':'#f85149','cerveza':'#d29922','pañales':'#bc8cff','mantequilla':'#79c0ff','café':'#56d364','jugo':'#ff7b72'};
+
+let cart=new Set();
+
+function support(itemset){
+  return TRANSACTIONS.filter(t=>itemset.every(i=>t.includes(i))).length/N;
+}
+
+function generateRules(minSup,minConf){
+  const freq=[];
+  const singles=ITEMS.filter(i=>support([i])>=minSup);
+  singles.forEach(i=>freq.push([i]));
+  // Pairs
+  for(let a=0;a<singles.length;a++)
+    for(let b=a+1;b<singles.length;b++)
+      if(support([singles[a],singles[b]])>=minSup) freq.push([singles[a],singles[b]]);
+  // Triples
+  for(let a=0;a<singles.length;a++)
+    for(let b=a+1;b<singles.length;b++)
+      for(let c=b+1;c<singles.length;c++)
+        if(support([singles[a],singles[b],singles[c]])>=minSup) freq.push([singles[a],singles[b],singles[c]]);
+
+  const rules=[];
+  freq.forEach(itemset=>{
+    if(itemset.length<2) return;
+    // Generate all non-empty proper subsets as antecedent
+    for(let mask=1;mask<(1<<itemset.length)-1;mask++){
+      const ant=itemset.filter((_,i)=>mask&(1<<i));
+      const cons=itemset.filter((_,i)=>!(mask&(1<<i)));
+      const sup=support(itemset);
+      const conf=sup/support(ant);
+      const lift=conf/support(cons);
+      if(conf>=minConf) rules.push({ant,cons,sup,conf,lift});
+    }
+  });
+  return rules;
+}
+
+function recommend(){
+  const minSup=parseInt(document.getElementById('supRange').value)/100;
+  const minConf=parseInt(document.getElementById('confRange').value)/100;
+  const rules=generateRules(minSup,minConf);
+
+  if(cart.size===0){
+    document.getElementById('recsPanel').innerHTML='<p style="font-size:.82rem;color:var(--muted);">Selecciona ítems en tu carrito.</p>';
+    document.getElementById('rulesPanel').innerHTML='';
+    drawGraph([],[]);
+    return;
+  }
+
+  const cartArr=[...cart];
+  const matched=rules.filter(r=>r.ant.every(a=>cart.has(a))&&r.cons.every(c=>!cart.has(c)));
+  const recMap={};
+  matched.forEach(r=>{
+    r.cons.forEach(item=>{
+      if(!recMap[item]||r.lift>recMap[item].lift) recMap[item]={...r,targetItem:item};
+    });
+  });
+
+  const recs=Object.values(recMap).sort((a,b)=>b.lift-a.lift).slice(0,5);
+  const maxLift=recs.length?recs[0].lift:1;
+
+  if(!recs.length){
+    document.getElementById('recsPanel').innerHTML='<p style="font-size:.82rem;color:var(--muted);">No hay recomendaciones con estos parámetros. Baja el soporte o confianza mínima.</p>';
+  } else {
+    document.getElementById('recsPanel').innerHTML=recs.map((rec,i)=>{
+      const col=PALETTE[rec.targetItem]||'#8b949e';
+      const pct=(rec.lift/maxLift*100).toFixed(0);
+      return `<div class="rec-row">
+        <span class="rec-rank">#${i+1}</span>
+        <span class="rec-item" style="color:${col};">${rec.targetItem}</span>
+        <div class="rec-bar-track"><div class="rec-bar-fill" style="width:${pct}%;background:${col};"></div></div>
+        <span class="rec-val">lift=${rec.lift.toFixed(2)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('rulesPanel').innerHTML=matched.slice(0,10).map(r=>
+    `{${r.ant.join(','')}} → {${r.cons.join(',')}} sup=${(r.sup*100).toFixed(0)}% conf=${(r.conf*100).toFixed(0)}% lift=${r.lift.toFixed(2)}`
+  ).join('<br>');
+
+  drawGraph(cartArr,recs);
+}
+
+function drawGraph(cartItems,recs){
+  const cv=document.getElementById('graphCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(!cartItems.length){
+    ctx.fillStyle='rgba(139,148,158,.4)';ctx.font='13px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Selecciona ítems para ver el grafo',W/2,H/2);return;
+  }
+
+  const PAD=60;
+  const cartX=PAD;
+  const recX=W-PAD;
+
+  function cartY(i){return H/(cartItems.length+1)*(i+1);}
+  function recY(i){return recs.length?H/(recs.length+1)*(i+1):H/2;}
+
+  // Edges
+  recs.forEach((rec,ri)=>{
+    cartItems.forEach((item,ci)=>{
+      if(rec.ant.includes(item)){
+        const thickness=Math.max(1,rec.lift*1.5);
+        ctx.save();ctx.strokeStyle=PALETTE[rec.targetItem]+'60';ctx.lineWidth=thickness;
+        ctx.beginPath();ctx.moveTo(cartX,cartY(ci));ctx.lineTo(recX,recY(ri));ctx.stroke();ctx.restore();
+      }
+    });
+  });
+
+  // Cart nodes
+  cartItems.forEach((item,i)=>{
+    const col=PALETTE[item]||'#8b949e';
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(cartX,cartY(i),18,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#0d1117';ctx.font='bold 9px JetBrains Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(item.slice(0,4),cartX,cartY(i));
+    ctx.fillStyle=col;ctx.font='9px Inter,system-ui';ctx.textAlign='right';
+    ctx.fillText(item,cartX-24,cartY(i)+4);
+    ctx.restore();
+  });
+
+  // Rec nodes
+  recs.forEach((rec,i)=>{
+    const col=PALETTE[rec.targetItem]||'#8b949e';
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(recX,recY(i),18,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#0d1117';ctx.font='bold 9px JetBrains Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(rec.targetItem.slice(0,4),recX,recY(i));
+    ctx.fillStyle=col;ctx.font='9px Inter,system-ui';ctx.textAlign='left';
+    ctx.fillText(`${rec.targetItem} (lift ${rec.lift.toFixed(1)})`,recX+24,recY(i)+4);
+    ctx.restore();
+  });
+
+  // Labels
+  ctx.save();ctx.font='10px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';
+  ctx.textAlign='center';ctx.fillText('CARRITO',cartX,H-10);
+  ctx.fillText('SUGERENCIAS',recX,H-10);ctx.restore();
+}
+
+// Build UI
+function buildGrid(){
+  const grid=document.getElementById('cartGrid');
+  ITEMS.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='item-cb';div.id=`cb-${item}`;
+    const col=PALETTE[item]||'#8b949e';
+    div.innerHTML=`<input type="checkbox" id="chk-${item}" onchange="toggleItem('${item}')"><label for="chk-${item}" style="color:${col};">${item}</label>`;
+    div.addEventListener('click',e=>{if(e.target.tagName!=='INPUT'){document.getElementById(`chk-${item}`).click();}});
+    grid.appendChild(div);
+  });
+}
+
+function toggleItem(item){
+  const chk=document.getElementById(`chk-${item}`);
+  const div=document.getElementById(`cb-${item}`);
+  if(chk.checked){cart.add(item);div.classList.add('selected');}
+  else{cart.delete(item);div.classList.remove('selected');}
+  recommend();
+}
+
+buildGrid();
+drawGraph([],[]);
+</script>
