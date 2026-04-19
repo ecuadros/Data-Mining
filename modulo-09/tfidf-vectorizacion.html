@@ -1,0 +1,506 @@
+---
+layout: default
+title: "TF-IDF y Vectorización"
+next_url: /modulo-09/similitud-documentos.html
+next_title: Similitud entre Documentos
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:720px;line-height:1.6;margin:0 0 2.5rem;}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.section h2{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2);margin:0 0 1rem;}
+.layout2{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+@media(max-width:900px){.layout2{grid-template-columns:1fr;}}
+.doc-list{display:flex;flex-direction:column;gap:.5rem;}
+.doc-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.6rem .9rem;cursor:pointer;text-align:left;transition:border-color .15s;}
+.doc-btn:hover{border-color:var(--accent);}
+.doc-btn.active{border-color:var(--accent);background:rgba(88,166,255,.08);}
+.doc-btn .doc-topic{font-size:.65rem;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;}
+.doc-btn .doc-preview{font-size:.8rem;color:var(--muted);line-height:1.4;}
+.doc-display{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem 1.2rem;font-size:.9rem;line-height:1.7;color:var(--text);min-height:120px;}
+.doc-display mark{background:rgba(88,166,255,.3);color:var(--accent);border-radius:2px;padding:0 2px;}
+.ctrl{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:.3rem;max-height:140px;overflow-y:auto;}
+.vocab-tag{font-size:.72rem;font-family:var(--font-mono);background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:.15rem .5rem;color:var(--muted);cursor:pointer;}
+.vocab-tag:hover{border-color:var(--accent);color:var(--accent);}
+.vocab-tag.selected{background:rgba(88,166,255,.15);border-color:var(--accent);color:var(--accent);}
+.tf-scroll{overflow-x:auto;max-height:320px;overflow-y:auto;}
+.tf-table{border-collapse:collapse;font-size:.72rem;font-family:var(--font-mono);min-width:600px;}
+.tf-table th{background:var(--surface);border:1px solid var(--border);padding:.35rem .6rem;color:var(--muted);position:sticky;top:0;z-index:1;}
+.tf-table td{border:1px solid var(--border);padding:.3rem .6rem;color:var(--text);}
+.tf-table tr:hover td{background:rgba(88,166,255,.04);}
+.tf-cell{background:rgba(88,166,255,var(--alpha,0));color:var(--text);}
+canvas{display:block;border-radius:var(--radius-sm);}
+.query-row{display:flex;gap:.75rem;align-items:center;margin-bottom:1rem;}
+.query-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .9rem;font-size:.9rem;color:var(--text);font-family:var(--font-sans);}
+.query-input:focus{outline:none;border-color:var(--accent);}
+.result-list{display:flex;flex-direction:column;gap:.4rem;}
+.result-item{display:flex;align-items:center;gap:.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .9rem;}
+.result-rank{font-size:.7rem;font-family:var(--font-mono);color:var(--accent);width:20px;}
+.result-bar-wrap{flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;}
+.result-bar{height:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s;}
+.result-score{font-size:.72rem;font-family:var(--font-mono);color:var(--muted);width:50px;text-align:right;}
+.result-label{font-size:.75rem;color:var(--muted);width:90px;text-align:right;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-09/' | relative_url }}">Módulo 09 — Minería de Texto</a><span class="sep">›</span>
+  TF-IDF y Vectorización
+</nav>
+<header>
+  <div class="eyebrow">Módulo 09 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">TF-IDF y Vectorización</h1>
+  <p class="demo-lead">TF-IDF convierte texto en vectores numéricos. Las palabras frecuentes en un documento pero raras en la colección obtienen mayor peso. Explora la frecuencia de términos, los valores IDF y el mapa de calor TF-IDF.</p>
+</header>
+
+<!-- Documentos -->
+<div class="section">
+  <h2>Documentos de la Colección</h2>
+  <div class="layout2">
+    <div class="doc-list" id="docList"></div>
+    <div>
+      <div class="doc-display" id="docDisplay">Selecciona un documento para ver su contenido.</div>
+      <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin:.5rem 0 0;">Las palabras resaltadas corresponden al término seleccionado en el vocabulario.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Vocabulario -->
+<div class="section">
+  <h2>Vocabulario (sin stopwords) — <span id="vocabCount">0</span> palabras únicas</h2>
+  <div class="vocab-grid" id="vocabGrid"></div>
+</div>
+
+<!-- TF Table -->
+<div class="section">
+  <h2>Frecuencia de Términos (TF) por Documento</h2>
+  <div class="tf-scroll">
+    <table class="tf-table" id="tfTable"></table>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin:.5rem 0 0;">Intensidad de azul proporcional al valor TF. Haz clic en una celda para resaltar la palabra en el documento.</p>
+</div>
+
+<!-- IDF Chart -->
+<div class="section">
+  <h2>IDF — Palabras más Discriminativas (Top 20)</h2>
+  <canvas id="idfCanvas" width="900" height="200"></canvas>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin:.5rem 0 0;">Mayor IDF = aparece en pocos documentos = más discriminativa.</p>
+</div>
+
+<!-- TF-IDF Heatmap -->
+<div class="section">
+  <h2>Mapa de Calor TF-IDF — Documentos × Top 20 Palabras</h2>
+  <canvas id="heatCanvas" width="900" height="280"></canvas>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin:.5rem 0 0;">Haz clic en una celda para resaltar esa palabra en el documento correspondiente.</p>
+</div>
+
+<!-- Query Search -->
+<div class="section">
+  <h2>Búsqueda por Similitud Coseno</h2>
+  <div class="query-row">
+    <input class="query-input" id="queryInput" type="text" placeholder="Escribe una consulta en español, p.ej. 'inteligencia artificial tecnología'…" oninput="runQuery()">
+    <button class="btn" onclick="document.getElementById('queryInput').value='';runQuery()">Limpiar</button>
+  </div>
+  <div class="result-list" id="resultList"></div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// ---- Corpus ----
+const DOCS = [
+  {
+    topic: 'Tecnología',
+    color: '#58a6ff',
+    text: 'La inteligencia artificial está transformando la industria tecnológica. Los algoritmos de aprendizaje automático permiten a las computadoras reconocer patrones complejos en grandes volúmenes de datos. Las redes neuronales profundas han revolucionado el procesamiento de imágenes y lenguaje natural.'
+  },
+  {
+    topic: 'Deportes',
+    color: '#3fb950',
+    text: 'El equipo nacional de fútbol ganó el campeonato sudamericano tras una emocionante final. El delantero anotó tres goles en el partido decisivo ante miles de aficionados. El entrenador destacó el esfuerzo colectivo y la disciplina táctica del equipo durante el torneo.'
+  },
+  {
+    topic: 'Política',
+    color: '#d29922',
+    text: 'El gobierno anunció nuevas políticas económicas para reducir la inflación y estimular el empleo. El parlamento debatirá el proyecto de ley la próxima semana en sesión plenaria. Los partidos de oposición cuestionaron la efectividad de las medidas propuestas por el ejecutivo.'
+  },
+  {
+    topic: 'Ciencia',
+    color: '#bc8cff',
+    text: 'Investigadores descubrieron una nueva especie de bacteria capaz de degradar plásticos en el océano. El estudio publicado en una revista científica describe las enzimas responsables del proceso de descomposición. Este hallazgo abre nuevas posibilidades para combatir la contaminación marina.'
+  },
+  {
+    topic: 'Arte',
+    color: '#ff7b72',
+    text: 'El museo inauguró una exposición de pintura contemporánea con obras de artistas latinoamericanos. Las pinturas exploran temas de identidad, memoria y cultura a través de colores vibrantes y texturas innovadoras. El curador señaló que la muestra refleja la diversidad creativa de la región.'
+  },
+  {
+    topic: 'Economía',
+    color: '#ffa657',
+    text: 'Los mercados financieros registraron una caída significativa ante la incertidumbre económica global. Los inversores retiraron capitales de los mercados emergentes frente al alza de tasas de interés. Los analistas proyectan una recuperación gradual durante el segundo semestre del año fiscal.'
+  },
+  {
+    topic: 'Salud',
+    color: '#79c0ff',
+    text: 'Un nuevo tratamiento médico redujo significativamente los síntomas en pacientes con enfermedades autoinmunes. La investigación clínica demostró que la terapia combinada es más efectiva que los medicamentos tradicionales. Los médicos recomiendan continuar los estudios para confirmar los resultados a largo plazo.'
+  },
+  {
+    topic: 'Educación',
+    color: '#56d364',
+    text: 'Las universidades adoptaron modelos de enseñanza híbrida combinando clases presenciales y virtuales. Los estudiantes valoran la flexibilidad del aprendizaje en línea para gestionar su tiempo de estudio. Los docentes destacan la importancia de la interacción directa en el desarrollo de habilidades sociales.'
+  }
+];
+
+// ---- Stopwords español ----
+const STOPWORDS = new Set([
+  'a','al','ante','bajo','con','contra','de','del','desde','durante','el','en','entre','hacia',
+  'hasta','la','las','le','les','lo','los','me','mi','mis','muy','no','o','para','pero','por',
+  'que','se','si','su','sus','te','ti','tras','un','una','unas','unos','y','ya','yo','es','son',
+  'era','han','ha','fue','ser','estar','tiene','tienen','hay','más','como','este','esta','estos',
+  'estas','ese','esa','esos','esas','aquel','aquella','aquellos','aquellas','él','ella','ellos',
+  'ellas','nosotros','vosotros','ustedes','también','así','sin','sobre','ni','porque','cuando',
+  'donde','quien','cuyo','todo','toda','todos','todas','otro','otra','otros','otras','nuevo',
+  'nueva','nuevas','nuevos','gran','grandes','cada','ante','durante','tras','según','dos','tres',
+  'vez','vez','del','al','ello','les','les','le','nos','os','nuestro','vuestra'
+]);
+
+function tokenize(text) {
+  return text.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOPWORDS.has(w));
+}
+
+// ---- Build TF-IDF ----
+const tokenized = DOCS.map(d => tokenize(d.text));
+
+// Vocabulary
+const vocabSet = new Set();
+tokenized.forEach(toks => toks.forEach(t => vocabSet.add(t)));
+const vocab = Array.from(vocabSet).sort();
+
+// TF: raw count / total tokens in doc
+function computeTF(toks) {
+  const counts = {};
+  toks.forEach(t => counts[t] = (counts[t]||0) + 1);
+  const total = toks.length;
+  const tf = {};
+  Object.keys(counts).forEach(t => tf[t] = counts[t] / total);
+  return tf;
+}
+
+const tfAll = tokenized.map(computeTF);
+
+// IDF: log(N / df)
+const N = DOCS.length;
+const idf = {};
+vocab.forEach(term => {
+  const df = tokenized.filter(toks => toks.includes(term)).length;
+  idf[term] = Math.log((N + 1) / (df + 1)) + 1; // smoothed
+});
+
+// TF-IDF vectors
+const tfidfAll = tfAll.map(tf => {
+  const vec = {};
+  vocab.forEach(t => vec[t] = (tf[t]||0) * idf[t]);
+  return vec;
+});
+
+function vecToArray(vec) { return vocab.map(t => vec[t]||0); }
+const tfidfArrays = tfidfAll.map(vecToArray);
+
+function cosine(a, b) {
+  let dot=0, na=0, nb=0;
+  for(let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}
+  const denom = Math.sqrt(na)*Math.sqrt(nb);
+  return denom===0 ? 0 : dot/denom;
+}
+
+// Top 20 TF-IDF words by max value across docs
+const wordScores = vocab.map(t => ({
+  term: t,
+  maxTfidf: Math.max(...tfidfAll.map(v => v[t]||0))
+}));
+wordScores.sort((a,b) => b.maxTfidf - a.maxTfidf);
+const top20 = wordScores.slice(0,20).map(w=>w.term);
+
+// ---- State ----
+let selectedDoc = 0;
+let selectedWord = null;
+let heatHighlight = null;
+
+// ---- Render doc list ----
+function renderDocList() {
+  const el = document.getElementById('docList');
+  el.innerHTML = '';
+  DOCS.forEach((d,i) => {
+    const btn = document.createElement('div');
+    btn.className = 'doc-btn' + (i===selectedDoc?' active':'');
+    btn.innerHTML = `<div class="doc-topic" style="color:${d.color}">${d.topic}</div><div class="doc-preview">${d.text.slice(0,70)}…</div>`;
+    btn.onclick = () => { selectedDoc = i; renderAll(); };
+    el.appendChild(btn);
+  });
+}
+
+function renderDocDisplay() {
+  const el = document.getElementById('docDisplay');
+  const doc = DOCS[selectedDoc];
+  if (!selectedWord) {
+    el.textContent = doc.text;
+    return;
+  }
+  // Highlight selected word (normalize)
+  const norm = selectedWord.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const words = doc.text.split(/(\s+)/);
+  el.innerHTML = words.map(w => {
+    const wn = w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+    return wn === norm ? `<mark>${w}</mark>` : w;
+  }).join('');
+}
+
+// ---- Vocabulary ----
+function renderVocab() {
+  const el = document.getElementById('vocabGrid');
+  document.getElementById('vocabCount').textContent = vocab.length;
+  el.innerHTML = '';
+  vocab.forEach(term => {
+    const tag = document.createElement('span');
+    tag.className = 'vocab-tag' + (term===selectedWord?' selected':'');
+    tag.textContent = term;
+    tag.onclick = () => {
+      selectedWord = (selectedWord===term)?null:term;
+      renderAll();
+    };
+    el.appendChild(tag);
+  });
+}
+
+// ---- TF Table ----
+function renderTFTable() {
+  const table = document.getElementById('tfTable');
+  // Find max TF per doc for coloring
+  const maxTF = {};
+  vocab.forEach(t => {
+    const vals = tfAll.map(tf => tf[t]||0);
+    maxTF[t] = Math.max(...vals);
+  });
+
+  // Only show top 30 words by IDF for table clarity
+  const tableWords = wordScores.slice(0,30).map(w=>w.term);
+
+  let html = '<thead><tr><th>Documento</th>';
+  tableWords.forEach(t => {
+    const hl = t===selectedWord?' style="color:var(--accent)"':'';
+    html += `<th${hl}>${t}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  DOCS.forEach((doc,i) => {
+    html += `<tr><td style="color:${doc.color};white-space:nowrap">${doc.topic}</td>`;
+    tableWords.forEach(t => {
+      const val = tfAll[i][t]||0;
+      const alpha = maxTF[t]>0 ? val/maxTF[t]*0.7 : 0;
+      const txt = val>0 ? val.toFixed(3) : '';
+      html += `<td class="tf-cell" style="--alpha:${alpha.toFixed(2)};cursor:${val>0?'pointer':'default'}"
+        onclick="${val>0?`selectCell(${i},'${t}')`:''}">
+        ${txt}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function selectCell(docIdx, term) {
+  selectedDoc = docIdx;
+  selectedWord = term;
+  renderAll();
+}
+
+// ---- IDF Chart ----
+function renderIDFChart() {
+  const canvas = document.getElementById('idfCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0,0,W,H);
+
+  // Sort by IDF descending, take top 20
+  const sorted = vocab.map(t=>({term:t, val:idf[t]})).sort((a,b)=>b.val-a.val).slice(0,20);
+  const maxVal = Math.max(...sorted.map(s=>s.val));
+
+  const PAD_L=10, PAD_R=10, PAD_T=10, PAD_B=50;
+  const chartW = W-PAD_L-PAD_R;
+  const chartH = H-PAD_T-PAD_B;
+  const barW = chartW/sorted.length - 4;
+
+  sorted.forEach((s,i) => {
+    const x = PAD_L + i*(chartW/sorted.length) + 2;
+    const barH = (s.val/maxVal)*chartH;
+    const y = PAD_T+chartH-barH;
+    const isHL = s.term === selectedWord;
+    ctx.fillStyle = isHL ? '#ffa657' : '#58a6ff';
+    ctx.globalAlpha = isHL?1:0.75;
+    ctx.fillRect(x, y, barW, barH);
+    ctx.globalAlpha = 1;
+
+    ctx.save();
+    ctx.fillStyle = isHL?'#ffa657':'#8b949e';
+    ctx.font = `${isHL?'600 ':''}10px monospace`;
+    ctx.translate(x+barW/2, PAD_T+chartH+4);
+    ctx.rotate(Math.PI/2*0.75);
+    ctx.fillText(s.term, 0, 0);
+    ctx.restore();
+
+    ctx.fillStyle='#cdd9e5';
+    ctx.font='9px monospace';
+    ctx.textAlign='center';
+    ctx.fillText(s.val.toFixed(2), x+barW/2, y-2);
+    ctx.textAlign='left';
+  });
+}
+
+// ---- TF-IDF Heatmap ----
+function renderHeatmap() {
+  const canvas = document.getElementById('heatCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0,0,W,H);
+
+  const PAD_L=90, PAD_T=10, PAD_B=55, PAD_R=10;
+  const rows = DOCS.length, cols = top20.length;
+  const cellW = (W-PAD_L-PAD_R)/cols;
+  const cellH = (H-PAD_T-PAD_B)/rows;
+
+  // Find max tfidf value for normalization
+  let maxVal = 0;
+  DOCS.forEach((_,i) => top20.forEach(t => {
+    maxVal = Math.max(maxVal, tfidfAll[i][t]||0);
+  }));
+
+  // Draw cells
+  DOCS.forEach((doc,i) => {
+    top20.forEach((term,j) => {
+      const val = tfidfAll[i][term]||0;
+      const t = maxVal>0 ? val/maxVal : 0;
+      const r = Math.round(t*88);
+      const g = Math.round(t*166);
+      const b = Math.round(55+t*200);
+
+      const x = PAD_L + j*cellW;
+      const y = PAD_T + i*cellH;
+      const isHL = (heatHighlight&&heatHighlight.doc===i&&heatHighlight.term===term);
+      ctx.fillStyle = isHL?'#ffa657':`rgb(${r},${g},${b})`;
+      ctx.fillRect(x+1,y+1,cellW-2,cellH-2);
+
+      if(cellH>16 && val>0){
+        ctx.fillStyle = t>0.4?'#fff':'#8b949e';
+        ctx.font='8px monospace';
+        ctx.textAlign='center';
+        ctx.fillText(val.toFixed(2), x+cellW/2, y+cellH/2+3);
+        ctx.textAlign='left';
+      }
+    });
+
+    // Doc label
+    ctx.fillStyle = doc.color;
+    ctx.font='bold 10px monospace';
+    ctx.fillText(doc.topic, 4, PAD_T+i*cellH+cellH/2+4);
+  });
+
+  // Word labels
+  top20.forEach((term,j) => {
+    const x = PAD_L + j*cellW + cellW/2;
+    ctx.save();
+    ctx.fillStyle = term===selectedWord?'#ffa657':'#8b949e';
+    ctx.font=`${term===selectedWord?'bold ':''}9px monospace`;
+    ctx.translate(x, PAD_T + rows*cellH + 5);
+    ctx.rotate(Math.PI/2*0.65);
+    ctx.fillText(term, 0, 0);
+    ctx.restore();
+  });
+
+  // Click handler (set once)
+  canvas._heatReady = true;
+}
+
+function heatClick(e) {
+  const canvas = document.getElementById('heatCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+  const mx = (e.clientX-rect.left)*sx;
+  const my = (e.clientY-rect.top)*sy;
+  const PAD_L=90, PAD_T=10, PAD_B=55, PAD_R=10;
+  const rows=DOCS.length, cols=top20.length;
+  const cellW=(canvas.width-PAD_L-PAD_R)/cols;
+  const cellH=(canvas.height-PAD_T-PAD_B)/rows;
+  const j=Math.floor((mx-PAD_L)/cellW);
+  const i=Math.floor((my-PAD_T)/cellH);
+  if(i>=0&&i<rows&&j>=0&&j<cols){
+    selectedDoc=i;
+    selectedWord=top20[j];
+    heatHighlight={doc:i,term:top20[j]};
+    renderAll();
+  }
+}
+
+// ---- Query ----
+function runQuery() {
+  const q = document.getElementById('queryInput').value.trim();
+  const el = document.getElementById('resultList');
+  if(!q){el.innerHTML='<p style="font-size:.8rem;color:var(--muted);text-align:center;padding:.5rem;">Ingresa una consulta para ver resultados.</p>';return;}
+
+  const qToks = tokenize(q);
+  const qTF = computeTF(qToks);
+  const qVec = vocab.map(t => (qTF[t]||0)*idf[t]);
+
+  const sims = DOCS.map((doc,i) => ({
+    doc, i,
+    sim: cosine(qVec, tfidfArrays[i])
+  })).sort((a,b)=>b.sim-a.sim);
+
+  const maxSim = sims[0].sim||1;
+  el.innerHTML = sims.map((r,rank) => `
+    <div class="result-item">
+      <div class="result-rank">#${rank+1}</div>
+      <div class="result-bar-wrap"><div class="result-bar" style="width:${maxSim>0?(r.sim/maxSim*100).toFixed(1):0}%"></div></div>
+      <div class="result-score">${r.sim.toFixed(3)}</div>
+      <div class="result-label" style="color:${r.doc.color}">${r.doc.topic}</div>
+    </div>
+  `).join('');
+}
+
+function renderAll() {
+  renderDocList();
+  renderDocDisplay();
+  renderVocab();
+  renderTFTable();
+  renderIDFChart();
+  renderHeatmap();
+}
+
+// Setup heatmap click
+document.getElementById('heatCanvas').addEventListener('click', heatClick);
+
+renderAll();
+runQuery();
+</script>
