@@ -1,0 +1,287 @@
+---
+layout: default
+title: "DBSCAN"
+prev_url: /modulo-06/kmeans-interactivo.html
+prev_title: K-Means Interactivo
+next_url: /modulo-06/dendrograma-jerarquico.html
+next_title: Dendrograma Jerárquico
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:110px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;}
+.leg-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:50%;}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-06/' | relative_url }}">Módulo 06 — Clustering</a><span class="sep">›</span>
+  DBSCAN
+</nav>
+<header>
+  <div class="eyebrow">Módulo 06 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">DBSCAN</h1>
+  <p class="demo-lead">Clustering basado en densidad. Ajusta ε y minPts con los sliders y observa cómo cambia la clasificación en puntos núcleo, frontera y ruido. Haz click para agregar puntos.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Tres tipos de puntos</h3>
+    <ul>
+      <li><strong style="color:#58a6ff;">Núcleo (core)</strong>: tiene ≥ minPts vecinos en radio ε</li>
+      <li><strong style="color:#d29922;">Frontera (border)</strong>: dentro del radio ε de un núcleo, pero sin suficientes vecinos propios</li>
+      <li><strong style="color:#8b949e;">Ruido (noise)</strong>: no es núcleo ni frontera — outlier</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Ventajas sobre K-Means</h3>
+    <ul>
+      <li>No requiere especificar k</li>
+      <li>Detecta clusters de forma arbitraria</li>
+      <li>Identifica outliers explícitamente</li>
+      <li>Robusto a la inicialización</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Cómo elegir ε</h3>
+    <p>Ordena las distancias al k-ésimo vecino de cada punto. El codo de la curva sugiere ε óptimo. minPts ≈ 2·dimensiones como regla de inicio.</p>
+  </div>
+  <div class="tb">
+    <h3>Complejidad</h3>
+    <p>O(n log n) con indexación espacial, O(n²) naive. Con ε muy grande: un solo cluster (como conectar todo). Con ε muy pequeño: todo es ruido.</p>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>ε = <span id="epsDisp">0.12</span></label><br>
+      <input type="range" id="epsRange" min="0.03" max="0.35" step="0.01" value="0.12" oninput="document.getElementById('epsDisp').textContent=parseFloat(this.value).toFixed(2);run();">
+    </div>
+    <div>
+      <label>minPts = <span id="mpDisp">5</span></label><br>
+      <input type="range" id="mpRange" min="2" max="15" step="1" value="5" oninput="document.getElementById('mpDisp').textContent=this.value;run();">
+    </div>
+    <button class="btn" onclick="resetData()">Nuevos datos</button>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#58a6ff;"></div>Núcleo</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#d29922;border:2px solid #d29922;background:transparent;outline:2px solid #d29922;"></div>Frontera</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#444c56;"></div>Ruido</div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Clusters</div>
+      <div class="m-val" id="clusterVal" style="color:var(--accent);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Puntos núcleo</div>
+      <div class="m-val" id="coreVal" style="color:#58a6ff;">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Frontera</div>
+      <div class="m-val" id="borderVal" style="color:#d29922;">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Ruido</div>
+      <div class="m-val" id="noiseVal" style="color:#8b949e;">—</div>
+    </div>
+  </div>
+
+  <div class="cw">
+    <canvas id="mainCanvas" width="520" height="420" style="cursor:crosshair;"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Click en el canvas para agregar puntos · El círculo muestra el radio ε al pasar el cursor</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+let POINTS=[];
+function makePoints(seed){
+  const r=rng(seed);
+  const pts=[];
+  // Several clusters + noise
+  const clusters=[
+    {cx:.18,cy:.3,n:25,spread:.1},
+    {cx:.6,cy:.25,n:30,spread:.09},
+    {cx:.4,cy:.7,n:20,spread:.08},
+    {cx:.8,cy:.7,n:22,spread:.1},
+    // ring cluster
+  ];
+  clusters.forEach(cl=>{
+    for(let i=0;i<cl.n;i++){
+      pts.push({x:Math.max(.02,Math.min(.98,cl.cx+(r()-.5)*2*cl.spread)),
+                y:Math.max(.02,Math.min(.98,cl.cy+(r()-.5)*2*cl.spread))});
+    }
+  });
+  // Ring
+  for(let i=0;i<20;i++){
+    const angle=r()*Math.PI*2,rad=.15+(r()-.5)*.03;
+    pts.push({x:Math.max(.02,Math.min(.98,.5+Math.cos(angle)*rad)),
+              y:Math.max(.02,Math.min(.98,.5+Math.sin(angle)*rad*.7))});
+  }
+  // Noise
+  for(let i=0;i<15;i++) pts.push({x:r()*.9+.05,y:r()*.9+.05});
+  return pts;
+}
+
+function resetData(){
+  POINTS=makePoints(Date.now()%9999);
+  run();
+}
+
+// DBSCAN
+function dist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+
+function dbscan(pts,eps,minPts){
+  const n=pts.length;
+  const labels=new Array(n).fill(-2); // -2=unvisited, -1=noise, >=0=cluster
+  let cluster=0;
+
+  function regionQuery(idx){
+    return pts.reduce((nb,p,i)=>dist(pts[idx],p)<=eps?[...nb,i]:nb,[]);
+  }
+
+  function expand(idx,neighbors,cid){
+    labels[idx]=cid;
+    let queue=[...neighbors];
+    while(queue.length){
+      const q=queue.shift();
+      if(labels[q]===-2){
+        labels[q]=cid;
+        const nb2=regionQuery(q);
+        if(nb2.length>=minPts) queue.push(...nb2.filter(i=>labels[i]<0));
+      }
+      if(labels[q]<0) labels[q]=cid;
+    }
+  }
+
+  for(let i=0;i<n;i++){
+    if(labels[i]!==-2) continue;
+    const nb=regionQuery(i);
+    if(nb.length<minPts){labels[i]=-1;}
+    else{expand(i,nb,cluster);cluster++;}
+  }
+
+  // Classify as core / border / noise
+  const isCore=pts.map((p,i)=>regionQuery(i).length>=minPts);
+  return {labels,isCore,numClusters:cluster};
+}
+
+const PALETTE=['#58a6ff','#3fb950','#f85149','#bc8cff','#d29922','#79c0ff','#56d364','#ff7b72','#ffa657','#e3b341'];
+
+let lastResult=null;
+let mousePos=null;
+
+function run(){
+  const eps=parseFloat(document.getElementById('epsRange').value);
+  const minPts=parseInt(document.getElementById('mpRange').value);
+  lastResult=dbscan(POINTS,eps,minPts);
+  const {labels,isCore,numClusters}=lastResult;
+  const nCore=isCore.filter(Boolean).length;
+  const nNoise=labels.filter(l=>l===-1).length;
+  const nBorder=labels.filter((l,i)=>l>=0&&!isCore[i]).length;
+  document.getElementById('clusterVal').textContent=numClusters;
+  document.getElementById('coreVal').textContent=nCore;
+  document.getElementById('borderVal').textContent=nBorder;
+  document.getElementById('noiseVal').textContent=nNoise;
+  draw();
+}
+
+function draw(){
+  const canvas=document.getElementById('mainCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  if(!lastResult) return;
+
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+  const {labels,isCore}=lastResult;
+  const eps=parseFloat(document.getElementById('epsRange').value);
+  const epsCanvas=eps*(W-2*PAD);
+
+  // Draw epsilon circles for core points (faint)
+  POINTS.forEach((p,i)=>{
+    if(!isCore[i]) return;
+    const col=labels[i]>=0?PALETTE[labels[i]%PALETTE.length]:'#8b949e';
+    ctx.save();ctx.strokeStyle=col+'20';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),epsCanvas,0,Math.PI*2);ctx.stroke();ctx.restore();
+  });
+
+  // Hover epsilon circle
+  if(mousePos){
+    ctx.save();ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(mousePos.x,mousePos.y,epsCanvas,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  }
+
+  // Points
+  POINTS.forEach((p,i)=>{
+    const core=isCore[i];
+    const label=labels[i];
+    let col, stroke;
+    if(label===-1){col='#444c56';stroke='#6e7681';}
+    else{col=PALETTE[label%PALETTE.length];stroke=core?'#fff':'rgba(0,0,0,.3)';}
+    ctx.save();
+    ctx.fillStyle=core?col:col+'60';
+    ctx.strokeStyle=stroke;
+    ctx.lineWidth=core?1.5:.5;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),core?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
+    // Border: hollow center
+    if(!core&&label>=0){
+      ctx.fillStyle='#0d1117';ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),2,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+const mainCanvas=document.getElementById('mainCanvas');
+mainCanvas.addEventListener('mousemove',e=>{
+  const rect=mainCanvas.getBoundingClientRect();
+  const sx=mainCanvas.width/rect.width,sy=mainCanvas.height/rect.height;
+  mousePos={x:(e.clientX-rect.left)*sx,y:(e.clientY-rect.top)*sy};
+  draw();
+});
+mainCanvas.addEventListener('mouseleave',()=>{mousePos=null;draw();});
+mainCanvas.addEventListener('click',e=>{
+  const rect=mainCanvas.getBoundingClientRect();
+  const PAD=20,sx=mainCanvas.width/rect.width,sy=mainCanvas.height/rect.height;
+  const px=(e.clientX-rect.left)*sx,py=(e.clientY-rect.top)*sy;
+  POINTS.push({x:(px-PAD)/(mainCanvas.width-2*PAD),y:(py-PAD)/(mainCanvas.height-2*PAD)});
+  run();
+});
+
+POINTS=makePoints(42);
+run();
+</script>
