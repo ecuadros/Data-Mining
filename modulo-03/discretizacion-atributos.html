@@ -1,0 +1,766 @@
+---
+layout: default
+title: "Discretización de Atributos"
+prev_url: /modulo-03/normalizacion-estandarizacion.html
+prev_title: Normalización y Estandarización
+next_url: /modulo-03/seleccion-features.html
+next_title: Selección de Features
+---
+<style>
+  .da-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .da-layout { grid-template-columns: 1fr; }
+  }
+
+  .theory-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .theory-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    margin-bottom: 0.6rem;
+  }
+  .theory-body {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .theory-body strong { color: var(--text); }
+
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin: 0.5rem 0;
+    line-height: 1.8;
+  }
+  .formula-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+
+  .concept-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+  }
+  .concept-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .concept-list li::before {
+    content: '›';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .concept-list li strong { color: var(--text); }
+
+  .insight-box {
+    background: rgba(188,140,255,0.06);
+    border: 1px solid rgba(188,140,255,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .insight-box strong { color: var(--accent2); }
+
+  .warn-box {
+    background: rgba(210,153,34,0.07);
+    border: 1px solid rgba(210,153,34,0.25);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .warn-box strong { color: var(--warn); }
+
+  /* Interactive panel */
+  .interactive-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--font-mono);
+  }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .control-label {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .method-btns {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 180ms ease;
+  }
+  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(88,166,255,0.08); }
+  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.12); }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .slider-row input[type=range] {
+    width: 120px;
+    accent-color: var(--accent2);
+  }
+  .slider-val {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent2);
+    min-width: 1.2rem;
+  }
+
+  .canvas-wrapper {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  #discCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Results table */
+  .results-table-wrap {
+    overflow-x: auto;
+  }
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+  .results-table th {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    border-bottom: 1px solid var(--border);
+  }
+  .results-table td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    color: var(--text);
+  }
+  .results-table tr:last-child td { border-bottom: none; }
+  .interval-badge {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+  }
+  .pct-bar-cell {
+    width: 80px;
+  }
+  .pct-bar-bg {
+    background: var(--surface2);
+    border-radius: 3px;
+    height: 6px;
+    width: 80px;
+    overflow: hidden;
+  }
+  .pct-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 400ms ease;
+  }
+</style>
+
+<div class="demo-page" style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);">
+  {% include demo-nav.html %}
+
+  <nav style="font-size:0.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;display:flex;align-items:center;gap:0.4rem;">
+    <a href="{{ '/' | relative_url }}" style="color:var(--accent);text-decoration:none;">Inicio</a>
+    <span style="color:var(--border);">›</span>
+    Módulo 03 — Preprocesamiento y Limpieza
+    <span style="color:var(--border);">›</span>
+    Discretización de Atributos
+  </nav>
+
+  <header style="margin-bottom:2.5rem;">
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 03 · Minería de Datos · Ciencia de la Computación</div>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.4rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Discretización de Atributos</h1>
+    <p style="font-size:1.05rem;color:var(--muted);max-width:640px;line-height:1.6;">Convierte atributos continuos en intervalos o categorías. Compara Equal-Width, Equal-Frequency y Jenks Natural Breaks de forma visual e interactiva.</p>
+  </header>
+
+  <div class="da-layout">
+    <!-- TEORÍA -->
+    <div class="theory-panel">
+
+      <div>
+        <div class="theory-section-title">¿Qué es discretizar?</div>
+        <div class="theory-body">
+          La <strong>discretización</strong> transforma un atributo continuo (p.ej. edad, ingreso, temperatura) en un conjunto finito de <strong>intervalos o categorías</strong>. Cada instancia queda asignada al intervalo que contiene su valor original.
+        </div>
+        <div class="insight-box" style="margin-top:0.75rem;">
+          Ejemplo: edad continua [18, 80] → categorías <strong>Joven [18–30)</strong>, <strong>Adulto [30–50)</strong>, <strong>Senior [50–80]</strong>.
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Casos de uso</div>
+        <ul class="concept-list">
+          <li><strong>Naive Bayes</strong>: asume independencia condicional por categoría; requiere atributos nominales o discretos.</li>
+          <li><strong>Algoritmo Apriori</strong>: trabaja con ítems discretos para encontrar reglas de asociación.</li>
+          <li><strong>Reducción de ruido</strong>: valores con pequeñas variaciones quedan en el mismo intervalo.</li>
+          <li><strong>Interpretabilidad</strong>: "clientes de 30–45 años" es más legible que un valor flotante.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Métodos</div>
+        <ul class="concept-list">
+          <li>
+            <span><strong>Equal-Width</strong>: divide el rango [min, max] en k intervalos de igual ancho.
+            <span style="display:block;margin-top:0.3rem;"></span></span>
+          </li>
+          <li>
+            <span><strong>Equal-Frequency (cuantiles)</strong>: divide en k intervalos cada uno con el mismo número de instancias (percentiles).</span>
+          </li>
+          <li>
+            <span><strong>Jenks Natural Breaks</strong>: algoritmo que minimiza la varianza intra-intervalo y maximiza la varianza inter-intervalo. Óptimo para visualización cartográfica.</span>
+          </li>
+          <li>
+            <span><strong>Supervisado (MDLP)</strong>: usa la etiqueta de clase para encontrar los puntos de corte con mayor ganancia de información (Minimum Description Length Principle).</span>
+          </li>
+        </ul>
+        <div class="formula-box" style="margin-top:0.75rem;">
+          <div class="formula-label">Equal-Width — ancho de intervalo</div>
+          w = (max − min) / k<br>
+          corte_i = min + i × w,  i = 1..k−1
+        </div>
+        <div class="formula-box">
+          <div class="formula-label">Equal-Frequency — corte por percentil</div>
+          corte_i = percentil((i/k) × 100, datos)<br>
+          → cada intervalo contiene ≈ n/k instancias
+        </div>
+      </div>
+
+      <div>
+        <div class="theory-section-title">Trade-off clave</div>
+        <div class="warn-box">
+          <strong>Más intervalos (k grande)</strong> → menos pérdida de información, pero mayor complejidad del modelo y riesgo de overfitting.<br><br>
+          <strong>Menos intervalos (k pequeño)</strong> → modelo más simple e interpretable, pero mayor pérdida de precisión (cuantización gruesa).
+        </div>
+      </div>
+
+    </div><!-- /theory-panel -->
+
+    <!-- INTERACTIVO -->
+    <div class="interactive-panel">
+      <div class="panel-title">Explorador de Discretización — Edad de clientes (n=80)</div>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <div class="control-label">Método</div>
+          <div class="method-btns">
+            <button class="btn active" id="btnEW" onclick="setMethod('ew')">Equal-Width</button>
+            <button class="btn" id="btnEF" onclick="setMethod('ef')">Equal-Freq</button>
+            <button class="btn" id="btnJK" onclick="setMethod('jenks')">Jenks</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-label">k (intervalos)</div>
+          <div class="slider-row">
+            <input type="range" id="kSlider" min="2" max="10" value="4" step="1">
+            <span class="slider-val" id="kVal">4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="discCanvas" width="540" height="260"></canvas>
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Intervalo</th>
+              <th>Límite inf.</th>
+              <th>Límite sup.</th>
+              <th>Instancias</th>
+              <th>%</th>
+              <th class="pct-bar-cell"></th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /interactive-panel -->
+  </div><!-- /da-layout -->
+
+  {% include demo-nav.html %}
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Dataset: 80 ages with bimodal distribution (young 18-30, adults 45-65) ──
+  const AGES = [
+    19, 21, 22, 22, 23, 24, 24, 25, 25, 26,
+    26, 27, 27, 28, 28, 29, 29, 30, 20, 23,
+    21, 25, 27, 22, 24, 26, 28, 19, 23, 27,
+    46, 47, 48, 49, 50, 50, 51, 52, 53, 54,
+    54, 55, 56, 57, 57, 58, 59, 60, 61, 62,
+    63, 64, 65, 48, 52, 55, 59, 62, 47, 53,
+    56, 61, 49, 51, 57, 60, 64, 48, 54, 58,
+    35, 38, 40, 42, 33, 37, 41, 36, 39, 43
+  ];
+
+  // Palette for intervals (up to 10)
+  const PALETTE = [
+    '#58a6ff', '#bc8cff', '#3fb950', '#f78166', '#d29922',
+    '#79c0ff', '#e8b4ff', '#85e89d', '#ffa198', '#ffd68f'
+  ];
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentMethod = 'ew';
+  let currentK = 4;
+  let animFrame = null;
+  let cuts = [];        // current cut points (rendered)
+  let targetCuts = [];  // target cut points (for animation)
+
+  // ── Canvas setup ──────────────────────────────────────────────────────────
+  const canvas = document.getElementById('discCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 540, H = 260;
+  canvas.width = W;
+  canvas.height = H;
+
+  const PAD_L = 42, PAD_R = 18, PAD_TOP = 28, PAD_BOT = 48;
+  const PLOT_W = W - PAD_L - PAD_R;
+  const PLOT_H = H - PAD_TOP - PAD_BOT;
+
+  const DATA_MIN = 18, DATA_MAX = 68;
+  const DATA_RANGE = DATA_MAX - DATA_MIN;
+
+  function xToCanvas(v) {
+    return PAD_L + ((v - DATA_MIN) / DATA_RANGE) * PLOT_W;
+  }
+
+  // ── Histogram bins ─────────────────────────────────────────────────────────
+  const BIN_W_VAL = 2; // each bin is 2 years wide
+  const bins = [];
+  for (let lo = DATA_MIN; lo < DATA_MAX; lo += BIN_W_VAL) {
+    const count = AGES.filter(a => a >= lo && a < lo + BIN_W_VAL).length;
+    bins.push({ lo, hi: lo + BIN_W_VAL, count });
+  }
+  // last bin: include DATA_MAX
+  bins[bins.length - 1].count += AGES.filter(a => a === DATA_MAX).length;
+  const maxBinCount = Math.max(...bins.map(b => b.count));
+
+  // ── Discretization methods ─────────────────────────────────────────────────
+  function computeCuts(method, k) {
+    const sorted = [...AGES].sort((a, b) => a - b);
+    const n = sorted.length;
+
+    if (method === 'ew') {
+      const w = DATA_RANGE / k;
+      const c = [];
+      for (let i = 1; i < k; i++) c.push(DATA_MIN + i * w);
+      return c;
+    }
+
+    if (method === 'ef') {
+      const c = [];
+      for (let i = 1; i < k; i++) {
+        const idx = (i / k) * (n - 1);
+        const lo = Math.floor(idx), hi = Math.ceil(idx);
+        const val = sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+        c.push(val);
+      }
+      // deduplicate
+      return [...new Set(c.map(v => +v.toFixed(4)))];
+    }
+
+    if (method === 'jenks') {
+      return jenksBreaks(sorted, k);
+    }
+
+    return [];
+  }
+
+  // Jenks Natural Breaks (Fisher-Jenks dynamic programming)
+  function jenksBreaks(sorted, k) {
+    const n = sorted.length;
+    if (k >= n) return sorted.slice(1, n).map(v => v - 0.001);
+
+    // lower class limits (1-based)
+    const lowerClassLimits = Array.from({ length: n + 1 }, () => new Array(k + 1).fill(0));
+    const varianceCombinations = Array.from({ length: n + 1 }, () => new Array(k + 1).fill(Infinity));
+
+    for (let i = 1; i <= n; i++) {
+      varianceCombinations[i][1] = 0;
+      lowerClassLimits[i][1] = 1;
+    }
+
+    for (let l = 2; l <= k; l++) {
+      for (let m = l; m <= n; m++) {
+        varianceCombinations[m][l] = Infinity;
+        let sum = 0, sumSq = 0;
+        for (let j = m; j >= l; j--) {
+          sum += sorted[j - 1];
+          sumSq += sorted[j - 1] * sorted[j - 1];
+          const cnt = m - j + 1;
+          const variance = sumSq - (sum * sum) / cnt;
+          const prevV = varianceCombinations[j - 1][l - 1];
+          if (prevV + variance < varianceCombinations[m][l]) {
+            varianceCombinations[m][l] = prevV + variance;
+            lowerClassLimits[m][l] = j;
+          }
+        }
+      }
+    }
+
+    // trace back
+    const breaks = [];
+    let m = n;
+    for (let l = k; l > 1; l--) {
+      const idx = lowerClassLimits[m][l] - 1;
+      if (idx > 0) breaks.push(sorted[idx - 1]);
+      m = lowerClassLimits[m][l] - 1;
+    }
+    breaks.sort((a, b) => a - b);
+    // shift cuts to midpoints between boundary values for cleaner display
+    return breaks;
+  }
+
+  // ── Interval assignment ────────────────────────────────────────────────────
+  function getIntervals(cutPoints) {
+    const bounds = [DATA_MIN, ...cutPoints, DATA_MAX];
+    return bounds.slice(0, -1).map((lo, i) => ({
+      lo,
+      hi: bounds[i + 1],
+      color: PALETTE[i % PALETTE.length],
+      count: 0
+    }));
+  }
+
+  function assignIntervals(intervals) {
+    intervals.forEach(iv => { iv.count = 0; });
+    AGES.forEach(age => {
+      for (let i = 0; i < intervals.length; i++) {
+        const iv = intervals[i];
+        const isLast = i === intervals.length - 1;
+        if (isLast ? age >= iv.lo && age <= iv.hi : age >= iv.lo && age < iv.hi) {
+          iv.count++;
+          break;
+        }
+      }
+    });
+  }
+
+  // ── Draw ───────────────────────────────────────────────────────────────────
+  function draw(animCuts) {
+    ctx.clearRect(0, 0, W, H);
+
+    const displayCuts = animCuts || cuts;
+    const intervals = getIntervals(displayCuts);
+    assignIntervals(intervals);
+
+    const axisY = PAD_TOP + PLOT_H;
+
+    // Background grid lines
+    ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([3, 4]);
+    for (let i = 1; i <= 4; i++) {
+      const y = PAD_TOP + PLOT_H - (i / 4) * PLOT_H;
+      ctx.beginPath();
+      ctx.moveTo(PAD_L, y);
+      ctx.lineTo(PAD_L + PLOT_W, y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Draw histogram bars colored by interval
+    bins.forEach(bin => {
+      const x1 = xToCanvas(bin.lo);
+      const x2 = xToCanvas(bin.hi);
+      const bw = Math.max(x2 - x1 - 1, 1);
+      const bh = (bin.count / maxBinCount) * PLOT_H * 0.92;
+      const by = axisY - bh;
+
+      // find interval for bin midpoint
+      const mid = (bin.lo + bin.hi) / 2;
+      let color = '#58a6ff';
+      for (let i = 0; i < intervals.length; i++) {
+        const iv = intervals[i];
+        const isLast = i === intervals.length - 1;
+        if (isLast ? mid >= iv.lo && mid <= iv.hi : mid >= iv.lo && mid < iv.hi) {
+          color = iv.color;
+          break;
+        }
+      }
+
+      ctx.fillStyle = color + 'cc';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.roundRect(x1 + 0.5, by, bw, bh, 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Draw cut lines
+    displayCuts.forEach((cut, i) => {
+      const cx = xToCanvas(cut);
+      // glow
+      const grad = ctx.createLinearGradient(cx - 3, 0, cx + 3, 0);
+      grad.addColorStop(0, 'rgba(188,140,255,0)');
+      grad.addColorStop(0.5, 'rgba(188,140,255,0.35)');
+      grad.addColorStop(1, 'rgba(188,140,255,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(cx - 3, PAD_TOP, 6, PLOT_H);
+
+      ctx.strokeStyle = '#bc8cff';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, PAD_TOP);
+      ctx.lineTo(cx, axisY + 6);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // cut label
+      ctx.fillStyle = '#bc8cff';
+      ctx.font = '9px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      const label = cut.toFixed(1);
+      ctx.fillText(label, cx, PAD_TOP - 6);
+    });
+
+    // X axis line
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, axisY);
+    ctx.lineTo(PAD_L + PLOT_W, axisY);
+    ctx.stroke();
+
+    // X axis ticks & labels
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    for (let v = 18; v <= 68; v += 5) {
+      const x = xToCanvas(v);
+      ctx.strokeStyle = '#30363d';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, axisY);
+      ctx.lineTo(x, axisY + 4);
+      ctx.stroke();
+      ctx.fillStyle = '#8b949e';
+      ctx.fillText(v, x, axisY + 14);
+    }
+
+    // X axis label
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '10px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Edad (años)', PAD_L + PLOT_W / 2, axisY + 30);
+
+    // Y axis label
+    ctx.save();
+    ctx.translate(12, PAD_TOP + PLOT_H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Frecuencia', 0, 0);
+    ctx.restore();
+
+    // Interval color legend strip at bottom
+    const legendY = H - 8;
+    const legendW = PLOT_W / intervals.length;
+    intervals.forEach((iv, i) => {
+      const lx = PAD_L + i * legendW;
+      ctx.fillStyle = iv.color + '99';
+      ctx.beginPath();
+      ctx.roundRect(lx, legendY - 5, legendW - 1, 5, 2);
+      ctx.fill();
+    });
+
+    // Update results table
+    updateTable(intervals);
+  }
+
+  // ── Results table ──────────────────────────────────────────────────────────
+  function updateTable(intervals) {
+    const tbody = document.getElementById('resultsBody');
+    const n = AGES.length;
+    tbody.innerHTML = intervals.map((iv, i) => {
+      const pct = (iv.count / n * 100).toFixed(1);
+      return `<tr>
+        <td><span class="interval-badge" style="background:${iv.color};"></span>Intervalo ${i + 1}</td>
+        <td>${iv.lo.toFixed(1)}</td>
+        <td>${iv.hi.toFixed(1)}</td>
+        <td>${iv.count}</td>
+        <td>${pct}%</td>
+        <td class="pct-bar-cell">
+          <div class="pct-bar-bg">
+            <div class="pct-bar-fill" style="width:${pct}%;background:${iv.color};"></div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Animation ──────────────────────────────────────────────────────────────
+  let animProgress = 1;
+  let animStartCuts = [];
+  const ANIM_DURATION = 380; // ms
+  let animStart = null;
+
+  function startAnimation(from, to) {
+    // pad arrays to same length
+    animStartCuts = [...from];
+    targetCuts = [...to];
+    const maxLen = Math.max(from.length, to.length);
+    while (animStartCuts.length < maxLen) {
+      animStartCuts.push(animStartCuts[animStartCuts.length - 1] ?? DATA_MIN);
+    }
+    while (targetCuts.length < maxLen) {
+      targetCuts.push(targetCuts[targetCuts.length - 1] ?? DATA_MAX);
+    }
+    animStart = null;
+    animProgress = 0;
+    if (animFrame) cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(animStep);
+  }
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function animStep(ts) {
+    if (!animStart) animStart = ts;
+    const elapsed = ts - animStart;
+    const t = Math.min(elapsed / ANIM_DURATION, 1);
+    const e = easeInOut(t);
+
+    const animCuts = animStartCuts.map((s, i) => s + (targetCuts[i] - s) * e);
+    // trim to target length
+    const tc = computeCuts(currentMethod, currentK);
+    const trimmed = animCuts.slice(0, tc.length);
+
+    draw(trimmed);
+
+    if (t < 1) {
+      animFrame = requestAnimationFrame(animStep);
+    } else {
+      cuts = tc;
+      draw();
+    }
+  }
+
+  // ── Controls ───────────────────────────────────────────────────────────────
+  function setMethod(m) {
+    currentMethod = m;
+    ['ew', 'ef', 'jenks'].forEach(id => {
+      document.getElementById('btn' + { ew: 'EW', ef: 'EF', jenks: 'JK' }[id])
+        .classList.toggle('active', id === m);
+    });
+    refresh();
+  }
+
+  function refresh() {
+    const newCuts = computeCuts(currentMethod, currentK);
+    startAnimation(cuts, newCuts);
+  }
+
+  const kSlider = document.getElementById('kSlider');
+  const kVal = document.getElementById('kVal');
+  kSlider.addEventListener('input', () => {
+    currentK = parseInt(kSlider.value);
+    kVal.textContent = currentK;
+    refresh();
+  });
+
+  // expose
+  window.setMethod = setMethod;
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  cuts = computeCuts(currentMethod, currentK);
+  draw();
+
+})();
+</script>
