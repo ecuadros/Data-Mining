@@ -1,0 +1,253 @@
+---
+layout: default
+title: "Bias-Varianza Tradeoff"
+prev_url: /modulo-10/validacion-cruzada.html
+prev_title: Validación Cruzada
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:140px;}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.72rem;font-weight:700;font-family:var(--font-mono);}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-10/' | relative_url }}">Módulo 10 — Evaluación de Modelos</a><span class="sep">›</span>
+  Bias-Varianza Tradeoff
+</nav>
+<header>
+  <div class="eyebrow">Módulo 10 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Bias-Varianza Tradeoff</h1>
+  <p class="demo-lead">Ajustando el grado del polinomio, observa cómo modelos simples tienen alto sesgo (subajuste) y modelos complejos tienen alta varianza (sobreajuste). Las 8 curvas muestran la variabilidad.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Descomposición del error</h3>
+    <p style="font-family:var(--font-mono);font-size:.8rem;color:var(--accent);background:#0d1117;padding:.5rem .8rem;border-radius:6px;border:1px solid rgba(88,166,255,.3);">Error = Sesgo² + Varianza + Ruido</p>
+    <ul>
+      <li><strong style="color:var(--danger)">Sesgo (Bias)</strong>: error por suposiciones incorrectas en el modelo — underfitting</li>
+      <li><strong style="color:var(--warn)">Varianza</strong>: sensibilidad a fluctuaciones del dataset de entrenamiento — overfitting</li>
+      <li><strong style="color:var(--muted)">Ruido irreducible</strong>: inherente a los datos</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Diagnóstico rápido</h3>
+    <p id="diagText" style="font-size:.88rem;color:var(--muted);">Ajusta el grado del polinomio.</p>
+  </div>
+  <div class="tb">
+    <h3>Métricas estimadas</h3>
+    <div class="metric-row" style="margin:0;">
+      <div class="metric"><div class="m-name">Sesgo² (aprox)</div><div class="m-val" id="biasVal" style="color:var(--danger);">—</div></div>
+      <div class="metric"><div class="m-name">Varianza (aprox)</div><div class="m-val" id="varVal" style="color:var(--warn);">—</div></div>
+    </div>
+    <div class="metric-row" style="margin-top:.5rem;">
+      <div class="metric"><div class="m-name">Train MSE</div><div class="m-val" id="trainMSE" style="color:var(--accent3);">—</div></div>
+      <div class="metric"><div class="m-name">Test MSE</div><div class="m-val" id="testMSE" style="color:var(--accent2);">—</div></div>
+    </div>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Grado del polinomio = <span id="degDisp">3</span></label><br>
+      <input type="range" id="degRange" min="1" max="10" step="1" value="3" oninput="document.getElementById('degDisp').textContent=this.value;update();">
+    </div>
+  </div>
+
+  <!-- Curve fit plot -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="fitCanvas" width="530" height="260"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.2rem 0 .6rem;">Curvas grises = 8 realizaciones del dataset · Azul = media de curvas · Puntos = datos actuales</p>
+
+  <!-- Complexity vs error plot -->
+  <div class="cw">
+    <canvas id="complexCanvas" width="530" height="160"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.2rem 0;">Curvas de error vs. complejidad del modelo</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+const N=25,NOISE=0.25;
+const trueFn=x=>Math.sin(2*Math.PI*x);
+
+function makeData(seed){
+  const r=rng(seed);
+  return Array.from({length:N},()=>{const x=r();return{x,y:trueFn(x)+(r()-.5)*2*NOISE};});
+}
+
+// Polynomial regression via normal equations (Vandermonde)
+function polyfit(data,deg){
+  const n=data.length,d=deg+1;
+  // Build Vandermonde matrix X
+  const X=data.map(p=>Array.from({length:d},(_,k)=>Math.pow(p.x,k)));
+  // XtX and Xty
+  const XtX=Array.from({length:d},(_,i)=>Array.from({length:d},(_,j)=>X.reduce((s,row)=>s+row[i]*row[j],0)));
+  const Xty=Array.from({length:d},(_,i)=>data.reduce((s,p,ri)=>s+X[ri][i]*p.y,0));
+  // Gaussian elimination
+  const A=XtX.map((row,i)=>[...row,Xty[i]]);
+  for(let c=0;c<d;c++){
+    let max=Math.abs(A[c][c]),mrow=c;
+    for(let r=c+1;r<d;r++) if(Math.abs(A[r][c])>max){max=Math.abs(A[r][c]);mrow=r;}
+    [A[c],A[mrow]]=[A[mrow],A[c]];
+    if(Math.abs(A[c][c])<1e-12) continue;
+    for(let r=0;r<d;r++) if(r!==c){const f=A[r][c]/A[c][c];for(let k=c;k<=d;k++) A[r][k]-=f*A[c][k];}
+  }
+  return A.map((row,i)=>A[i][i]!==0?row[d]/A[i][i]:0);
+}
+
+function polyEval(coeffs,x){return coeffs.reduce((s,c,k)=>s+c*Math.pow(x,k),0);}
+function mse(data,coeffs){return data.reduce((s,p)=>s+(polyEval(coeffs,p.x)-p.y)**2,0)/data.length;}
+
+const SEEDS=[42,17,55,88,123,200,314,7];
+const TRAIN_SETS=SEEDS.map(s=>makeData(s));
+const TEST_DATA=makeData(999);
+
+function update(){
+  const deg=parseInt(document.getElementById('degRange').value);
+  const allCoeffs=TRAIN_SETS.map(data=>polyfit(data,deg));
+
+  // Train/test MSE
+  const trainMSEs=TRAIN_SETS.map((data,i)=>mse(data,allCoeffs[i]));
+  const testMSEs=TRAIN_SETS.map((_,i)=>mse(TEST_DATA,allCoeffs[i]));
+  const trainMean=trainMSEs.reduce((s,v)=>s+v,0)/SEEDS.length;
+  const testMean=testMSEs.reduce((s,v)=>s+v,0)/SEEDS.length;
+
+  // Bias/variance decomposition at test points
+  const xs=TEST_DATA.map(p=>p.x);
+  const preds=xs.map(x=>allCoeffs.map(c=>polyEval(c,x)));
+  const meanPred=xs.map((_,xi)=>preds[xi].reduce((s,v)=>s+v,0)/SEEDS.length);
+  const bias2=xs.reduce((s,x,xi)=>(meanPred[xi]-trueFn(x))**2+s,0)/xs.length;
+  const variance=xs.reduce((s,_,xi)=>preds[xi].reduce((sv,v)=>sv+(v-meanPred[xi])**2,0)/SEEDS.length+s,0)/xs.length;
+
+  document.getElementById('biasVal').textContent=bias2.toFixed(4);
+  document.getElementById('varVal').textContent=variance.toFixed(4);
+  document.getElementById('trainMSE').textContent=trainMean.toFixed(4);
+  document.getElementById('testMSE').textContent=testMean.toFixed(4);
+
+  const label=deg<=2?'Alto sesgo (subajuste)':deg>=7?'Alta varianza (sobreajuste)':'Balance razonable';
+  const col=deg<=2?'var(--danger)':deg>=7?'var(--warn)':'var(--accent3)';
+  document.getElementById('diagText').innerHTML=`Grado ${deg}: <strong style="color:${col};">${label}</strong>`;
+
+  drawFit(TRAIN_SETS[0],allCoeffs,deg);
+  drawComplexity(deg);
+}
+
+function drawFit(mainData,allCoeffs,deg){
+  const cv=document.getElementById('fitCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=25;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>H/2-v*(H/2-PAD);
+
+  // Grid
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,H/2);ctx.lineTo(W-PAD,H/2);ctx.stroke();ctx.restore();
+
+  // True function
+  ctx.save();ctx.strokeStyle='rgba(210,153,34,.5)';ctx.lineWidth=2;ctx.setLineDash([5,5]);
+  ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;if(i===0)ctx.moveTo(toX(x),toY(trueFn(x)));else ctx.lineTo(toX(x),toY(trueFn(x)));}ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // All fitted curves (grey)
+  allCoeffs.forEach(coeffs=>{
+    ctx.save();ctx.strokeStyle='rgba(139,148,158,.2)';ctx.lineWidth=1.5;
+    ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;const y=Math.max(-2,Math.min(2,polyEval(coeffs,x)));if(i===0)ctx.moveTo(toX(x),toY(y));else ctx.lineTo(toX(x),toY(y));}ctx.stroke();ctx.restore();
+  });
+
+  // Mean curve (blue)
+  ctx.save();ctx.strokeStyle='#58a6ff';ctx.lineWidth=2.5;
+  ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;const y=allCoeffs.reduce((s,c)=>s+polyEval(c,x),0)/allCoeffs.length;const yc=Math.max(-2,Math.min(2,y));if(i===0)ctx.moveTo(toX(x),toY(yc));else ctx.lineTo(toX(x),toY(yc));}ctx.stroke();ctx.restore();
+
+  // Data points
+  mainData.forEach(p=>{
+    ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),4,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+
+  // Legend
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';
+  ctx.fillStyle='#d29922';ctx.fillText('Verdadero',PAD+2,14);
+  ctx.fillStyle='#58a6ff';ctx.fillText('Media ajuste',PAD+70,14);
+  ctx.fillStyle='rgba(139,148,158,.6)';ctx.fillText('Realizaciones',PAD+155,14);
+  ctx.restore();
+}
+
+const DEGREES=Array.from({length:10},(_,i)=>i+1);
+function precomputeErrors(){
+  return DEGREES.map(deg=>{
+    const allC=TRAIN_SETS.map(data=>polyfit(data,deg));
+    const trMs=TRAIN_SETS.map((data,i)=>mse(data,allC[i])).reduce((s,v)=>s+v,0)/SEEDS.length;
+    const teMs=TRAIN_SETS.map((_,i)=>mse(TEST_DATA,allC[i])).reduce((s,v)=>s+v,0)/SEEDS.length;
+    return{deg,train:trMs,test:teMs};
+  });
+}
+const ERRORS=precomputeErrors();
+
+function drawComplexity(curDeg){
+  const cv=document.getElementById('complexCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=35;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const maxE=Math.min(0.5,Math.max(...ERRORS.map(e=>e.test))*1.1);
+  const toX=v=>PAD+(v-1)/9*(W-2*PAD);
+  const toY=v=>H-PAD-(Math.min(v,maxE)/maxE)*(H-2*PAD);
+
+  // Grid
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();ctx.restore();
+
+  function drawLine(vals,color,label){
+    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';
+    ctx.beginPath();vals.forEach((v,i)=>{const x=toX(i+1),y=toY(v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+    vals.forEach((v,i)=>{const iscur=(i+1)===curDeg;ctx.fillStyle=iscur?'#d29922':color;ctx.beginPath();ctx.arc(toX(i+1),toY(v),iscur?7:4,0,Math.PI*2);ctx.fill();});
+    ctx.restore();
+  }
+
+  drawLine(ERRORS.map(e=>e.train),'#3fb950');
+  drawLine(ERRORS.map(e=>e.test),'#f85149');
+
+  // Current degree line
+  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(toX(curDeg),PAD);ctx.lineTo(toX(curDeg),H-PAD);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // Labels
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';
+  DEGREES.forEach(d=>ctx.fillText(d,toX(d),H-PAD+13));
+  ctx.fillText('Grado del polinomio',W/2,H-2);
+  ctx.fillStyle='#3fb950';ctx.textAlign='right';ctx.fillText('Train MSE',W-PAD-2,PAD+12);
+  ctx.fillStyle='#f85149';ctx.fillText('Test MSE',W-PAD-2,PAD+26);
+  ctx.restore();
+}
+
+update();
+</script>
