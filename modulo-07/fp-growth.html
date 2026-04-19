@@ -1,0 +1,241 @@
+---
+layout: default
+title: "FP-Growth y FP-Tree"
+prev_url: /modulo-07/reglas-asociacion.html
+prev_title: Reglas de Asociación
+next_url: /modulo-07/sistema-recomendacion.html
+next_title: Sistema de Recomendación
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.txn-badge{display:inline-block;font-size:.72rem;font-family:var(--font-mono);padding:.15rem .45rem;border-radius:10px;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.25);color:var(--accent);margin:.15rem;}
+.txn-row{padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.8rem;color:var(--muted);}
+.txn-row.current{background:rgba(210,153,34,.1);border-radius:4px;padding:.3rem .5rem;}
+.freq-item{display:flex;justify-content:space-between;align-items:center;padding:.2rem 0;font-size:.78rem;font-family:var(--font-mono);}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-07/' | relative_url }}">Módulo 07 — Reglas de Asociación</a><span class="sep">›</span>
+  FP-Growth y FP-Tree
+</nav>
+<header>
+  <div class="eyebrow">Módulo 07 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">FP-Growth y FP-Tree</h1>
+  <p class="demo-lead">FP-Growth evita el costoso escaneo repetido de Apriori comprimiendo las transacciones en un árbol prefijo. Agrega transacciones una a una y observa cómo crece el árbol.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Ventaja sobre Apriori</h3>
+    <p>Apriori escanea la BD k veces (una por nivel). FP-Growth la escanea <strong style="color:var(--accent)">solo 2 veces</strong>: una para contar frecuencias, otra para construir el árbol.</p>
+    <p>La minería se hace recursivamente sobre subárboles condicionales sin generar candidatos explícitos.</p>
+  </div>
+  <div class="tb">
+    <h3>Transacciones ordenadas</h3>
+    <p>Cada transacción se inserta ordenada por frecuencia descendente de items. Esto maximiza el prefijo compartido y comprime el árbol.</p>
+    <div id="freqOrder"></div>
+  </div>
+  <div class="tb">
+    <h3>Cola de transacciones</h3>
+    <div id="txnQueue"></div>
+    <button class="btn" style="margin-top:.6rem;" onclick="addNext()">Agregar siguiente →</button>
+    <button class="btn" style="margin-top:.6rem;margin-left:.4rem;" onclick="addAll()">Agregar todas</button>
+  </div>
+</aside>
+
+<div>
+  <div class="cw">
+    <canvas id="treeCanvas" width="540" height="420"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0 .8rem;">Nodos = items · Número = contador de soporte · Colores por item</p>
+  <div class="tb">
+    <h3>Nodos en el árbol actual</h3>
+    <div id="nodeStats" style="font-size:.82rem;color:var(--muted);">El árbol está vacío.</div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+const ITEMS=['pan','leche','huevos','cerveza','pañales','mantequilla','café','jugo'];
+const RAW_TXNS=[
+  ['pan','leche','pañales','café'],
+  ['leche','huevos','mantequilla'],
+  ['pan','cerveza','pañales','jugo'],
+  ['leche','mantequilla','café'],
+  ['pan','leche','huevos','café'],
+  ['cerveza','pañales','jugo'],
+  ['pan','leche','pañales','mantequilla'],
+  ['leche','huevos','café','jugo'],
+  ['pan','cerveza'],
+  ['pan','leche','mantequilla','café'],
+  ['leche','huevos','pañales'],
+  ['pan','pañales','jugo'],
+];
+
+const PALETTE_ITEMS={
+  'pan':'#58a6ff','leche':'#3fb950','huevos':'#f85149','cerveza':'#d29922',
+  'pañales':'#bc8cff','mantequilla':'#79c0ff','café':'#56d364','jugo':'#ff7b72'
+};
+
+// Count global frequencies
+const freq={};
+RAW_TXNS.forEach(t=>t.forEach(item=>{freq[item]=(freq[item]||0)+1;}));
+const MIN_SUP=3;
+const freqOrder=Object.entries(freq).filter(([_,c])=>c>=MIN_SUP).sort((a,b)=>b[1]-a[1]).map(([k])=>k);
+
+// Order transactions by frequency
+const TXNS=RAW_TXNS.map(t=>t.filter(i=>freqOrder.includes(i)).sort((a,b)=>freqOrder.indexOf(a)-freqOrder.indexOf(b)));
+
+// FP-Tree structure
+let root={item:null,count:0,children:{},parent:null};
+let txnIdx=0;
+
+function insertTxn(node,items){
+  if(!items.length) return;
+  const item=items[0];
+  if(!node.children[item]) node.children[item]={item,count:0,children:{},parent:node};
+  node.children[item].count++;
+  insertTxn(node.children[item],items.slice(1));
+}
+
+function addNext(){
+  if(txnIdx>=TXNS.length) return;
+  insertTxn(root,TXNS[txnIdx]);
+  txnIdx++;
+  render();
+}
+
+function addAll(){while(txnIdx<TXNS.length) addNext();}
+
+function render(){
+  // Freq order panel
+  document.getElementById('freqOrder').innerHTML=freqOrder.map(item=>{
+    const col=PALETTE_ITEMS[item]||'#8b949e';
+    return `<div class="freq-item"><span style="color:${col};">${item}</span><span style="color:var(--muted);">freq=${freq[item]}</span></div>`;
+  }).join('');
+
+  // Queue panel
+  document.getElementById('txnQueue').innerHTML=TXNS.map((t,i)=>{
+    const cl=i===txnIdx?'txn-row current':i<txnIdx?'txn-row':'txn-row';
+    const prefix=i<txnIdx?'✓ ':i===txnIdx?'→ ':'  ';
+    const col=i<txnIdx?'rgba(63,185,80,.5)':i===txnIdx?'#d29922':'var(--muted)';
+    return `<div class="${cl}" style="color:${col};">${prefix}T${i+1}: ${t.map(item=>`<span class="txn-badge">${item}</span>`).join('')}</div>`;
+  }).join('');
+
+  drawTree();
+  updateNodeStats();
+}
+
+function flattenTree(node,depth=0,result=[]){
+  Object.values(node.children).forEach(child=>{
+    result.push({node:child,depth});
+    flattenTree(child,depth+1,result);
+  });
+  return result;
+}
+
+function drawTree(){
+  const canvas=document.getElementById('treeCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(Object.keys(root.children).length===0){
+    ctx.fillStyle='rgba(139,148,158,.5)';ctx.font='14px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Árbol vacío — agrega transacciones',W/2,H/2);
+    return;
+  }
+
+  // BFS layout
+  const levels=[];
+  function bfs(node,lv){
+    if(!levels[lv]) levels[lv]=[];
+    levels[lv].push(node);
+    Object.values(node.children).forEach(c=>bfs(c,lv+1));
+  }
+  Object.values(root.children).forEach(c=>bfs(c,0));
+
+  const maxLv=levels.length;
+  const LV_H=(H-40)/Math.max(maxLv,1);
+  const nodePos=new Map();
+
+  levels.forEach((lv,li)=>{
+    lv.forEach((node,ni)=>{
+      const x=(ni+1)*W/(lv.length+1);
+      const y=30+li*LV_H+LV_H/2;
+      nodePos.set(node,{x,y});
+    });
+  });
+
+  // Draw edges
+  Object.values(root.children).forEach(c=>drawEdges(c,ctx,nodePos));
+
+  // Draw nodes
+  Object.values(root.children).forEach(c=>drawNodes(c,ctx,nodePos));
+}
+
+function drawEdges(node,ctx,pos){
+  const p=pos.get(node);
+  if(!p) return;
+  Object.values(node.children).forEach(child=>{
+    const cp=pos.get(child);
+    if(!cp) return;
+    ctx.save();ctx.strokeStyle='rgba(139,148,158,.3)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(cp.x,cp.y);ctx.stroke();ctx.restore();
+    drawEdges(child,ctx,pos);
+  });
+}
+
+function drawNodes(node,ctx,pos){
+  const p=pos.get(node);
+  if(!p) return;
+  const col=PALETTE_ITEMS[node.item]||'#8b949e';
+  const r=14;
+  ctx.save();
+  ctx.fillStyle=col+'dd';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#0d1117';ctx.font='bold 8px JetBrains Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(node.item.slice(0,3),p.x,p.y-3);
+  ctx.fillText(':'+node.count,p.x,p.y+5);
+  ctx.restore();
+  Object.values(node.children).forEach(c=>drawNodes(c,ctx,pos));
+}
+
+function updateNodeStats(){
+  const flat=flattenTree(root);
+  const counts={};
+  flat.forEach(({node})=>{counts[node.item]=(counts[node.item]||0)+1;});
+  document.getElementById('nodeStats').innerHTML=
+    `Nodos totales: <strong style="color:var(--accent);">${flat.length}</strong><br>`+
+    Object.entries(counts).map(([item,c])=>{
+      const col=PALETTE_ITEMS[item]||'#8b949e';
+      return `<span style="color:${col};">${item}</span>: ${c} nodo${c>1?'s':''} `;
+    }).join(' · ');
+}
+
+render();
+</script>
