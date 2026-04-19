@@ -1,0 +1,323 @@
+---
+layout: default
+title: "Dendrograma Jerárquico"
+prev_url: /modulo-06/dbscan.html
+prev_title: DBSCAN
+next_url: /modulo-06/evaluacion-silhouette.html
+next_title: Evaluación con Silhouette
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:130px;}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.8rem;padding:.3rem .6rem;font-family:var(--font-mono);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-06/' | relative_url }}">Módulo 06 — Clustering</a><span class="sep">›</span>
+  Dendrograma Jerárquico
+</nav>
+<header>
+  <div class="eyebrow">Módulo 06 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Dendrograma Jerárquico</h1>
+  <p class="demo-lead">El clustering jerárquico aglomerativo fusiona los dos grupos más cercanos en cada paso. Arrastra la línea de corte para elegir cuántos clusters obtener.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Algoritmo aglomerativo</h3>
+    <ol style="padding-left:1.2rem;">
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Cada punto es su propio cluster</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Fusionar los dos clusters más cercanos</li>
+      <li style="font-size:.88rem;color:var(--muted);">Repetir hasta tener un solo cluster</li>
+    </ol>
+  </div>
+  <div class="tb">
+    <h3>Linkage (criterio de distancia)</h3>
+    <ul>
+      <li><strong style="color:var(--accent)">Single</strong>: mínima distancia entre miembros (tiende a encadenar)</li>
+      <li><strong style="color:var(--accent2)">Complete</strong>: máxima distancia (clusters compactos)</li>
+      <li><strong style="color:var(--accent3)">Average</strong>: promedio de todas las distancias entre pares</li>
+      <li><strong style="color:var(--warn)">Ward</strong>: minimiza la varianza intra-cluster (similar a K-Means)</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Lectura del dendrograma</h3>
+    <p>La altura de cada unión indica la distancia a la que se fusionaron esos clusters. Un <strong style="color:var(--accent)">corte horizontal</strong> a cierta altura determina el número de clusters: tantos como ramas que cruza la línea.</p>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Linkage</label><br>
+      <select id="linkageSel" onchange="rebuild()">
+        <option value="ward">Ward</option>
+        <option value="complete">Complete</option>
+        <option value="average">Average</option>
+        <option value="single">Single</option>
+      </select>
+    </div>
+    <div>
+      <label>Corte: <span id="cutDisp">k=3</span></label><br>
+      <input type="range" id="cutRange" min="0" max="1" step="0.01" value="0.5" oninput="updateCut();">
+    </div>
+    <button class="btn" onclick="rebuild()">Nuevos datos</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Clusters (corte)</div>
+      <div class="m-val" id="clusterVal" style="color:var(--accent);">3</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Altura de corte</div>
+      <div class="m-val" id="cutHeightVal" style="color:var(--accent2);">—</div>
+    </div>
+  </div>
+
+  <!-- Scatter canvas -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="scatterCanvas" width="520" height="200"></canvas>
+  </div>
+
+  <!-- Dendrogram canvas -->
+  <div class="cw">
+    <canvas id="dendroCanvas" width="520" height="240"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Arrastra el slider de corte para elegir el número de clusters</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+const PALETTE=['#58a6ff','#3fb950','#f85149','#d29922','#bc8cff','#79c0ff','#56d364','#ff7b72'];
+
+let PTS=[], mergeHistory=[], maxHeight=1;
+
+function makeData(seed){
+  const r=rng(seed);
+  const pts=[];
+  const centers=[[.2,.3],[.7,.25],[.5,.72],[.25,.75],[.8,.7]];
+  centers.forEach(c=>{
+    const n=8+Math.floor(r()*5);
+    for(let i=0;i<n;i++){
+      pts.push({x:Math.max(.04,Math.min(.96,c[0]+(r()-.5)*.22)),
+                y:Math.max(.04,Math.min(.96,c[1]+(r()-.5)*.22))});
+    }
+  });
+  return pts;
+}
+
+function dist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+
+function clusterDist(ca,cb,allPts,type){
+  const pairs=[];
+  ca.forEach(i=>cb.forEach(j=>pairs.push(dist(allPts[i],allPts[j]))));
+  if(type==='single') return Math.min(...pairs);
+  if(type==='complete') return Math.max(...pairs);
+  if(type==='average') return pairs.reduce((s,v)=>s+v,0)/pairs.length;
+  if(type==='ward'){
+    const na=ca.length,nb=cb.length;
+    const centA={x:ca.reduce((s,i)=>s+allPts[i].x,0)/na,y:ca.reduce((s,i)=>s+allPts[i].y,0)/na};
+    const centB={x:cb.reduce((s,i)=>s+allPts[i].x,0)/nb,y:cb.reduce((s,i)=>s+allPts[i].y,0)/nb};
+    return dist(centA,centB)*Math.sqrt((na*nb)/(na+nb));
+  }
+}
+
+function hierarchical(pts,type){
+  const n=pts.length;
+  let clusters=pts.map((_,i)=>[i]);
+  const merges=[];
+
+  while(clusters.length>1){
+    let minD=Infinity,mi=-1,mj=-1;
+    for(let i=0;i<clusters.length;i++){
+      for(let j=i+1;j<clusters.length;j++){
+        const d=clusterDist(clusters[i],clusters[j],pts,type);
+        if(d<minD){minD=d;mi=i;mj=j;}
+      }
+    }
+    const merged=[...clusters[mi],...clusters[mj]];
+    merges.push({left:clusters[mi],right:clusters[mj],height:minD,members:merged});
+    clusters=[...clusters.filter((_,i)=>i!==mi&&i!==mj),merged];
+  }
+  return merges;
+}
+
+function rebuild(){
+  PTS=makeData(Date.now()%9999);
+  const type=document.getElementById('linkageSel').value;
+  mergeHistory=hierarchical(PTS,type);
+  maxHeight=mergeHistory[mergeHistory.length-1].height*1.05;
+  updateCut();
+}
+
+function getClusters(cutHeight){
+  // Replay merges up to cutHeight
+  let clusters=PTS.map((_,i)=>[i]);
+  mergeHistory.forEach(m=>{
+    if(m.height<=cutHeight){
+      // Remove left and right, add merged
+      clusters=clusters.filter(c=>!(c.length===m.left.length&&m.left.every((v,i)=>c[i]===v)||
+        c.every(v=>m.left.includes(v))&&m.left.every(v=>c.includes(v))||
+        c.every(v=>m.right.includes(v))&&m.right.every(v=>c.includes(v))));
+    }
+  });
+  // Actually: use a simpler label approach
+  const labels=new Array(PTS.length).fill(-1);
+  const visited=new Set();
+  let cid=0;
+  function label(members,id){members.forEach(i=>{if(labels[i]===-1)labels[i]=id;});}
+
+  // Find which merges are active at cutHeight
+  const activeMerges=mergeHistory.filter(m=>m.height<=cutHeight);
+  const activeMembers=activeMerges.length?activeMerges[activeMerges.length-1]?.members:null;
+
+  // Assign labels by finding which merge-group each point belongs to
+  // Simple: replay with union-find
+  const parent=Array.from({length:PTS.length},(_,i)=>i);
+  function find(x){while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;}
+  function union(a,b){const ra=find(a),rb=find(b);if(ra!==rb)parent[ra]=rb;}
+
+  mergeHistory.forEach(m=>{
+    if(m.height<=cutHeight){
+      for(let i=1;i<m.members.length;i++) union(m.members[0],m.members[i]);
+    }
+  });
+
+  const roots=new Map();
+  PTS.forEach((_,i)=>{const r=find(i);if(!roots.has(r))roots.set(r,roots.size);});
+  return PTS.map((_,i)=>roots.get(find(i)));
+}
+
+function updateCut(){
+  const slider=document.getElementById('cutRange');
+  const cutFrac=parseFloat(slider.value);
+  const cutHeight=cutFrac*maxHeight;
+  document.getElementById('cutHeightVal').textContent=cutHeight.toFixed(4);
+
+  const labels=getClusters(cutHeight);
+  const k=new Set(labels).size;
+  document.getElementById('clusterVal').textContent=k;
+  document.getElementById('cutDisp').textContent=`k=${k}`;
+
+  drawScatter(labels);
+  drawDendro(cutHeight);
+}
+
+function drawScatter(labels){
+  const cv=document.getElementById('scatterCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=15;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+  PTS.forEach((p,i)=>{
+    const col=PALETTE[labels[i]%PALETTE.length];
+    ctx.save();ctx.fillStyle=col;ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p.x),toY(p.y),5,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+}
+
+function drawDendro(cutHeight){
+  const cv=document.getElementById('dendroCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const PAD_L=10,PAD_R=10,PAD_T=20,PAD_B=40;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const n=PTS.length;
+  const toH=v=>PAD_T+(1-v/maxHeight)*(H-PAD_T-PAD_B);
+  const cutY=toH(cutHeight);
+
+  // Assign leaf x positions (order by BFS of final merge)
+  const leafOrder=[];
+  function collectLeaves(members){
+    if(members.length===1){leafOrder.push(members[0]);return;}
+    // Find the merge that created this group
+    const m=mergeHistory.find(m=>m.members.length===members.length&&members.every(v=>m.members.includes(v)));
+    if(m){collectLeaves(m.left);collectLeaves(m.right);}
+    else members.forEach(v=>leafOrder.push(v));
+  }
+  if(mergeHistory.length) collectLeaves(mergeHistory[mergeHistory.length-1].members);
+
+  const leafX={};
+  leafOrder.forEach((idx,i)=>{
+    leafX[idx]=PAD_L+(i+0.5)*(W-PAD_L-PAD_R)/n;
+  });
+
+  // Compute x position for each merge node (centroid of leaves)
+  const mergeX=mergeHistory.map(m=>{
+    const xs=m.members.map(i=>leafX[i]).filter(v=>v!==undefined);
+    return xs.reduce((s,v)=>s+v,0)/xs.length;
+  });
+
+  // Draw merges
+  mergeHistory.forEach((m,mi)=>{
+    const my=toH(m.height);
+    const above=m.height>cutHeight;
+    ctx.save();
+    ctx.strokeStyle=above?'rgba(139,148,158,.5)':'#58a6ff';
+    ctx.lineWidth=above?1:1.5;
+
+    // Get x positions for left/right
+    function getX(members){
+      if(members.length===1) return leafX[members[0]];
+      const mi2=mergeHistory.findIndex(m2=>m2.members.length===members.length&&members.every(v=>m2.members.includes(v)));
+      return mi2>=0?mergeX[mi2]:(members.reduce((s,i)=>s+(leafX[i]||0),0)/members.length);
+    }
+    const lx=getX(m.left),rx=getX(m.right),cx2=(lx+rx)/2;
+
+    const ly=m.left.length===1?H-PAD_B:toH(mergeHistory.find(m2=>m2.members.length===m.left.length&&m.left.every(v=>m2.members.includes(v)))?.height||0);
+    const ry=m.right.length===1?H-PAD_B:toH(mergeHistory.find(m2=>m2.members.length===m.right.length&&m.right.every(v=>m2.members.includes(v)))?.height||0);
+
+    ctx.beginPath();
+    ctx.moveTo(lx,ly);ctx.lineTo(lx,my);ctx.lineTo(rx,my);ctx.lineTo(rx,ry);
+    ctx.stroke();ctx.restore();
+  });
+
+  // Cut line
+  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(PAD_L,cutY);ctx.lineTo(W-PAD_R,cutY);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#d29922';ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText(`corte = ${cutHeight.toFixed(3)}`,PAD_L+4,cutY-5);ctx.restore();
+
+  // Y axis labels
+  ctx.save();ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';ctx.textAlign='right';
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=toH(f*maxHeight);
+    ctx.fillText((f*maxHeight).toFixed(3),PAD_L+32,y+3);
+  });
+  ctx.restore();
+}
+
+rebuild();
+</script>
