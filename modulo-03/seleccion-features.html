@@ -1,0 +1,231 @@
+---
+layout: default
+title: "Selección de Features"
+prev_url: /modulo-03/discretizacion-atributos.html
+prev_title: Discretización de Atributos
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+.family-badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:4px;margin:.1rem;font-family:var(--font-mono);}
+.fb-filter{background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.3);}
+.fb-wrapper{background:rgba(63,185,80,.1);color:var(--accent3);border:1px solid rgba(63,185,80,.3);}
+.fb-embedded{background:rgba(188,140,255,.1);color:var(--accent2);border:1px solid rgba(188,140,255,.3);}
+.ctrl-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.ctrl-bar label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);transition:background .2s;}
+.btn:hover{background:rgba(88,166,255,.2);}
+.feat-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:var(--radius-sm);margin-bottom:.45rem;background:var(--surface);border:1px solid var(--border);transition:border-color .2s,background .2s;}
+.feat-row.selected{border-color:rgba(88,166,255,.5);background:rgba(88,166,255,.06);}
+.feat-row.excluded{opacity:.4;}
+.feat-check{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.feat-name{font-size:.83rem;font-weight:600;color:var(--text);width:140px;flex-shrink:0;}
+.feat-name .feat-type{font-size:.65rem;color:var(--muted);font-family:var(--font-mono);font-weight:400;}
+.bar-col{flex:1;display:flex;flex-direction:column;gap:3px;}
+.bar-label{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);display:flex;justify-content:space-between;}
+.bar-track{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.score-badge{font-family:var(--font-mono);font-size:.8rem;font-weight:700;width:42px;text-align:right;flex-shrink:0;}
+.selected-panel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-top:1rem;}
+.sel-title{font-size:.7rem;font-family:var(--font-mono);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;}
+.feat-chip{display:inline-flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:600;padding:.2rem .6rem;border-radius:12px;margin:.2rem;font-family:var(--font-mono);}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-03/' | relative_url }}">Módulo 03 — Preprocesamiento y Limpieza</a><span class="sep">›</span>
+  Selección de Features
+</nav>
+<header>
+  <div class="eyebrow">Módulo 03 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Selección de Features</h1>
+  <p class="demo-lead">Con 100 features solo 10 pueden ser relevantes. Elegir mal dispara el sobreajuste y el tiempo de cómputo. Aprende a medir y comparar la relevancia de cada atributo.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>¿Por qué seleccionar?</h3>
+    <ul>
+      <li>Maldición de la dimensionalidad: más features ≠ mejor modelo</li>
+      <li>Features irrelevantes añaden ruido al clasificador</li>
+      <li>Features redundantes desperdician cómputo</li>
+      <li>Menos features → modelos más interpretables</li>
+    </ul>
+  </div>
+  <div class="tb">
+    <h3>Tres familias de métodos</h3>
+    <p><span class="family-badge fb-filter">Filter</span> Evalúan features individualmente, independiente del modelo. Rápidos: varianza, correlación, información mutua.</p>
+    <p><span class="family-badge fb-wrapper">Wrapper</span> Evalúan subconjuntos entrenando el modelo. Más precisos pero costosos: forward/backward selection, RFE.</p>
+    <p><span class="family-badge fb-embedded">Embedded</span> La selección ocurre durante el entrenamiento. Balance ideal: Lasso, árboles de decisión, XGBoost feature importance.</p>
+  </div>
+  <div class="tb">
+    <h3>Métricas usadas aquí</h3>
+    <ul>
+      <li><strong style="color:var(--text)">Varianza</strong>: feature con σ²≈0 no aporta información</li>
+      <li><strong style="color:var(--text)">|r| con la clase</strong>: correlación de Pearson con el target churn (valores abs.)</li>
+      <li><strong style="color:var(--text)">Score combinado</strong>: promedio de ambas métricas normalizadas</li>
+    </ul>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl-bar">
+    <div>
+      <label>Auto-selección Top k = <span id="kvalDisp">5</span></label><br>
+      <input type="range" id="kSlider" min="1" max="10" value="5" oninput="document.getElementById('kvalDisp').textContent=this.value;">
+    </div>
+    <button class="btn" onclick="autoSelect()">Seleccionar Top k</button>
+    <button class="btn" style="border-color:rgba(139,148,158,.3);background:var(--surface2);color:var(--muted);" onclick="selectAll()">Todas</button>
+    <button class="btn" style="border-color:rgba(139,148,158,.3);background:var(--surface2);color:var(--muted);" onclick="selectNone()">Ninguna</button>
+  </div>
+
+  <div id="featList"></div>
+
+  <div class="selected-panel">
+    <div class="sel-title">Features seleccionadas actualmente</div>
+    <div id="selChips"></div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// Dataset: churn de telecomunicaciones, 60 instancias
+// Features: 9 numéricas + 1 nominal (región)
+// Target: churn (0/1)
+const N = 60;
+function rng(seed){ let s=seed; return ()=>{ s=Math.imul(s^s>>>15,1|s); s^=s+Math.imul(s^s>>>7,61|s); return ((s^s>>>14)>>>0)/4294967296; }; }
+const rand = rng(42);
+
+function genData(){
+  const rows=[];
+  for(let i=0;i<N;i++){
+    const churn = rand()<0.35?1:0;
+    rows.push({
+      edad:           Math.round(20+rand()*50),
+      ingresos:       Math.round(1000+rand()*4000),
+      n_productos:    Math.round(1+rand()*5),
+      n_reclamos:     churn ? Math.round(2+rand()*8) : Math.round(rand()*3),
+      dias_cliente:   churn ? Math.round(30+rand()*300) : Math.round(200+rand()*800),
+      uso_app:        churn ? rand()*0.3 : 0.4+rand()*0.6,
+      n_llamadas_sop: churn ? Math.round(3+rand()*10) : Math.round(rand()*3),
+      saldo_promedio: Math.round(500+rand()*3000),
+      tiene_tarjeta:  rand()<0.5?1:0,
+      churn
+    });
+  }
+  return rows;
+}
+
+const DATA = genData();
+const TARGET = DATA.map(r=>r.churn);
+
+const FEATURES = [
+  {key:'edad',          label:'Edad',             type:'num'},
+  {key:'ingresos',      label:'Ingresos',          type:'num'},
+  {key:'n_productos',   label:'N° Productos',      type:'num'},
+  {key:'n_reclamos',    label:'N° Reclamos',       type:'num'},
+  {key:'dias_cliente',  label:'Días como cliente', type:'num'},
+  {key:'uso_app',       label:'Uso de App',        type:'num'},
+  {key:'n_llamadas_sop',label:'Llamadas Soporte',  type:'num'},
+  {key:'saldo_promedio',label:'Saldo Promedio',    type:'num'},
+  {key:'tiene_tarjeta', label:'Tiene Tarjeta',     type:'bin'},
+  {key:'region',        label:'Región',            type:'nom'},
+];
+
+// For 'region', generate nominal values
+DATA.forEach(r=>{ r.region = ['Norte','Sur','Centro','Este'][Math.floor(rand()*4)]; });
+
+function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function variance(arr){ const m=mean(arr); return mean(arr.map(v=>(v-m)**2)); }
+function pearson(xs,ys){
+  const mx=mean(xs),my=mean(ys);
+  const num=xs.map((x,i)=>(x-mx)*(ys[i]-my)).reduce((a,b)=>a+b,0);
+  const den=Math.sqrt(xs.map(x=>(x-mx)**2).reduce((a,b)=>a+b,0)*ys.map(y=>(y-my)**2).reduce((a,b)=>a+b,0));
+  return den===0?0:num/den;
+}
+
+// Compute scores
+const scores = FEATURES.map(f=>{
+  const vals = DATA.map(r=>typeof r[f.key]==='number'?r[f.key]:NaN);
+  if(f.type==='nom'){
+    // chi-square proxy: variance of class rates per category
+    const cats=[...new Set(DATA.map(r=>r[f.key]))];
+    const rates=cats.map(c=>{const rows=DATA.filter(r=>r[f.key]===c);return mean(rows.map(r=>r.churn));});
+    const v=variance(rates);
+    return {key:f.key,label:f.label,type:f.type,varScore:Math.min(1,v*10),corrScore:Math.min(1,v*10),score:Math.min(1,v*10)};
+  }
+  const numVals=vals.filter(v=>!isNaN(v));
+  const varNorm=Math.min(1,variance(numVals)/Math.max(...numVals.map(v=>v**2))*10)||0;
+  const corr=Math.abs(pearson(vals,TARGET));
+  const score=(varNorm+corr)/2;
+  return {key:f.key,label:f.label,type:f.type,varScore:varNorm,corrScore:corr,score};
+});
+
+// Sort by score desc
+scores.sort((a,b)=>b.score-a.score);
+
+let selected = new Set(scores.slice(0,5).map(s=>s.key));
+
+function scoreColor(s){
+  if(s>=0.6) return '#3fb950';
+  if(s>=0.35) return '#d29922';
+  return '#f85149';
+}
+
+function render(){
+  const list=document.getElementById('featList');
+  list.innerHTML='';
+  scores.forEach(f=>{
+    const isSel=selected.has(f.key);
+    const div=document.createElement('div');
+    div.className='feat-row'+(isSel?' selected':'');
+    div.innerHTML=`
+      <input type="checkbox" class="feat-check" ${isSel?'checked':''} onchange="toggle('${f.key}',this.checked)">
+      <div class="feat-name">${f.label}<br><span class="feat-type">${f.type}</span></div>
+      <div class="bar-col">
+        <div class="bar-label"><span>Varianza</span><span>${(f.varScore*100).toFixed(0)}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${f.varScore*100}%;background:var(--accent);"></div></div>
+        <div class="bar-label" style="margin-top:3px;"><span>|r| con churn</span><span>${(f.corrScore*100).toFixed(0)}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${f.corrScore*100}%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="score-badge" style="color:${scoreColor(f.score)};">${(f.score*100).toFixed(0)}%</div>
+    `;
+    list.appendChild(div);
+  });
+  renderChips();
+}
+
+function renderChips(){
+  const chips=document.getElementById('selChips');
+  if(!selected.size){ chips.innerHTML='<span style="color:var(--muted);font-size:.82rem;">Ninguna seleccionada</span>'; return; }
+  chips.innerHTML=[...selected].map(k=>{
+    const f=scores.find(s=>s.key===k);
+    const col=scoreColor(f.score);
+    return `<span class="feat-chip" style="background:${col}22;color:${col};border:1px solid ${col}44;">${f.label}</span>`;
+  }).join('');
+}
+
+function toggle(key,checked){ if(checked) selected.add(key); else selected.delete(key); render(); }
+function autoSelect(){ const k=parseInt(document.getElementById('kSlider').value); selected=new Set(scores.slice(0,k).map(s=>s.key)); render(); }
+function selectAll(){ selected=new Set(scores.map(s=>s.key)); render(); }
+function selectNone(){ selected=new Set(); render(); }
+
+render();
+</script>
