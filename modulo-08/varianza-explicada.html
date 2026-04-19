@@ -1,0 +1,275 @@
+---
+layout: default
+title: "Varianza Explicada"
+prev_url: /modulo-08/tsne-proyeccion.html
+prev_title: t-SNE
+next_url: /modulo-08/seleccion-features-avanzada.html
+next_title: Selección de Features
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100px;}
+.pca-tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.pca-tbl th{background:var(--surface2);color:var(--muted);font-family:var(--font-mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;padding:.4rem .6rem;border:1px solid var(--border);}
+.pca-tbl td{padding:.35rem .6rem;border:1px solid var(--border);font-family:var(--font-mono);}
+.bar-inline{display:inline-block;height:6px;border-radius:3px;vertical-align:middle;margin-left:4px;}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-08/' | relative_url }}">Módulo 08 — Reducción de Dimensionalidad</a><span class="sep">›</span>
+  Varianza Explicada
+</nav>
+<header>
+  <div class="eyebrow">Módulo 08 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Varianza Explicada</h1>
+  <p class="demo-lead">El gráfico de codo (scree plot) muestra cuánta varianza captura cada componente principal. Elige cuántos componentes retener y observa el error de reconstrucción.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Criterio de retención</h3>
+    <p><strong style="color:var(--accent)">Regla del 80-90%</strong>: retener los k primeros componentes que acumulen el 80-90% de la varianza total.</p>
+    <p><strong style="color:var(--accent2)">Regla del codo</strong>: buscar el punto de inflexión en el scree plot donde la ganancia marginal cae abruptamente.</p>
+    <p><strong style="color:var(--accent3)">Regla de Kaiser</strong>: retener solo componentes con varianza &gt; 1 (cuando los datos están estandarizados).</p>
+  </div>
+  <div class="tb">
+    <h3>Componentes principales</h3>
+    <table class="pca-tbl" id="pcaTbl"></table>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Componentes = <span id="kDisp">3</span></label><br>
+      <input type="range" id="kRange" min="1" max="6" step="1" value="3" oninput="document.getElementById('kDisp').textContent=this.value;update();">
+    </div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Varianza retenida</div>
+      <div class="m-val" id="varRet" style="color:var(--accent);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Error reconstrucción</div>
+      <div class="m-val" id="reconErr" style="color:var(--warn);">—</div>
+    </div>
+  </div>
+
+  <!-- Scree plot -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="screeCanvas" width="530" height="200"></canvas>
+  </div>
+
+  <!-- Scatter (first 2 features, original vs reconstructed) -->
+  <div class="cw">
+    <canvas id="scatterCanvas" width="530" height="220"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Scatter: puntos originales (azul) vs. reconstruidos a k componentes (naranja)</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+const r=rng(42);
+const N=80,DIM=6;
+// Generate 6D data with known structure (3 meaningful dims + 3 noisy)
+const RAW=Array.from({length:N},()=>{
+  const base=[r()-.5,r()-.5,r()-.5];
+  const noise=[r()*.2-.1,r()*.2-.1,r()*.1-.05];
+  return [...base.map((v,i)=>v*[3,2,1.5][i]),...noise];
+});
+
+// Center
+const mean=Array(DIM).fill(0);
+RAW.forEach(p=>p.forEach((v,i)=>mean[i]+=v/N));
+const DATA=RAW.map(p=>p.map((v,i)=>v-mean[i]));
+
+// Covariance matrix (DIM×DIM)
+const COV=Array.from({length:DIM},(_,i)=>Array.from({length:DIM},(_,j)=>{
+  let s=0;DATA.forEach(p=>s+=p[i]*p[j]);return s/(N-1);
+}));
+
+// Power iteration for eigenvalues/vectors
+function powerIter(M,dim){
+  const eigenvals=[],eigenvecs=[];
+  let Mcur=M.map(r=>[...r]);
+  for(let k=0;k<dim;k++){
+    let v=Array.from({length:dim},()=>r()-.5);
+    let norm=Math.sqrt(v.reduce((s,x)=>s+x*x,0));
+    v=v.map(x=>x/norm);
+    for(let iter=0;iter<200;iter++){
+      const Mv=Array(dim).fill(0);
+      for(let i=0;i<dim;i++) for(let j=0;j<dim;j++) Mv[i]+=Mcur[i][j]*v[j];
+      const lambda=Mv.reduce((s,x,i)=>s+x*v[i],0);
+      norm=Math.sqrt(Mv.reduce((s,x)=>s+x*x,0));
+      v=Mv.map(x=>x/norm);
+      if(iter>100&&Math.abs(norm-lambda)<1e-8) break;
+    }
+    const lambda=Array(dim).fill(0).reduce((s,_,i)=>{let t=0;for(let j=0;j<dim;j++)t+=Mcur[i][j]*v[j];return s+t*v[i];},0);
+    eigenvals.push(lambda);eigenvecs.push(v);
+    // Deflate
+    for(let i=0;i<dim;i++) for(let j=0;j<dim;j++) Mcur[i][j]-=lambda*v[i]*v[j];
+  }
+  return {eigenvals,eigenvecs};
+}
+
+const {eigenvals:EVALS,eigenvecs:EVECS}=powerIter(COV,DIM);
+const totalVar=EVALS.reduce((s,v)=>s+Math.abs(v),0);
+
+function project(k){
+  return DATA.map(p=>{
+    return EVECS.slice(0,k).map(ev=>p.reduce((s,x,i)=>s+x*ev[i],0));
+  });
+}
+
+function reconstruct(k){
+  const projs=project(k);
+  return projs.map(coords=>{
+    const rec=Array(DIM).fill(0);
+    coords.forEach((c,ki)=>EVECS[ki].forEach((v,di)=>rec[di]+=c*v));
+    return rec;
+  });
+}
+
+function update(){
+  const k=parseInt(document.getElementById('kRange').value);
+  const cumVar=EVALS.slice(0,k).reduce((s,v)=>s+Math.abs(v),0)/totalVar*100;
+  document.getElementById('varRet').textContent=cumVar.toFixed(1)+'%';
+
+  const recon=reconstruct(k);
+  let err=0;
+  DATA.forEach((p,i)=>p.forEach((v,d)=>err+=(v-recon[i][d])**2));
+  document.getElementById('reconErr').textContent=(err/N).toFixed(4);
+
+  drawScree(k);
+  drawScatter(recon);
+  buildTable(k);
+}
+
+function drawScree(k){
+  const cv=document.getElementById('screeCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=35;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const vars=EVALS.map(v=>Math.abs(v)/totalVar*100);
+  const cumvars=vars.map((_,i)=>vars.slice(0,i+1).reduce((s,v)=>s+v,0));
+
+  // Axes
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();ctx.restore();
+
+  const barW=(W-2*PAD)/DIM*.6;
+  const cx=i=>PAD+(i+0.5)*(W-2*PAD)/DIM;
+  const cy=v=>H-PAD-(v/100)*(H-2*PAD);
+
+  vars.forEach((v,i)=>{
+    const x=cx(i)-barW/2,y=cy(v),bh=H-PAD-y;
+    const selected=i<k;
+    ctx.fillStyle=selected?'#58a6ff66':'rgba(139,148,158,.2)';
+    ctx.fillRect(x,y,barW,bh);
+    ctx.fillStyle=selected?'rgba(139,148,158,.8)':'rgba(139,148,158,.4)';
+    ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(`PC${i+1}`,cx(i),H-PAD+12);
+    ctx.fillText(v.toFixed(1)+'%',cx(i),y-5);
+  });
+
+  // Cumulative curve
+  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.beginPath();cumvars.forEach((v,i)=>{if(i===0)ctx.moveTo(cx(i),cy(v));else ctx.lineTo(cx(i),cy(v));});ctx.stroke();
+  cumvars.forEach((v,i)=>{ctx.fillStyle=i<k?'#d29922':'rgba(210,153,34,.3)';ctx.beginPath();ctx.arc(cx(i),cy(v),4,0,Math.PI*2);ctx.fill();});
+  ctx.restore();
+
+  // 80% line
+  ctx.save();ctx.strokeStyle='rgba(248,81,73,.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(PAD,cy(80));ctx.lineTo(W-PAD,cy(80));ctx.stroke();
+  ctx.fillStyle='rgba(248,81,73,.7)';ctx.font='8px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText('80%',PAD+3,cy(80)-4);ctx.setLineDash([]);ctx.restore();
+
+  // Y labels
+  ctx.save();ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';ctx.textAlign='right';
+  [0,25,50,75,100].forEach(v=>ctx.fillText(v+'%',PAD-3,cy(v)+3));ctx.restore();
+}
+
+function drawScatter(recon){
+  const cv=document.getElementById('scatterCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const allX=[...DATA.map(p=>p[0]),...recon.map(p=>p[0])];
+  const allY=[...DATA.map(p=>p[1]),...recon.map(p=>p[1])];
+  const xMin=Math.min(...allX),xMax=Math.max(...allX);
+  const yMin=Math.min(...allY),yMax=Math.max(...allY);
+  const toX=v=>PAD+(v-xMin)/(xMax-xMin+1e-10)*(W-2*PAD);
+  const toY=v=>PAD+(v-yMin)/(yMax-yMin+1e-10)*(H-2*PAD);
+
+  // Lines
+  DATA.forEach((p,i)=>{
+    ctx.save();ctx.strokeStyle='rgba(139,148,158,.15)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(toX(p[0]),toY(p[1]));ctx.lineTo(toX(recon[i][0]),toY(recon[i][1]));ctx.stroke();ctx.restore();
+  });
+  DATA.forEach(p=>{
+    ctx.save();ctx.fillStyle='#58a6ff';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p[0]),toY(p[1]),4,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+  recon.forEach(p=>{
+    ctx.save();ctx.fillStyle='#f85149';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p[0]),toY(p[1]),3,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+
+  // Legend
+  ctx.save();ctx.font='9px Inter,system-ui';
+  ctx.fillStyle='#58a6ff';ctx.fillRect(W-130,8,8,8);ctx.fillStyle='rgba(230,237,243,.8)';ctx.fillText('Original',W-119,16);
+  ctx.fillStyle='#f85149';ctx.fillRect(W-130,22,8,8);ctx.fillStyle='rgba(230,237,243,.8)';ctx.fillText('Reconstruido',W-119,30);
+  ctx.restore();
+}
+
+function buildTable(k){
+  const vars=EVALS.map(v=>Math.abs(v)/totalVar*100);
+  let cum=0;
+  let html='<tr><th>PC</th><th>Eigenvalor</th><th>Var %</th><th>Var acum %</th></tr>';
+  vars.forEach((v,i)=>{
+    cum+=v;
+    const sel=i<k;
+    const col=sel?'var(--accent)':'var(--muted)';
+    html+=`<tr style="color:${col};">
+      <td style="font-weight:${sel?700:400};">PC${i+1}</td>
+      <td>${EVALS[i].toFixed(3)}</td>
+      <td>${v.toFixed(1)}%<span class="bar-inline" style="width:${v.toFixed(0)}px;background:${sel?'#58a6ff':'rgba(139,148,158,.3)'}"></span></td>
+      <td>${cum.toFixed(1)}%</td>
+    </tr>`;
+  });
+  document.getElementById('pcaTbl').innerHTML=html;
+}
+
+update();
+</script>
