@@ -1,0 +1,371 @@
+---
+layout: default
+title: "Reglas de Asociación"
+prev_url: /modulo-07/apriori-visualizado.html
+prev_title: Apriori Visualizado
+next_url: /modulo-07/fp-growth.html
+next_title: FP-Growth
+---
+<style>
+.demo-page{max-width:1280px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:680px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:300px 1fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.formula{font-family:var(--font-mono);color:var(--accent);background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.2);border-radius:6px;padding:.4rem .7rem;font-size:.82rem;margin:.4rem 0;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:110px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.rules-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.rules-table th{padding:.4rem .6rem;text-align:left;color:var(--accent2);font-size:.65rem;letter-spacing:.06em;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;}
+.rules-table th:hover{color:var(--accent);}
+.rules-table td{padding:.35rem .6rem;color:var(--muted);border-bottom:1px solid rgba(48,54,61,.4);vertical-align:middle;}
+.rules-table tr{cursor:pointer;transition:background .1s;}
+.rules-table tr:hover td{background:rgba(88,166,255,.06);}
+.rules-table tr.selected td{background:rgba(88,166,255,.12);}
+.sort-arrow{font-size:.6rem;margin-left:.3rem;color:var(--accent);}
+.rule-arrow{color:var(--accent);font-weight:700;margin:0 .3rem;}
+.info-box{background:rgba(88,166,255,.07);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:.7rem 1rem;margin-bottom:.75rem;font-size:.82rem;font-family:var(--font-mono);color:var(--text);}
+.lift-high{color:#3fb950;}
+.lift-mid{color:#d29922;}
+.lift-low{color:#f85149;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-07/' | relative_url }}">Módulo 07 — Reglas de Asociación</a><span class="sep">›</span>
+  Reglas de Asociación
+</nav>
+<header>
+  <div class="eyebrow">Módulo 07 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Reglas de Asociación</h1>
+  <p class="demo-lead">Explora las reglas generadas a partir del mercado. Filtra por soporte y confianza, ordena la tabla y haz click en una regla para verla destacada en el scatter plot.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Soporte</h3>
+    <div class="formula">sup(X→Y) = P(X∪Y)</div>
+    <p>Fracción de transacciones que contienen tanto X como Y.</p>
+  </div>
+  <div class="tb">
+    <h3>Confianza</h3>
+    <div class="formula">conf(X→Y) = P(Y|X) = sup(X∪Y)/sup(X)</div>
+    <p>Probabilidad de que Y aparezca dado que X está presente.</p>
+  </div>
+  <div class="tb">
+    <h3>Lift</h3>
+    <div class="formula">lift(X→Y) = conf(X→Y) / sup(Y)</div>
+    <p>lift &gt; 1: asociación positiva. lift = 1: independencia. lift &lt; 1: asociación negativa.</p>
+  </div>
+  <div class="ctrl" style="flex-direction:column;align-items:flex-start;gap:.6rem;">
+    <div>
+      <label>min_support = <span id="supDisp">0.20</span></label><br>
+      <input type="range" id="supRange" min="0.10" max="0.60" step="0.05" value="0.20"
+             oninput="document.getElementById('supDisp').textContent=parseFloat(this.value).toFixed(2);update();">
+    </div>
+    <div>
+      <label>min_confianza = <span id="confDisp">0.40</span></label><br>
+      <input type="range" id="confRange" min="0.10" max="0.95" step="0.05" value="0.40"
+             oninput="document.getElementById('confDisp').textContent=parseFloat(this.value).toFixed(2);update();">
+    </div>
+  </div>
+  <div class="tb">
+    <h3>Regla seleccionada</h3>
+    <div id="ruleDetail" style="font-size:.82rem;color:var(--muted);">Haz click en una regla de la tabla</div>
+  </div>
+</aside>
+
+<div>
+  <div class="cw">
+    <canvas id="scatterCanvas" width="640" height="340"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0 .75rem;">Eje X = soporte · Eje Y = confianza · Tamaño del punto = lift · Color: verde=lift alto, amarillo=medio, rojo=bajo</p>
+
+  <div class="tb" style="overflow-x:auto;padding:.75rem;">
+    <table class="rules-table" id="rulesTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('ant')">Antecedente <span class="sort-arrow" id="s-ant"></span></th>
+          <th onclick="sortBy('con')">Consecuente <span class="sort-arrow" id="s-con"></span></th>
+          <th onclick="sortBy('sup')">Soporte <span class="sort-arrow" id="s-sup">▼</span></th>
+          <th onclick="sortBy('conf')">Confianza <span class="sort-arrow" id="s-conf"></span></th>
+          <th onclick="sortBy('lift')">Lift <span class="sort-arrow" id="s-lift"></span></th>
+        </tr>
+      </thead>
+      <tbody id="rulesBody"></tbody>
+    </table>
+    <p id="ruleCount" style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);margin:.5rem 0 0;"></p>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+const ITEMS = ['pan','leche','huevos','cerveza','pañales','mantequilla','café','jugo'];
+const TRANSACTIONS = [
+  [1,1,0,0,0,1,0,0],
+  [1,1,1,0,0,0,0,0],
+  [0,1,0,1,1,0,0,0],
+  [1,0,1,0,0,0,1,0],
+  [0,1,0,1,1,0,0,1],
+  [1,1,1,0,0,1,0,0],
+  [0,0,1,1,1,0,0,0],
+  [1,1,0,0,0,0,1,1],
+  [0,1,0,1,0,0,0,0],
+  [1,0,1,0,0,1,0,0],
+  [0,1,1,0,0,0,1,0],
+  [1,1,0,0,0,1,0,1],
+  [0,0,0,1,1,0,0,1],
+  [1,1,1,0,0,0,0,0],
+  [0,1,0,0,0,0,1,1],
+];
+const N = TRANSACTIONS.length;
+
+function getSupport(idxArr){
+  let c = 0;
+  for(const t of TRANSACTIONS) if(idxArr.every(i => t[i]===1)) c++;
+  return c/N;
+}
+
+// Generate all frequent itemsets up to size 3
+function allFrequent(minSup){
+  const freq = [];
+  // L1
+  for(let i=0;i<ITEMS.length;i++){
+    const s=getSupport([i]);
+    if(s>=minSup) freq.push({items:[i],support:s});
+  }
+  // L2
+  const f1=freq.filter(x=>x.items.length===1);
+  for(let i=0;i<f1.length;i++) for(let j=i+1;j<f1.length;j++){
+    const items=[f1[i].items[0],f1[j].items[0]];
+    const s=getSupport(items);
+    if(s>=minSup) freq.push({items,support:s});
+  }
+  // L3
+  const f2=freq.filter(x=>x.items.length===2);
+  for(let i=0;i<f2.length;i++) for(let j=i+1;j<f2.length;j++){
+    const a=f2[i].items,b=f2[j].items;
+    if(a[0]===b[0]){
+      const items=[a[0],a[1],b[1]];
+      const s=getSupport(items);
+      if(s>=minSup) freq.push({items,support:s});
+    }
+  }
+  return freq;
+}
+
+function powerSubsets(arr){
+  const subs=[];
+  const n=arr.length;
+  for(let mask=1;mask<(1<<n)-1;mask++){
+    const sub=arr.filter((_,i)=>(mask>>i)&1);
+    subs.push(sub);
+  }
+  return subs;
+}
+
+function generateRules(minSup, minConf){
+  const freq = allFrequent(minSup);
+  const rules=[];
+  const supMap={};
+  freq.forEach(f=>{ supMap[f.items.join(',')]=f.support; });
+
+  for(const f of freq){
+    if(f.items.length < 2) continue;
+    const subs = powerSubsets(f.items);
+    for(const ant of subs){
+      const con = f.items.filter(x=>!ant.includes(x));
+      if(con.length===0) continue;
+      const antKey=ant.join(',');
+      const supAnt=supMap[antKey]||getSupport(ant);
+      const supAll=f.support;
+      const conf=supAll/supAnt;
+      if(conf<minConf) continue;
+      const supCon=supMap[con.join(',')]||getSupport(con);
+      const lift=conf/supCon;
+      rules.push({ant,con,support:supAll,confidence:conf,lift,supAnt,supCon});
+    }
+  }
+  // Deduplicate
+  const seen=new Set();
+  return rules.filter(r=>{
+    const k=r.ant.join(',')+'=>'+r.con.join(',');
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
+let sortKey='sup', sortDir=-1;
+let selectedRule=null;
+let visibleRules=[];
+
+function sortBy(key){
+  if(sortKey===key) sortDir*=-1;
+  else{sortKey=key;sortDir=-1;}
+  ['ant','con','sup','conf','lift'].forEach(k=>document.getElementById('s-'+k).textContent='');
+  document.getElementById('s-'+sortKey).textContent=sortDir===-1?'▼':'▲';
+  renderTable();
+}
+
+function update(){
+  const minSup=parseFloat(document.getElementById('supRange').value);
+  const minConf=parseFloat(document.getElementById('confRange').value);
+  visibleRules=generateRules(minSup,minConf);
+  selectedRule=null;
+  renderTable();
+  drawScatter();
+}
+
+function renderTable(){
+  const sorted=[...visibleRules].sort((a,b)=>{
+    let va,vb;
+    if(sortKey==='ant'){va=a.ant.map(i=>ITEMS[i]).join('+');vb=b.ant.map(i=>ITEMS[i]).join('+');}
+    else if(sortKey==='con'){va=a.con.map(i=>ITEMS[i]).join('+');vb=b.con.map(i=>ITEMS[i]).join('+');}
+    else if(sortKey==='sup'){va=a.support;vb=b.support;}
+    else if(sortKey==='conf'){va=a.confidence;vb=b.confidence;}
+    else{va=a.lift;vb=b.lift;}
+    if(typeof va==='string') return va.localeCompare(vb)*sortDir;
+    return (va-vb)*sortDir;
+  });
+
+  const tbody=document.getElementById('rulesBody');
+  tbody.innerHTML='';
+  sorted.forEach((r,idx)=>{
+    const tr=document.createElement('tr');
+    if(selectedRule && selectedRule.ant.join()===r.ant.join() && selectedRule.con.join()===r.con.join())
+      tr.classList.add('selected');
+    const liftClass=r.lift>=1.5?'lift-high':r.lift>=1?'lift-mid':'lift-low';
+    tr.innerHTML=`
+      <td style="font-family:var(--font-mono);color:var(--text);">{${r.ant.map(i=>ITEMS[i]).join(', ')}}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent);">{${r.con.map(i=>ITEMS[i]).join(', ')}}</td>
+      <td style="font-family:var(--font-mono);">${(r.support*100).toFixed(1)}%</td>
+      <td style="font-family:var(--font-mono);">${(r.confidence*100).toFixed(1)}%</td>
+      <td class="${liftClass}" style="font-family:var(--font-mono);font-weight:700;">${r.lift.toFixed(2)}</td>`;
+    tr.addEventListener('click',()=>{ selectedRule=r; showDetail(r); renderTable(); drawScatter(); });
+    tbody.appendChild(tr);
+  });
+  document.getElementById('ruleCount').textContent=`${sorted.length} reglas mostradas`;
+}
+
+function showDetail(r){
+  const d=document.getElementById('ruleDetail');
+  d.innerHTML=`
+    <div style="margin-bottom:.5rem;font-size:.9rem;">
+      <span style="color:var(--text);">{${r.ant.map(i=>ITEMS[i]).join(', ')}}</span>
+      <span style="color:var(--accent);margin:0 .4rem;">→</span>
+      <span style="color:#3fb950;">{${r.con.map(i=>ITEMS[i]).join(', ')}}</span>
+    </div>
+    <div>sup(X∪Y) = <strong style="color:var(--accent);">${(r.support*100).toFixed(1)}%</strong></div>
+    <div>sup(X) = ${(r.supAnt*100).toFixed(1)}%</div>
+    <div>sup(Y) = ${(r.supCon*100).toFixed(1)}%</div>
+    <div>confianza = <strong style="color:var(--accent);">${(r.confidence*100).toFixed(1)}%</strong></div>
+    <div>lift = <strong class="${r.lift>=1.5?'lift-high':r.lift>=1?'lift-mid':'lift-low'}">${r.lift.toFixed(3)}</strong></div>`;
+}
+
+// ── Scatter plot ─────────────────────────────────────────────────────────────
+function drawScatter(){
+  const canvas=document.getElementById('scatterCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const PAD={l:55,r:30,t:20,b:45};
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const plotW=W-PAD.l-PAD.r, plotH=H-PAD.t-PAD.b;
+
+  // Axes
+  ctx.strokeStyle='#30363d';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD.l,PAD.t);ctx.lineTo(PAD.l,PAD.t+plotH);ctx.lineTo(PAD.l+plotW,PAD.t+plotH);ctx.stroke();
+
+  // Grid lines + labels X
+  ctx.font='9px var(--font-mono,monospace)';ctx.fillStyle='#8b949e';ctx.textAlign='center';
+  for(let v=0;v<=1;v+=0.2){
+    const x=PAD.l+v*plotW;
+    ctx.strokeStyle='#30363d';ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(x,PAD.t);ctx.lineTo(x,PAD.t+plotH);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText((v*100).toFixed(0)+'%',x,PAD.t+plotH+14);
+  }
+  // Grid lines + labels Y
+  ctx.textAlign='right';
+  for(let v=0;v<=1;v+=0.2){
+    const y=PAD.t+plotH-v*plotH;
+    ctx.strokeStyle='#30363d';ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+plotW,y);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText((v*100).toFixed(0)+'%',PAD.l-6,y+3);
+  }
+  // Axis labels
+  ctx.fillStyle='#8b949e';ctx.textAlign='center';
+  ctx.font='10px var(--font-mono,monospace)';
+  ctx.fillText('Soporte',PAD.l+plotW/2,H-6);
+  ctx.save();ctx.translate(14,PAD.t+plotH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Confianza',0,0);ctx.restore();
+
+  const minSup=parseFloat(document.getElementById('supRange').value);
+  const minConf=parseFloat(document.getElementById('confRange').value);
+
+  // min support / min conf lines
+  const msx=PAD.l+minSup*plotW;
+  const mcy=PAD.t+plotH-minConf*plotH;
+  ctx.strokeStyle='rgba(88,166,255,0.3)';ctx.lineWidth=1;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(msx,PAD.t);ctx.lineTo(msx,PAD.t+plotH);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(PAD.l,mcy);ctx.lineTo(PAD.l+plotW,mcy);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Scatter points
+  const maxLift=Math.max(...visibleRules.map(r=>r.lift),2);
+  visibleRules.forEach(r=>{
+    const x=PAD.l+r.support*plotW;
+    const y=PAD.t+plotH-r.confidence*plotH;
+    const rad=4+((r.lift/maxLift)*14);
+    const isSel=selectedRule&&selectedRule.ant.join()===r.ant.join()&&selectedRule.con.join()===r.con.join();
+
+    let col;
+    if(r.lift>=1.5) col='#3fb950';
+    else if(r.lift>=1.0) col='#d29922';
+    else col='#f85149';
+
+    ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);
+    ctx.fillStyle=col+(isSel?'ee':'55');
+    ctx.fill();
+    ctx.strokeStyle=isSel?'#fff':col+'88';
+    ctx.lineWidth=isSel?2:1;
+    ctx.stroke();
+
+    if(isSel){
+      const label=`{${r.ant.map(i=>ITEMS[i]).join('+')}→${r.con.map(i=>ITEMS[i]).join('+')}}`;
+      ctx.font='bold 9px var(--font-mono,monospace)';
+      ctx.fillStyle='#fff';
+      ctx.textAlign='center';
+      // background pill
+      const tw=ctx.measureText(label).width+10;
+      const lx=Math.min(Math.max(x,PAD.l+tw/2),PAD.l+plotW-tw/2);
+      const ly=y-rad-12;
+      ctx.fillStyle='rgba(13,17,23,0.85)';
+      ctx.fillRect(lx-tw/2,ly-10,tw,14);
+      ctx.fillStyle='#fff';
+      ctx.fillText(label,lx,ly);
+    }
+  });
+}
+
+update();
+</script>
