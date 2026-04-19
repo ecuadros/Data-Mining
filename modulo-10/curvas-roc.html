@@ -1,0 +1,278 @@
+---
+layout: default
+title: "Curvas ROC y AUC"
+prev_url: /modulo-10/matriz-confusion.html
+prev_title: Matriz de Confusión
+next_url: /modulo-10/validacion-cruzada.html
+next_title: Validación Cruzada
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:.75rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:150px;}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.5rem;}
+.leg-item{display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-family:var(--font-mono);}
+.leg-line{width:20px;height:2px;border-radius:1px;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-10/' | relative_url }}">Módulo 10 — Evaluación de Modelos</a><span class="sep">›</span>
+  Curvas ROC y AUC
+</nav>
+<header>
+  <div class="eyebrow">Módulo 10 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Curvas ROC y AUC</h1>
+  <p class="demo-lead">La curva ROC muestra el trade-off entre TPR y FPR al variar el umbral de clasificación. El AUC resume el rendimiento en un solo número. Arrastra el umbral para ver su efecto.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Interpretación</h3>
+    <p><strong style="color:var(--accent)">AUC = 1.0</strong>: clasificador perfecto.</p>
+    <p><strong style="color:var(--muted)">AUC = 0.5</strong>: aleatorio (diagonal).</p>
+    <p><strong style="color:var(--danger)">AUC &lt; 0.5</strong>: peor que el azar.</p>
+    <p>Útil para clases desbalanceadas: no depende del umbral elegido.</p>
+  </div>
+  <div class="tb">
+    <h3>Tres clasificadores</h3>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-line" style="background:#58a6ff;"></div>Bueno (~0.92)</div>
+      <div class="leg-item"><div class="leg-line" style="background:#3fb950;"></div>Moderado (~0.72)</div>
+      <div class="leg-item"><div class="leg-line" style="background:rgba(139,148,158,.5);"></div>Aleatorio (0.5)</div>
+    </div>
+  </div>
+  <div class="tb">
+    <h3>Umbral actual</h3>
+    <div class="metric-row" style="margin:0;">
+      <div class="metric">
+        <div class="m-name">TPR (Recall)</div>
+        <div class="m-val" id="tprVal" style="color:#3fb950;">—</div>
+      </div>
+      <div class="metric">
+        <div class="m-name">FPR</div>
+        <div class="m-val" id="fprVal" style="color:#f85149;">—</div>
+      </div>
+    </div>
+    <div class="metric-row" style="margin-top:.5rem;">
+      <div class="metric">
+        <div class="m-name">Precisión</div>
+        <div class="m-val" id="precVal" style="color:#d29922;">—</div>
+      </div>
+      <div class="metric">
+        <div class="m-name">F1</div>
+        <div class="m-val" id="f1Val" style="color:#bc8cff;">—</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Umbral = <span id="thrDisp">0.50</span></label><br>
+      <input type="range" id="thrRange" min="0" max="1" step="0.01" value="0.5" oninput="document.getElementById('thrDisp').textContent=parseFloat(this.value).toFixed(2);updateStats();">
+    </div>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="m-name">AUC (Bueno)</div><div class="m-val" id="auc1" style="color:#58a6ff;">—</div></div>
+    <div class="metric"><div class="m-name">AUC (Moderado)</div><div class="m-val" id="auc2" style="color:#3fb950;">—</div></div>
+    <div class="metric"><div class="m-name">AUC (Aleatorio)</div><div class="m-val" id="auc3" style="color:var(--muted);">0.500</div></div>
+  </div>
+
+  <!-- ROC -->
+  <div class="cw" style="margin-bottom:.5rem;">
+    <canvas id="rocCanvas" width="530" height="280"></canvas>
+  </div>
+  <!-- PR curve -->
+  <div class="cw">
+    <canvas id="prCanvas" width="530" height="160"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Curva Precisión-Recall — más informativa para clases desbalanceadas</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+// Generate scores for 3 classifiers on 200 samples (80 positive, 120 negative)
+const N=200,Npos=80;
+const r=rng(55);
+const TRUE_LABELS=Array.from({length:N},(_,i)=>i<Npos?1:0);
+
+function genScores(quality,seed){
+  const r2=rng(seed);
+  return TRUE_LABELS.map(y=>{
+    if(y===1) return Math.min(1,Math.max(0,quality*(0.5+r2()*0.5)+(1-quality)*r2()));
+    return Math.min(1,Math.max(0,(1-quality)*r2()+quality*r2()*.4));
+  });
+}
+
+const SCORES1=genScores(0.92,11);// Good
+const SCORES2=genScores(0.72,22);// Moderate
+const SCORES3=TRUE_LABELS.map(()=>r());// Random
+
+function rocCurve(scores){
+  const pairs=scores.map((s,i)=>({s,y:TRUE_LABELS[i]})).sort((a,b)=>b.s-a.s);
+  const Pp=TRUE_LABELS.filter(y=>y===1).length,Pn=TRUE_LABELS.filter(y=>y===0).length;
+  const pts=[{fpr:0,tpr:0}];
+  let tp=0,fp=0;
+  pairs.forEach(({y})=>{
+    if(y===1) tp++;else fp++;
+    pts.push({fpr:fp/Pn,tpr:tp/Pp});
+  });
+  pts.push({fpr:1,tpr:1});
+  return pts;
+}
+
+function auc(pts){
+  let a=0;
+  for(let i=1;i<pts.length;i++) a+=(pts[i].fpr-pts[i-1].fpr)*(pts[i].tpr+pts[i-1].tpr)/2;
+  return a;
+}
+
+function prCurve(scores){
+  const pairs=scores.map((s,i)=>({s,y:TRUE_LABELS[i]})).sort((a,b)=>b.s-a.s);
+  const pts=[];
+  let tp=0,fp=0;
+  pairs.forEach(({y},i)=>{
+    if(y===1) tp++;else fp++;
+    pts.push({rec:tp/Npos,prec:tp/(tp+fp)});
+  });
+  return pts;
+}
+
+const ROC1=rocCurve(SCORES1),ROC2=rocCurve(SCORES2);
+const AUC1=auc(ROC1),AUC2=auc(ROC2);
+document.getElementById('auc1').textContent=AUC1.toFixed(3);
+document.getElementById('auc2').textContent=AUC2.toFixed(3);
+
+function getMetrics(scores,thr){
+  let tp=0,fp=0,tn=0,fn=0;
+  scores.forEach((s,i)=>{
+    const pred=s>=thr?1:0;
+    if(pred===1&&TRUE_LABELS[i]===1) tp++;
+    else if(pred===1&&TRUE_LABELS[i]===0) fp++;
+    else if(pred===0&&TRUE_LABELS[i]===0) tn++;
+    else fn++;
+  });
+  const tpr=tp/(tp+fn)||0,fpr=fp/(fp+tn)||0,prec=tp/(tp+fp)||0;
+  const f1=prec+tpr>0?2*prec*tpr/(prec+tpr):0;
+  return {tpr,fpr,prec,f1};
+}
+
+function updateStats(){
+  const thr=parseFloat(document.getElementById('thrRange').value);
+  const m=getMetrics(SCORES1,thr);
+  document.getElementById('tprVal').textContent=(m.tpr*100).toFixed(1)+'%';
+  document.getElementById('fprVal').textContent=(m.fpr*100).toFixed(1)+'%';
+  document.getElementById('precVal').textContent=(m.prec*100).toFixed(1)+'%';
+  document.getElementById('f1Val').textContent=m.f1.toFixed(3);
+  drawROC(thr);drawPR(thr);
+}
+
+function drawROC(thr){
+  const cv=document.getElementById('rocCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=40;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>H-PAD-v*(H-2*PAD);
+
+  // Grid
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.5)';ctx.lineWidth=1;
+  [0,.25,.5,.75,1].forEach(v=>{
+    ctx.beginPath();ctx.moveTo(toX(v),PAD);ctx.lineTo(toX(v),H-PAD);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(PAD,toY(v));ctx.lineTo(W-PAD,toY(v));ctx.stroke();
+  });ctx.restore();
+
+  // Diagonal
+  ctx.save();ctx.strokeStyle='rgba(139,148,158,.35)';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(toX(0),toY(0));ctx.lineTo(toX(1),toY(1));ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  function drawCurve(pts,col,lw=2){
+    ctx.save();ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineJoin='round';
+    ctx.beginPath();pts.forEach((p,i)=>{if(i===0)ctx.moveTo(toX(p.fpr),toY(p.tpr));else ctx.lineTo(toX(p.fpr),toY(p.tpr));});ctx.stroke();ctx.restore();
+  }
+
+  // AUC fill for curve 1
+  ctx.save();ctx.fillStyle='rgba(88,166,255,.07)';
+  ctx.beginPath();ctx.moveTo(toX(0),toY(0));
+  ROC1.forEach(p=>ctx.lineTo(toX(p.fpr),toY(p.tpr)));
+  ctx.lineTo(toX(1),toY(0));ctx.closePath();ctx.fill();ctx.restore();
+
+  drawCurve([{fpr:0,tpr:0},{fpr:1,tpr:1}],'rgba(139,148,158,.3)',1.5);
+  drawCurve(ROC2,'#3fb950',2);
+  drawCurve(ROC1,'#58a6ff',2.5);
+
+  // Current threshold point on ROC1
+  const m=getMetrics(SCORES1,thr);
+  ctx.save();ctx.fillStyle='#d29922';ctx.strokeStyle='#fff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(toX(m.fpr),toY(m.tpr),7,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+
+  // Axis labels
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';
+  ctx.textAlign='center';ctx.fillText('FPR (Tasa Falsos Positivos)',W/2,H-6);
+  ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('TPR (Recall)',0,0);ctx.restore();
+  [0,.25,.5,.75,1].forEach(v=>{ctx.textAlign='right';ctx.fillText(v.toFixed(2),PAD-3,toY(v)+3);ctx.textAlign='center';ctx.fillText(v.toFixed(2),toX(v),H-PAD+13);});
+  ctx.restore();
+
+  // AUC labels
+  ctx.save();ctx.font='10px JetBrains Mono,monospace';
+  ctx.fillStyle='#58a6ff';ctx.fillText(`Bueno AUC=${AUC1.toFixed(3)}`,W-PAD-5,PAD+18);ctx.textAlign='right';
+  ctx.fillStyle='#3fb950';ctx.fillText(`Mod AUC=${AUC2.toFixed(3)}`,W-PAD-5,PAD+34);
+  ctx.restore();
+}
+
+function drawPR(thr){
+  const cv=document.getElementById('prCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=35;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const PR1=prCurve(SCORES1),PR2=prCurve(SCORES2);
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>H-PAD-v*(H-2*PAD);
+
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.5)';ctx.lineWidth=1;
+  [0,.5,1].forEach(v=>{ctx.beginPath();ctx.moveTo(PAD,toY(v));ctx.lineTo(W-PAD,toY(v));ctx.stroke();});ctx.restore();
+
+  [[PR2,'#3fb950'],[PR1,'#58a6ff']].forEach(([pr,col])=>{
+    ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineJoin='round';
+    ctx.beginPath();pr.forEach((p,i)=>{if(i===0)ctx.moveTo(toX(p.rec),toY(p.prec));else ctx.lineTo(toX(p.rec),toY(p.prec));});ctx.stroke();ctx.restore();
+  });
+
+  const m=getMetrics(SCORES1,thr);
+  ctx.save();ctx.fillStyle='#d29922';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(toX(m.tpr),toY(m.prec),6,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';
+  ctx.textAlign='center';ctx.fillText('Recall',W/2,H-3);
+  [0,.5,1].forEach(v=>{ctx.textAlign='right';ctx.fillText(v.toFixed(1),PAD-3,toY(v)+3);});
+  ctx.restore();
+}
+
+updateStats();
+</script>
