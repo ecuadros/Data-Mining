@@ -1,0 +1,225 @@
+---
+layout: default
+title: "Word Embeddings"
+prev_url: /modulo-09/similitud-documentos.html
+prev_title: Similitud de Documentos
+next_url: /modulo-09/analisis-sentimiento.html
+next_title: Análisis de Sentimiento
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.8rem;padding:.3rem .6rem;font-family:var(--font-mono);}
+.nn-row{display:flex;align-items:center;gap:.6rem;padding:.3rem 0;font-size:.82rem;font-family:var(--font-mono);}
+.nn-rank{color:var(--muted);width:20px;}
+.nn-dist{color:var(--muted);font-size:.72rem;margin-left:auto;}
+.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.82rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+.analogy-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.5rem;}
+.analogy-row select{flex:1;min-width:80px;}
+.analogy-row span{color:var(--muted);font-size:.9rem;}
+.legend{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.5rem;}
+.leg-item{display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-family:var(--font-mono);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-09/' | relative_url }}">Módulo 09 — Minería de Texto</a><span class="sep">›</span>
+  Word Embeddings
+</nav>
+<header>
+  <div class="eyebrow">Módulo 09 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Word Embeddings</h1>
+  <p class="demo-lead">Vectores de palabras en 2D. Haz click en una palabra para ver sus vecinos más cercanos. Explora la aritmética vectorial: rey − hombre + mujer ≈ reina.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>¿Qué son los embeddings?</h3>
+    <p>Representaciones numéricas densas donde palabras semánticamente similares están cerca en el espacio vectorial.</p>
+    <div class="formula-box">rey − hombre + mujer ≈ reina</div>
+    <p>Esta aritmética funciona porque los embeddings capturan relaciones semánticas como género, tamaño o categoría.</p>
+  </div>
+  <div class="tb">
+    <h3>Vecinos más cercanos</h3>
+    <p style="font-size:.78rem;color:var(--muted);">Haz click en una palabra del mapa.</p>
+    <div id="nnPanel"></div>
+  </div>
+  <div class="tb">
+    <h3>Aritmética vectorial</h3>
+    <div class="analogy-row">
+      <select id="wA"></select><span>−</span><select id="wB"></select><span>+</span><select id="wC"></select>
+    </div>
+    <div style="margin-top:.6rem;font-size:.82rem;color:var(--muted);">Resultado: <span id="analogyResult" style="color:var(--accent);font-weight:700;">—</span></div>
+    <button style="margin-top:.5rem;display:inline-flex;align-items:center;padding:.35rem .8rem;border-radius:var(--radius-sm);font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);" onclick="computeAnalogy()">Calcular →</button>
+  </div>
+  <div class="legend" id="legendPanel"></div>
+</aside>
+
+<div>
+  <div class="cw">
+    <canvas id="embedCanvas" width="530" height="460" style="cursor:pointer;"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0;">Click = seleccionar · Colores = categoría semántica</p>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// Pre-defined 2D word embeddings (manually crafted to show semantic structure)
+const WORDS=[
+  // Animales
+  {w:'perro',x:.12,y:.82,cat:'Animales'},{w:'gato',x:.18,y:.75,cat:'Animales'},
+  {w:'pájaro',x:.08,y:.65,cat:'Animales'},{w:'pez',x:.22,y:.60,cat:'Animales'},
+  {w:'caballo',x:.05,y:.88,cat:'Animales'},{w:'vaca',x:.28,y:.85,cat:'Animales'},
+  // Comida
+  {w:'pan',x:.78,y:.82,cat:'Comida'},{w:'leche',x:.85,y:.75,cat:'Comida'},
+  {w:'arroz',x:.72,y:.68,cat:'Comida'},{w:'fruta',x:.92,y:.82,cat:'Comida'},
+  {w:'carne',x:.80,y:.90,cat:'Comida'},{w:'verdura',x:.68,y:.88,cat:'Comida'},
+  // Profesiones + género
+  {w:'médico',x:.38,y:.35,cat:'Profesiones'},{w:'médica',x:.42,y:.28,cat:'Profesiones'},
+  {w:'ingeniero',x:.32,y:.42,cat:'Profesiones'},{w:'ingeniera',x:.36,y:.35,cat:'Profesiones'},
+  {w:'profesor',x:.52,y:.38,cat:'Profesiones'},{w:'profesora',x:.56,y:.32,cat:'Profesiones'},
+  // Royalty (analogía)
+  {w:'rey',x:.22,y:.18,cat:'Realeza'},{w:'reina',x:.28,y:.12,cat:'Realeza'},
+  {w:'príncipe',x:.18,y:.25,cat:'Realeza'},{w:'princesa',x:.32,y:.20,cat:'Realeza'},
+  // Género
+  {w:'hombre',x:.45,y:.55,cat:'Género'},{w:'mujer',x:.55,y:.48,cat:'Género'},
+  {w:'niño',x:.42,y:.62,cat:'Género'},{w:'niña',x:.52,y:.55,cat:'Género'},
+  // Tecnología
+  {w:'computadora',x:.72,y:.32,cat:'Tecnología'},{w:'internet',x:.78,y:.25,cat:'Tecnología'},
+  {w:'software',x:.82,y:.38,cat:'Tecnología'},{w:'datos',x:.68,y:.42,cat:'Tecnología'},
+  {w:'algoritmo',x:.75,y:.45,cat:'Tecnología'},{w:'red',x:.88,y:.35,cat:'Tecnología'},
+  // Deportes
+  {w:'fútbol',x:.18,y:.50,cat:'Deportes'},{w:'baloncesto',x:.12,y:.42,cat:'Deportes'},
+  {w:'tenis',x:.25,y:.45,cat:'Deportes'},{w:'natación',x:.08,y:.52,cat:'Deportes'},
+  // Ciencia
+  {w:'física',x:.58,y:.18,cat:'Ciencia'},{w:'química',x:.62,y:.12,cat:'Ciencia'},
+  {w:'biología',x:.52,y:.22,cat:'Ciencia'},{w:'matemática',x:.65,y:.22,cat:'Ciencia'},
+];
+
+const CATEGORIES=[...new Set(WORDS.map(w=>w.cat))];
+const CAT_COLS={'Animales':'#3fb950','Comida':'#d29922','Profesiones':'#58a6ff','Realeza':'#bc8cff','Género':'#f85149','Tecnología':'#79c0ff','Deportes':'#ff7b72','Ciencia':'#56d364'};
+
+let selected=null,analogyHighlight=null;
+
+function dist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+function nearest(word,k=5){
+  return WORDS.filter(w=>w.w!==word.w).map(w=>({...w,d:dist(word,w)})).sort((a,b)=>a.d-b.d).slice(0,k);
+}
+
+function draw(){
+  const cv=document.getElementById('embedCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+
+  // Highlight nearest neighbors
+  const nn=selected?new Set(nearest(selected).map(w=>w.w)):new Set();
+
+  // Draw lines to neighbors
+  if(selected){
+    nearest(selected).forEach(n=>{
+      ctx.save();ctx.strokeStyle='rgba(210,153,34,.3)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(toX(selected.x),toY(selected.y));ctx.lineTo(toX(n.x),toY(n.y));ctx.stroke();ctx.restore();
+    });
+  }
+
+  // Analogy arrow
+  if(analogyHighlight){
+    ctx.save();ctx.strokeStyle='rgba(188,140,255,.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(toX(analogyHighlight.from.x),toY(analogyHighlight.from.y));
+    ctx.lineTo(toX(analogyHighlight.to.x),toY(analogyHighlight.to.y));ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  }
+
+  WORDS.forEach(w=>{
+    const col=CAT_COLS[w.cat]||'#8b949e';
+    const isSel=selected&&selected.w===w.w;
+    const isNN=nn.has(w.w);
+    const isAnalogy=analogyHighlight&&analogyHighlight.to.w===w.w;
+    const r=isSel?9:isNN?7:6;
+    ctx.save();
+    ctx.fillStyle=isSel||isNN||isAnalogy?col:col+'99';
+    ctx.strokeStyle=isSel?'#fff':isAnalogy?'#bc8cff':isNN?'#fff':'rgba(0,0,0,.2)';
+    ctx.lineWidth=isSel||isAnalogy?2:1;
+    ctx.beginPath();ctx.arc(toX(w.x),toY(w.y),r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=isSel||isNN?'rgba(230,237,243,.95)':isAnalogy?'#bc8cff':'rgba(230,237,243,.55)';
+    ctx.font=(isSel?'bold ':'')+`${isSel?11:9}px JetBrains Mono,monospace`;
+    ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillText(w.w,toX(w.x),toY(w.y)-r-2);
+    ctx.restore();
+  });
+}
+
+const canvas=document.getElementById('embedCanvas');
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;
+  const PAD=20,W=canvas.width,H=canvas.height;
+  const toX=v=>PAD+v*(W-2*PAD),toY=v=>PAD+v*(H-2*PAD);
+  let closest=null,minD=Infinity;
+  WORDS.forEach(w=>{const d=Math.hypot(toX(w.x)-mx,toY(w.y)-my);if(d<minD){minD=d;closest=w;}});
+  if(minD<20){selected=closest;analogyHighlight=null;}else{selected=null;}
+  updateNN();draw();
+});
+
+function updateNN(){
+  if(!selected){document.getElementById('nnPanel').innerHTML='<p style="font-size:.78rem;color:var(--muted);">Haz click en una palabra del mapa.</p>';return;}
+  const nn=nearest(selected);
+  document.getElementById('nnPanel').innerHTML=`<p style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem;">Vecinos de "<strong style="color:var(--accent);">${selected.w}</strong>":</p>`+
+  nn.map((n,i)=>`<div class="nn-row"><span class="nn-rank">#${i+1}</span><span style="color:${CAT_COLS[n.cat]};">${n.w}</span><span class="nn-dist">d=${n.d.toFixed(3)}</span></div>`).join('');
+}
+
+function computeAnalogy(){
+  const wA=document.getElementById('wA').value;
+  const wB=document.getElementById('wB').value;
+  const wC=document.getElementById('wC').value;
+  const vA=WORDS.find(w=>w.w===wA),vB=WORDS.find(w=>w.w===wB),vC=WORDS.find(w=>w.w===wC);
+  if(!vA||!vB||!vC) return;
+  const tx=vA.x-vB.x+vC.x,ty=vA.y-vB.y+vC.y;
+  const result=WORDS.filter(w=>w.w!==wA&&w.w!==wB&&w.w!==wC)
+    .map(w=>({...w,d:Math.hypot(w.x-tx,w.y-ty)})).sort((a,b)=>a.d-b.d)[0];
+  document.getElementById('analogyResult').textContent=result?result.w:'—';
+  analogyHighlight={from:vC,to:result};
+  draw();
+}
+
+// Build dropdowns
+function buildDropdowns(){
+  const words=WORDS.map(w=>w.w);
+  ['wA','wB','wC'].forEach((id,i)=>{
+    const sel=document.getElementById(id);
+    words.forEach(w=>{const o=document.createElement('option');o.value=w;o.textContent=w;sel.appendChild(o);});
+  });
+  document.getElementById('wA').value='rey';
+  document.getElementById('wB').value='hombre';
+  document.getElementById('wC').value='mujer';
+}
+
+function buildLegend(){
+  document.getElementById('legendPanel').innerHTML=CATEGORIES.map(cat=>`
+    <div class="leg-item"><div class="leg-dot" style="background:${CAT_COLS[cat]};"></div>${cat}</div>
+  `).join('');
+}
+
+buildDropdowns();buildLegend();draw();
+</script>
