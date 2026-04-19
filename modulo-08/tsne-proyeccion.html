@@ -1,0 +1,273 @@
+---
+layout: default
+title: "t-SNE: Proyección de Embeddings"
+prev_url: /modulo-08/pca-interactivo.html
+prev_title: PCA Interactivo
+next_url: /modulo-08/varianza-explicada.html
+next_title: Varianza Explicada
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+input[type=range]{accent-color:var(--accent);width:100px;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.btn-danger{border-color:rgba(248,81,73,.35);background:rgba(248,81,73,.1);color:var(--danger);}
+.metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.5rem;}
+.leg-item{display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-family:var(--font-mono);}
+.leg-dot{width:10px;height:10px;border-radius:50%;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-08/' | relative_url }}">Módulo 08 — Reducción de Dimensionalidad</a><span class="sep">›</span>
+  t-SNE: Proyección de Embeddings
+</nav>
+<header>
+  <div class="eyebrow">Módulo 08 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">t-SNE: Proyección de Embeddings</h1>
+  <p class="demo-lead">t-SNE proyecta datos de alta dimensión a 2D preservando las relaciones de vecindad locales. Observa cómo el descenso de gradiente separa los clusters — cambia la perplejidad y reinicia.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Idea central</h3>
+    <p>t-SNE convierte distancias en probabilidades de vecindad. En alta dimensión usa gaussianas; en 2D usa distribuciones t de Student (colas pesadas para evitar el "crowding problem").</p>
+    <p style="font-family:var(--font-mono);font-size:.8rem;color:var(--accent);background:#0d1117;padding:.5rem .8rem;border-radius:6px;border:1px solid rgba(88,166,255,.3);">C = KL(P‖Q) = Σᵢⱼ pᵢⱼ log(pᵢⱼ/qᵢⱼ)</p>
+  </div>
+  <div class="tb">
+    <h3>Perplejidad</h3>
+    <p>Controla el número efectivo de vecinos considerados. Valores bajos (~5): estructura local. Valores altos (~50): estructura global. Rango típico: 5–50.</p>
+  </div>
+  <div class="tb">
+    <h3>Dataset</h3>
+    <p>60 puntos en 6 dimensiones, 4 clases. Cada clase tiene estructura de cluster en el espacio original — t-SNE debería separarlas en 2D.</p>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#58a6ff;"></div>Clase 0</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#3fb950;"></div>Clase 1</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#f85149;"></div>Clase 2</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#d29922;"></div>Clase 3</div>
+    </div>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <div>
+      <label>Perplejidad = <span id="perpDisp">15</span></label><br>
+      <input type="range" id="perpRange" min="5" max="40" step="5" value="15" oninput="document.getElementById('perpDisp').textContent=this.value;">
+    </div>
+    <button class="btn" onclick="restart()">Reiniciar</button>
+    <button class="btn" id="toggleBtn" onclick="toggleRun()">▶ Iniciar</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Iteración</div>
+      <div class="m-val" id="iterVal" style="color:var(--accent);">0</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">KL Divergencia</div>
+      <div class="m-val" id="klVal" style="color:var(--warn);">—</div>
+    </div>
+  </div>
+
+  <div class="cw">
+    <canvas id="mainCanvas" width="530" height="360"></canvas>
+  </div>
+  <div class="cw" style="padding:.75rem;">
+    <canvas id="costCanvas" width="530" height="90"></canvas>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+// Generate 6D dataset with 4 classes
+function makeData(seed){
+  const r=rng(seed);
+  const pts=[],labels=[];
+  const centers=[[1,1,0,0,0,0],[0,0,1,1,0,0],[0,0,0,0,1,1],[1,0,1,0,0,1]];
+  centers.forEach((c,ci)=>{
+    for(let i=0;i<15;i++){
+      pts.push(c.map(v=>v+(r()-.5)*.6));
+      labels.push(ci);
+    }
+  });
+  return {pts,labels};
+}
+
+const {pts:HD_PTS,labels:LABELS}=makeData(77);
+const N=HD_PTS.length,D=6;
+const COLS=['#58a6ff','#3fb950','#f85149','#d29922'];
+
+// Pairwise squared distances in HD
+function pairwiseDist2HD(){
+  const D2=Array.from({length:N},()=>new Array(N).fill(0));
+  for(let i=0;i<N;i++)
+    for(let j=i+1;j<N;j++){
+      let s=0;for(let k=0;k<D;k++) s+=(HD_PTS[i][k]-HD_PTS[j][k])**2;
+      D2[i][j]=D2[j][i]=s;
+    }
+  return D2;
+}
+
+function computeP(D2,perp){
+  const P=Array.from({length:N},()=>new Array(N).fill(0));
+  for(let i=0;i<N;i++){
+    // Binary search for sigma
+    let lo=1e-20,hi=1e20,sigma=1;
+    for(let iter=0;iter<50;iter++){
+      let sum=0;
+      const vals=D2[i].map((d,j)=>j===i?0:Math.exp(-d/(2*sigma*sigma)));
+      sum=vals.reduce((s,v)=>s+v,1e-10);
+      const H=-vals.reduce((s,v)=>v>0?s+v/sum*Math.log2(v/sum+1e-10):s,0);
+      if(Math.abs(H-Math.log2(perp))<0.01) break;
+      if(H<Math.log2(perp)) lo=sigma; else hi=sigma;
+      sigma=(lo+hi)/2;
+    }
+    const denom=D2[i].reduce((s,d,j)=>j===i?s:s+Math.exp(-d/(2*sigma*sigma)),0);
+    for(let j=0;j<N;j++) if(j!==i) P[i][j]=Math.exp(-D2[i][j]/(2*sigma*sigma))/denom;
+  }
+  // Symmetrize
+  const Psym=Array.from({length:N},()=>new Array(N).fill(0));
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++) Psym[i][j]=(P[i][j]+P[j][i])/(2*N);
+  return Psym;
+}
+
+let Y=[],velocity=[],Psym=[];
+let running=false,animId=null,iter=0;
+const costHistory=[];
+const D2HD=pairwiseDist2HD();
+
+function restart(){
+  const r=rng(Date.now()%9999);
+  Y=Array.from({length:N},()=>[r()-.5,r()-.5]);
+  velocity=Array.from({length:N},()=>[0,0]);
+  const perp=parseInt(document.getElementById('perpRange').value);
+  Psym=computeP(D2HD,perp);
+  iter=0;costHistory.length=0;
+  document.getElementById('iterVal').textContent='0';
+  document.getElementById('klVal').textContent='—';
+  draw();drawCost();
+}
+
+function step(){
+  // Compute Q
+  const num=Array.from({length:N},()=>new Array(N).fill(0));
+  let sumQ=0;
+  for(let i=0;i<N;i++)
+    for(let j=i+1;j<N;j++){
+      const d=(Y[i][0]-Y[j][0])**2+(Y[i][1]-Y[j][1])**2;
+      const q=1/(1+d);
+      num[i][j]=num[j][i]=q;sumQ+=2*q;
+    }
+  sumQ=Math.max(sumQ,1e-10);
+
+  // Compute gradients
+  const lr=iter<100?20:iter<200?10:5;
+  const mom=iter<100?0.5:0.8;
+  let kl=0;
+  const grad=Array.from({length:N},()=>[0,0]);
+  for(let i=0;i<N;i++)
+    for(let j=0;j<N;j++){
+      if(i===j) continue;
+      const q=num[i][j]/sumQ;
+      const p=Math.max(Psym[i][j],1e-10);
+      if(p>1e-12) kl+=p*Math.log(p/Math.max(q,1e-10));
+      const factor=4*(p-q)*num[i][j];
+      grad[i][0]+=factor*(Y[i][0]-Y[j][0]);
+      grad[i][1]+=factor*(Y[i][1]-Y[j][1]);
+    }
+
+  for(let i=0;i<N;i++){
+    velocity[i][0]=mom*velocity[i][0]-lr*grad[i][0];
+    velocity[i][1]=mom*velocity[i][1]-lr*grad[i][1];
+    Y[i][0]+=velocity[i][0];Y[i][1]+=velocity[i][1];
+  }
+  iter++;
+  if(iter%5===0){
+    costHistory.push(kl);
+    document.getElementById('iterVal').textContent=iter;
+    document.getElementById('klVal').textContent=kl.toFixed(4);
+    draw();drawCost();
+  }
+}
+
+function toggleRun(){
+  running=!running;
+  document.getElementById('toggleBtn').textContent=running?'⏸ Pausar':'▶ Iniciar';
+  if(running) loop();
+}
+
+function loop(){
+  if(!running) return;
+  for(let i=0;i<5;i++) step();
+  if(iter<500) animId=requestAnimationFrame(loop);
+  else{running=false;document.getElementById('toggleBtn').textContent='▶ Iniciar';}
+}
+
+function draw(){
+  const cv=document.getElementById('mainCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=25;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  if(!Y.length) return;
+  const xs=Y.map(p=>p[0]),ys=Y.map(p=>p[1]);
+  const xMin=Math.min(...xs),xMax=Math.max(...xs),yMin=Math.min(...ys),yMax=Math.max(...ys);
+  const xR=Math.max(xMax-xMin,.1),yR=Math.max(yMax-yMin,.1);
+  const toX=v=>PAD+(v-xMin)/xR*(W-2*PAD);
+  const toY=v=>PAD+(v-yMin)/yR*(H-2*PAD);
+
+  Y.forEach((p,i)=>{
+    ctx.save();ctx.fillStyle=COLS[LABELS[i]];ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(toX(p[0]),toY(p[1]),6,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+  });
+}
+
+function drawCost(){
+  const cv=document.getElementById('costCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,PAD=20;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  if(costHistory.length<2) return;
+  const maxC=Math.max(...costHistory);
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();ctx.restore();
+  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.beginPath();costHistory.forEach((c,i)=>{
+    const x=PAD+i/(Math.max(costHistory.length-1,1))*(W-2*PAD);
+    const y=H-PAD-(c/maxC)*(H-2*PAD);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });ctx.stroke();ctx.restore();
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';ctx.textAlign='left';
+  ctx.fillText('KL Divergencia',PAD+2,12);ctx.restore();
+}
+
+restart();
+</script>
