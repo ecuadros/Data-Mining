@@ -1,0 +1,311 @@
+---
+layout: default
+title: "Boosting"
+prev_url: /modulo-05/random-forest.html
+prev_title: Random Forest
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.tb ul{padding-left:1.1rem;}
+.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.8rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+canvas{display:block;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;}
+.ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(88,166,255,.2);}
+.btn-accent2{border-color:rgba(188,140,255,.35);background:rgba(188,140,255,.1);color:var(--accent2);}
+.btn-accent2:hover{background:rgba(188,140,255,.2);}
+.step-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;font-size:.82rem;color:var(--muted);margin-bottom:.8rem;}
+.step-info strong{color:var(--text);}
+.stumps-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;}
+.stump-badge{font-size:.7rem;font-family:var(--font-mono);padding:.25rem .55rem;border-radius:12px;border:1px solid;background:rgba(0,0,0,.2);}
+.metric-row{display:flex;gap:.8rem;margin-bottom:.6rem;}
+.metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
+.m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.m-val{font-size:1.1rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-05/' | relative_url }}">Módulo 05 — Clasificación: Árboles y Ensambles</a><span class="sep">›</span>
+  Boosting
+</nav>
+<header>
+  <div class="eyebrow">Módulo 05 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Boosting (AdaBoost)</h1>
+  <p class="demo-lead">Ensamble secuencial: cada clasificador débil (stump) se enfoca en los errores del anterior. El tamaño de los puntos muestra su peso actual — los mal clasificados se vuelven más grandes.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Algoritmo AdaBoost</h3>
+    <ol style="padding-left:1.2rem;">
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Inicializar pesos w_i = 1/n</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Entrenar clasificador débil h_t minimizando error ponderado</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Calcular α_t = ½ ln((1-ε_t)/ε_t)</li>
+      <li style="font-size:.88rem;color:var(--muted);margin-bottom:.4rem;">Actualizar pesos: mal clasificados × e^α, bien clasificados × e^{-α}</li>
+      <li style="font-size:.88rem;color:var(--muted);">Repetir T veces</li>
+    </ol>
+    <div class="formula-box">H(x) = sign(Σ_t α_t · h_t(x))</div>
+  </div>
+  <div class="tb">
+    <h3>vs Random Forest</h3>
+    <ul>
+      <li><strong style="color:var(--accent)">RF</strong>: paralelo, reduce varianza, robusto a outliers</li>
+      <li><strong style="color:var(--accent2)">Boosting</strong>: secuencial, reduce sesgo, más susceptible a ruido</li>
+      <li>Boosting suele ganar en accuracy limpia; RF es más estable</li>
+    </ul>
+  </div>
+  <div class="tb" id="stump-panel">
+    <h3>Stumps entrenados</h3>
+    <p style="font-size:.82rem;color:var(--muted);">Usa los botones para avanzar paso a paso.</p>
+  </div>
+</aside>
+
+<div>
+  <div class="ctrl">
+    <button class="btn" onclick="reset()">Reiniciar</button>
+    <button class="btn btn-accent2" onclick="step()">Siguiente paso →</button>
+    <button class="btn" onclick="runAll()">Correr todo (10 pasos)</button>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric">
+      <div class="m-name">Paso</div>
+      <div class="m-val" id="stepVal" style="color:var(--accent);">0 / 10</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Error ponderado ε</div>
+      <div class="m-val" id="errVal" style="color:var(--warn);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Peso α</div>
+      <div class="m-val" id="alphaVal" style="color:var(--accent2);">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-name">Acc. ensamble</div>
+      <div class="m-val" id="accVal" style="color:var(--accent3);">—</div>
+    </div>
+  </div>
+
+  <div class="cw">
+    <canvas id="mainCanvas" width="520" height="380"></canvas>
+  </div>
+  <p style="font-size:.72rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin:.3rem 0 .8rem;">Tamaño de punto = peso actual · Color de fondo = clasificación del ensamble</p>
+
+  <div class="cw" style="padding:.75rem;">
+    <canvas id="alphaCanvas" width="520" height="90"></canvas>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+
+// Binary dataset: 2 classes
+const r=rng(77);
+const N=60;
+const PTS=[];
+for(let i=0;i<N;i++){
+  const c=i<N/2?-1:1;
+  const cx=c===-1?.28:.68,cy=.5;
+  PTS.push({x:Math.max(.05,Math.min(.95,cx+(r()-.5)*.55)),
+            y:Math.max(.05,Math.min(.95,cy+(r()-.5)*.55)),
+            c,w:1/N});
+}
+
+const MAX_STEPS=10;
+let weights=[...PTS.map(p=>p.w)];
+let stumps=[];
+let alphas=[];
+let curStep=0;
+
+// Find best decision stump (axis-aligned split, binary)
+function bestStump(pts,ws){
+  let bestErr=Infinity,bestFeat=0,bestThr=0,bestPol=1;
+  [0,1].forEach(feat=>{
+    const vals=pts.map((p,i)=>({v:feat===0?p.x:p.y,c:p.c,w:ws[i]}));
+    vals.sort((a,b)=>a.v-b.v);
+    const thrs=vals.map((v,i)=>i<vals.length-1?(v.v+vals[i+1].v)/2:null).filter(v=>v!==null);
+    thrs.forEach(thr=>{
+      [-1,1].forEach(pol=>{
+        let err=0;
+        vals.forEach(v=>{
+          const pred=pol*(v.v<=thr?-1:1);
+          if(pred!==v.c) err+=v.w;
+        });
+        if(err<bestErr){bestErr=err;bestFeat=feat;bestThr=thr;bestPol=pol;}
+      });
+    });
+  });
+  return {feat:bestFeat,thr:bestThr,pol:bestPol,err:bestErr};
+}
+
+function predictStump(s,x,y){
+  const v=s.feat===0?x:y;
+  return s.pol*(v<=s.thr?-1:1);
+}
+
+function ensemblePredict(x,y){
+  if(!stumps.length) return 0;
+  return stumps.reduce((sum,s,i)=>sum+alphas[i]*predictStump(s,x,y),0);
+}
+
+function step(){
+  if(curStep>=MAX_STEPS) return;
+  // Normalize weights
+  const wSum=weights.reduce((s,w)=>s+w,0);
+  const ws=weights.map(w=>w/wSum);
+
+  const s=bestStump(PTS,ws);
+  const alpha=0.5*Math.log((1-s.err+1e-10)/(s.err+1e-10));
+  stumps.push(s);alphas.push(alpha);
+
+  // Update weights
+  PTS.forEach((p,i)=>{
+    const pred=predictStump(s,p.x,p.y);
+    weights[i]=ws[i]*Math.exp(-alpha*p.c*pred);
+  });
+  curStep++;
+  updateUI(s.err,alpha);
+  drawMain();
+  drawAlphaChart();
+  updateStumpPanel();
+}
+
+function runAll(){
+  while(curStep<MAX_STEPS) step();
+}
+
+function reset(){
+  weights=PTS.map(()=>1/N);
+  stumps=[];alphas=[];curStep=0;
+  document.getElementById('errVal').textContent='—';
+  document.getElementById('alphaVal').textContent='—';
+  document.getElementById('accVal').textContent='—';
+  document.getElementById('stepVal').textContent=`0 / ${MAX_STEPS}`;
+  document.getElementById('stump-panel').innerHTML='<h3 style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;">Stumps entrenados</h3><p style="font-size:.82rem;color:var(--muted);">Usa los botones para avanzar paso a paso.</p>';
+  drawMain();
+  drawAlphaChart();
+}
+
+function updateUI(err,alpha){
+  const acc=PTS.filter((p,i)=>Math.sign(ensemblePredict(p.x,p.y)||1)===p.c).length/N;
+  document.getElementById('stepVal').textContent=`${curStep} / ${MAX_STEPS}`;
+  document.getElementById('errVal').textContent=err.toFixed(4);
+  document.getElementById('alphaVal').textContent=alpha.toFixed(4);
+  document.getElementById('accVal').textContent=(acc*100).toFixed(1)+'%';
+}
+
+function updateStumpPanel(){
+  const panel=document.getElementById('stump-panel');
+  const FEAT_NAMES=['x','y'];
+  const DIRS=['≤','≤'];
+  panel.innerHTML='<h3 style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;">Stumps entrenados</h3>'
+    +'<div class="stumps-row">'
+    +stumps.map((s,i)=>{
+      const col=alphas[i]>0?'rgba(88,166,255,.8)':'rgba(248,81,73,.8)';
+      const brd=alphas[i]>0?'rgba(88,166,255,.5)':'rgba(248,81,73,.5)';
+      return `<span class="stump-badge" style="color:${col};border-color:${brd};">h${i+1}: ${FEAT_NAMES[s.feat]}${s.pol>0?'':' !'}≤${s.thr.toFixed(2)} α=${alphas[i].toFixed(2)}</span>`;
+    }).join('')+'</div>';
+}
+
+const COLS_BIN=['#58a6ff','#f85149'];
+function drawMain(){
+  const canvas=document.getElementById('mainCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,PAD=20;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  // Background decision
+  if(stumps.length){
+    const step=6;
+    for(let py=PAD;py<H-PAD;py+=step){
+      for(let px=PAD;px<W-PAD;px+=step){
+        const nx=(px-PAD)/(W-2*PAD),ny=(py-PAD)/(H-2*PAD);
+        const score=ensemblePredict(nx,ny);
+        const cls=score>=0?0:1;
+        ctx.fillStyle=COLS_BIN[cls]+'28';
+        ctx.fillRect(px,py,step,step);
+      }
+    }
+    // Stump line (last)
+    const s=stumps[stumps.length-1];
+    ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    if(s.feat===0){
+      const sx=PAD+s.thr*(W-2*PAD);
+      ctx.beginPath();ctx.moveTo(sx,PAD);ctx.lineTo(sx,H-PAD);ctx.stroke();
+    } else {
+      const sy=PAD+s.thr*(H-2*PAD);
+      ctx.beginPath();ctx.moveTo(PAD,sy);ctx.lineTo(W-PAD,sy);ctx.stroke();
+    }
+    ctx.setLineDash([]);ctx.restore();
+  }
+
+  // Points
+  const wSum=weights.reduce((s,w)=>s+w,0);
+  const ws=weights.map(w=>w/wSum);
+  const maxW=Math.max(...ws);
+  PTS.forEach((p,i)=>{
+    const col=p.c===1?COLS_BIN[0]:COLS_BIN[1];
+    const rad=4+ws[i]/maxW*14;
+    const pred=stumps.length?Math.sign(ensemblePredict(p.x,p.y)||1):0;
+    const wrong=stumps.length&&pred!==p.c;
+    ctx.save();
+    ctx.fillStyle=col+(wrong?'ff':'aa');
+    ctx.strokeStyle=wrong?'#fff':'rgba(0,0,0,.3)';
+    ctx.lineWidth=wrong?2:0.5;
+    ctx.beginPath();
+    const px=PAD+p.x*(W-2*PAD),py=PAD+p.y*(H-2*PAD);
+    ctx.arc(px,py,rad,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function drawAlphaChart(){
+  const cc=document.getElementById('alphaCanvas');
+  const ctx=cc.getContext('2d');
+  const W=cc.width,H=cc.height,PAD=25;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  if(!alphas.length) return;
+
+  const maxA=Math.max(...alphas.map(Math.abs),0.1);
+  ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,H/2);ctx.lineTo(W-PAD,H/2);ctx.stroke();
+  ctx.restore();
+
+  alphas.forEach((a,i)=>{
+    const x=PAD+i*(W-2*PAD)/(MAX_STEPS-1);
+    const barH=(a/maxA)*(H/2-PAD);
+    const col=a>0?'#58a6ff':'#f85149';
+    ctx.fillStyle=col+'cc';
+    ctx.fillRect(x-6,H/2-barH,12,barH);
+    ctx.save();ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';
+    ctx.fillText(`h${i+1}`,x,H-6);
+    ctx.restore();
+  });
+
+  ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.6)';ctx.textAlign='left';
+  ctx.fillText('α (peso del clasificador)',PAD,12);ctx.restore();
+}
+
+reset();
+</script>
