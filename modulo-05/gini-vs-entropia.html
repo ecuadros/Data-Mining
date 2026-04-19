@@ -1,0 +1,268 @@
+---
+layout: default
+title: "Gini vs Entropía"
+prev_url: /modulo-05/arbol-decision.html
+prev_title: Árbol de Decisión
+next_url: /modulo-05/random-forest.html
+next_title: Random Forest
+---
+<style>
+.demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
+.breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
+.layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}}
+.tb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
+.tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
+.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.85rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+.formula-box.v{color:var(--accent2);border-color:rgba(188,140,255,.35);}
+canvas{display:block;background:#0d1117;border-radius:var(--radius-md);}
+.cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem;}
+.stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.65rem .9rem;}
+.stat-name{font-size:.68rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.stat-val{font-size:1.2rem;font-weight:700;font-family:var(--font-mono);margin-top:.2rem;}
+.hint{font-size:.75rem;font-family:var(--font-mono);color:var(--muted);text-align:center;margin-top:.5rem;}
+</style>
+
+<div class="demo-page">
+{% include demo-nav.html %}
+<nav class="breadcrumb">
+  <a href="{{ '/' | relative_url }}">Inicio</a><span class="sep">›</span>
+  <a href="{{ '/modulo-05/' | relative_url }}">Módulo 05 — Clasificación: Árboles y Ensambles</a><span class="sep">›</span>
+  Gini vs Entropía
+</nav>
+<header>
+  <div class="eyebrow">Módulo 05 · Minería de Datos · Ciencia de la Computación</div>
+  <h1 class="dt">Gini vs Entropía</h1>
+  <p class="demo-lead">Dos criterios para medir la impureza de un nodo. Arrastra la línea de corte para explorar cómo cada métrica evalúa un split y cuánta ganancia de información produce.</p>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="tb">
+    <h3>Impureza de Gini</h3>
+    <div class="formula-box">Gini(S) = 1 − Σᵢ pᵢ²</div>
+    <p>Probabilidad de clasificar mal una instancia elegida aleatoriamente si se etiqueta según la distribución de clases. Rango: [0, 1−1/k].</p>
+    <p>Máximo en distribución uniforme: 0.5 (2 clases), 0.667 (3 clases).</p>
+  </div>
+  <div class="tb">
+    <h3>Entropía de Shannon</h3>
+    <div class="formula-box v">H(S) = −Σᵢ pᵢ log₂(pᵢ)</div>
+    <p>Bits necesarios para codificar la clase de una instancia. Rango: [0, log₂(k)].</p>
+    <p>Máximo: 1 bit (2 clases), 1.585 bits (3 clases).</p>
+  </div>
+  <div class="tb">
+    <h3>Ganancia de información</h3>
+    <div class="formula-box">IG = Impureza(padre) − Σ (|Sᵢ|/|S|)·Impureza(Sᵢ)</div>
+    <p>Ambas métricas casi siempre coinciden en el split elegido. Gini es computacionalmente más barata (sin logaritmos). Entropía penaliza más los splits impuros.</p>
+  </div>
+</aside>
+
+<div>
+  <div class="cw">
+    <canvas id="mainCanvas" width="520" height="320"></canvas>
+  </div>
+  <p class="hint">Arrastra la línea de corte vertical para cambiar la posición del split</p>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-name">Gini — Nodo padre</div>
+      <div class="stat-val" id="gini-parent" style="color:var(--accent);">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-name">Entropía — Nodo padre</div>
+      <div class="stat-val" id="entr-parent" style="color:var(--accent2);">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-name">Ganancia Gini</div>
+      <div class="stat-val" id="gain-gini" style="color:var(--accent3);">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-name">Ganancia Entropía</div>
+      <div class="stat-val" id="gain-entr" style="color:var(--warn);">—</div>
+    </div>
+  </div>
+
+  <!-- Comparison curves canvas -->
+  <div class="tb">
+    <h3>Curvas de impureza — todos los splits posibles</h3>
+    <div class="cw" style="margin:0;">
+      <canvas id="curveCanvas" width="520" height="180"></canvas>
+    </div>
+  </div>
+</div>
+</div>
+
+{% include demo-nav.html %}
+</div>
+
+<script>
+// Dataset: 80 1D points with 2 classes, used for split visualization
+function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
+const r=rng(99);
+const POINTS=[];
+for(let i=0;i<80;i++){
+  const c=i<40?0:1;
+  const base=c===0?0.25:0.65;
+  POINTS.push({x:Math.max(0.01,Math.min(0.99,base+(r()-.5)*.5)),c});
+}
+POINTS.sort((a,b)=>a.x-b.x);
+
+const CLASS_COLORS=['#58a6ff','#bc8cff'];
+const canvas=document.getElementById('mainCanvas');
+const ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height;
+const PAD=30,DOT_Y=H/2;
+
+let splitX=0.5;
+let dragging=false;
+
+function gini(pts){if(!pts.length)return 0;const p=pts.filter(p=>p.c===0).length/pts.length;return 1-p*p-(1-p)*(1-p);}
+function entropy(pts){
+  if(!pts.length)return 0;
+  const p=pts.filter(p=>p.c===0).length/pts.length;
+  const q=1-p;
+  if(p===0||q===0)return 0;
+  return -(p*Math.log2(p)+q*Math.log2(q));
+}
+
+function dataX(x){return PAD+x*(W-2*PAD);}
+function fromCanvas(cx){return (cx-PAD)/(W-2*PAD);}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+
+  const left=POINTS.filter(p=>p.x<=splitX);
+  const right=POINTS.filter(p=>p.x>splitX);
+
+  // Background regions
+  ctx.fillStyle='rgba(88,166,255,.07)';ctx.fillRect(PAD,20,dataX(splitX)-PAD,H-40);
+  ctx.fillStyle='rgba(188,140,255,.07)';ctx.fillRect(dataX(splitX),20,W-PAD-dataX(splitX),H-40);
+
+  // Axis
+  ctx.save();ctx.strokeStyle='rgba(139,148,158,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(PAD,DOT_Y);ctx.lineTo(W-PAD,DOT_Y);ctx.stroke();ctx.restore();
+
+  // Points (stacked vertically by class)
+  const stacks={};
+  POINTS.forEach(p=>{
+    const bx=Math.round(p.x*50);
+    if(!stacks[bx])stacks[bx]={0:0,1:0};
+    const stackH=stacks[bx][p.c]++;
+    const px=dataX(p.x);
+    const py=DOT_Y+(p.c===0?-1:1)*(12+stackH*9);
+    ctx.save();
+    ctx.fillStyle=CLASS_COLORS[p.c];
+    ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.restore();
+  });
+
+  // Split line
+  const sx=dataX(splitX);
+  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=2.5;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(sx,20);ctx.lineTo(sx,H-20);ctx.stroke();ctx.setLineDash([]);
+  // Drag handle
+  ctx.fillStyle='#d29922';ctx.strokeStyle='#fff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(sx,DOT_Y,8,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 9px JetBrains Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('↔',sx,DOT_Y);
+  ctx.restore();
+
+  // Region labels
+  ctx.save();ctx.font='10px JetBrains Mono,monospace';ctx.fillStyle='rgba(88,166,255,.7)';ctx.textAlign='center';
+  ctx.fillText(`izq: n=${left.length}`,PAD+(sx-PAD)/2,H-8);
+  ctx.fillStyle='rgba(188,140,255,.7)';
+  ctx.fillText(`der: n=${right.length}`,sx+(W-PAD-sx)/2,H-8);
+  ctx.restore();
+
+  // Update stats
+  const gP=gini(POINTS),eP=entropy(POINTS);
+  const gL=gini(left),gR=gini(right),eL=entropy(left),eR=entropy(right);
+  const wL=left.length/POINTS.length,wR=right.length/POINTS.length;
+  const gainG=gP-(wL*gL+wR*gR);
+  const gainE=eP-(wL*eL+wR*eR);
+  document.getElementById('gini-parent').textContent=gP.toFixed(4);
+  document.getElementById('entr-parent').textContent=eP.toFixed(4);
+  document.getElementById('gain-gini').textContent=gainG.toFixed(4);
+  document.getElementById('gain-entr').textContent=gainE.toFixed(4);
+
+  drawCurves(sx);
+}
+
+function drawCurves(splitCanvasX){
+  const cc=document.getElementById('curveCanvas');
+  const cx=cc.getContext('2d');
+  const CW=cc.width,CH=cc.height,CP=30;
+  cx.clearRect(0,0,CW,CH);
+  cx.fillStyle='#0d1117';cx.fillRect(0,0,CW,CH);
+
+  const steps=100;
+  const giniGains=[],entrGains=[];
+  for(let i=1;i<steps;i++){
+    const t=i/steps;
+    const l=POINTS.filter(p=>p.x<=t),r=POINTS.filter(p=>p.x>t);
+    if(!l.length||!r.length){giniGains.push(0);entrGains.push(0);continue;}
+    const wL=l.length/POINTS.length,wR=r.length/POINTS.length;
+    giniGains.push(gini(POINTS)-(wL*gini(l)+wR*gini(r)));
+    entrGains.push(entropy(POINTS)-(wL*entropy(l)+wR*entropy(r)));
+  }
+
+  const maxG=Math.max(...giniGains,.001),maxE=Math.max(...entrGains,.001);
+  const overall=Math.max(maxG,maxE);
+
+  function drawLine(vals,color,maxV){
+    cx.save();cx.strokeStyle=color;cx.lineWidth=2;cx.lineJoin='round';
+    cx.beginPath();
+    vals.forEach((v,i)=>{
+      const x=CP+i/(steps-2)*(CW-2*CP);
+      const y=CH-CP-v/maxV*(CH-2*CP);
+      if(i===0)cx.moveTo(x,y);else cx.lineTo(x,y);
+    });
+    cx.stroke();cx.restore();
+  }
+
+  // Grid
+  cx.save();cx.strokeStyle='rgba(48,54,61,.6)';cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(CP,CP);cx.lineTo(CP,CH-CP);cx.lineTo(CW-CP,CH-CP);cx.stroke();cx.restore();
+
+  drawLine(giniGains,'#58a6ff',overall);
+  drawLine(entrGains,'#bc8cff',overall);
+
+  // Current split marker
+  cx.save();cx.strokeStyle='#d29922';cx.lineWidth=2;cx.setLineDash([5,4]);
+  cx.beginPath();cx.moveTo(splitCanvasX*((CW-2*CP)/(W-2*PAD))+CP,CP);
+  cx.lineTo(splitCanvasX*((CW-2*CP)/(W-2*PAD))+CP,CH-CP);cx.stroke();cx.setLineDash([]);cx.restore();
+
+  // Legend
+  cx.save();cx.font='10px Inter,system-ui';
+  cx.fillStyle='#58a6ff';cx.fillRect(CW-110,8,10,10);cx.fillStyle='rgba(230,237,243,.8)';cx.fillText('Ganancia Gini',CW-97,17);
+  cx.fillStyle='#bc8cff';cx.fillRect(CW-110,24,10,10);cx.fillStyle='rgba(230,237,243,.8)';cx.fillText('Ganancia Entropía',CW-97,33);
+  cx.restore();
+}
+
+// Drag
+canvas.addEventListener('mousedown',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const cx=(e.clientX-rect.left)*W/rect.width;
+  if(Math.abs(cx-dataX(splitX))<15)dragging=true;
+});
+canvas.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const rect=canvas.getBoundingClientRect();
+  const cx=(e.clientX-rect.left)*W/rect.width;
+  splitX=Math.max(0.05,Math.min(0.95,fromCanvas(cx)));
+  draw();
+  canvas.style.cursor='ew-resize';
+});
+canvas.addEventListener('mouseup',()=>{dragging=false;canvas.style.cursor='default';});
+canvas.addEventListener('mouseleave',()=>{dragging=false;});
+
+draw();
+</script>
