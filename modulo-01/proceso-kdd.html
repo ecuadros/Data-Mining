@@ -27,8 +27,8 @@ next_title: Explorador de Datasets
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--accent);
-  background: rgba(88,166,255,.08);
-  border: 1px solid rgba(88,166,255,.25);
+  background: rgba(0,122,255,.08);
+  border: 1px solid rgba(0,122,255,.25);
   border-radius: 20px;
   padding: 0.2rem 0.75rem;
   margin-bottom: 1rem;
@@ -101,7 +101,7 @@ next_title: Explorador de Datasets
   cursor: pointer;
   transition: border-color .2s, background .2s;
 }
-.kdd-steps li:hover { border-color: var(--accent); background: rgba(88,166,255,.06); }
+.kdd-steps li:hover { border-color: var(--accent); background: rgba(0,122,255,.06); }
 
 .step-num {
   display: inline-flex;
@@ -110,7 +110,7 @@ next_title: Explorador de Datasets
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(88,166,255,.15);
+  background: rgba(0,122,255,.15);
   color: var(--accent);
   font-size: .72rem;
   font-weight: 700;
@@ -153,8 +153,8 @@ next_title: Explorador de Datasets
   display: flex;
   align-items: flex-start;
   gap: .6rem;
-  background: rgba(88,166,255,.06);
-  border: 1px solid rgba(88,166,255,.2);
+  background: rgba(0,122,255,.06);
+  border: 1px solid rgba(0,122,255,.2);
   border-radius: var(--radius-sm);
   padding: .7rem .9rem;
   font-size: .83rem;
@@ -198,7 +198,7 @@ next_title: Explorador de Datasets
   padding: .55rem 1.2rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--accent);
-  background: rgba(88,166,255,.1);
+  background: rgba(0,122,255,.1);
   color: var(--accent);
   font-weight: 600;
   font-size: .88rem;
@@ -206,14 +206,14 @@ next_title: Explorador de Datasets
   transition: background .2s, transform .1s;
   font-family: var(--font-sans);
 }
-.btn-sim:hover { background: rgba(88,166,255,.2); }
+.btn-sim:hover { background: rgba(0,122,255,.2); }
 .btn-sim:active { transform: scale(.97); }
 .btn-sim.danger {
   border-color: var(--danger);
-  background: rgba(248,81,73,.1);
+  background: rgba(255,59,48,.1);
   color: var(--danger);
 }
-.btn-sim.danger:hover { background: rgba(248,81,73,.2); }
+.btn-sim.danger:hover { background: rgba(255,59,48,.2); }
 
 .sim-hint { color: var(--muted); font-size: .82rem; }
 
@@ -232,8 +232,8 @@ next_title: Explorador de Datasets
   display: inline-flex;
   align-items: center;
   gap: .4rem;
-  background: rgba(88,166,255,.12);
-  border: 1px solid rgba(88,166,255,.3);
+  background: rgba(0,122,255,.12);
+  border: 1px solid rgba(0,122,255,.3);
   color: var(--accent);
   border-radius: 20px;
   padding: .2rem .8rem;
@@ -289,8 +289,8 @@ next_title: Explorador de Datasets
 }
 
 .tool-tag {
-  background: rgba(188,140,255,.1);
-  border: 1px solid rgba(188,140,255,.25);
+  background: rgba(175,82,222,.1);
+  border: 1px solid rgba(175,82,222,.25);
   color: var(--accent2);
   border-radius: var(--radius-sm);
   padding: .18rem .55rem;
@@ -457,7 +457,7 @@ const STEPS = [
     what: 'Identificar y extraer el subconjunto de datos relevante para el objetivo del análisis. Se elige qué tablas, columnas y períodos temporales se usarán.',
     tools: ['SQL', 'pandas', 'Apache Spark', 'AWS S3'],
     example: '<strong>Fraude bancario:</strong> Se seleccionan transacciones de los últimos 12 meses: monto, comercio, hora, ubicación GPS y si fue marcada como fraude. Se excluyen columnas irrelevantes (e.g., notas internas).',
-    color: '#58a6ff',
+    color: '#007AFF',
   },
   {
     label: 'Preprocesamiento',
@@ -465,7 +465,7 @@ const STEPS = [
     what: 'Limpiar los datos: eliminar duplicados, imputar o eliminar valores faltantes, detectar y tratar outliers, corregir inconsistencias (e.g., fechas malformadas).',
     tools: ['pandas', 'scikit-learn', 'OpenRefine', 'Great Expectations'],
     example: '<strong>Fraude bancario:</strong> El 3 % de transacciones tiene monto nulo → se imputa con la mediana por comercio. Se eliminan duplicados por ID de transacción. Outliers de monto > 3σ se marcan con un flag.',
-    color: '#bc8cff',
+    color: '#AF52DE',
   },
   {
     label: 'Transformación',
@@ -473,7 +473,7 @@ const STEPS = [
     what: 'Convertir datos al formato óptimo para el algoritmo: normalización, codificación one-hot, creación de nuevas features, reducción de dimensionalidad (PCA, etc.).',
     tools: ['scikit-learn', 'Feature-engine', 'PCA', 'StandardScaler'],
     example: '<strong>Fraude bancario:</strong> Monto normalizado con log1p. Hora → sin/cos para capturar ciclicidad. País del comercio → one-hot. Nueva feature: "transacciones en últimas 24 h desde misma IP".',
-    color: '#3fb950',
+    color: '#34C759',
   },
   {
     label: 'Minería de Datos',
@@ -481,7 +481,7 @@ const STEPS = [
     what: 'Aplicar el algoritmo de aprendizaje automático al dataset transformado. Puede ser clasificación, clustering, regresión, detección de anomalías, reglas de asociación, etc.',
     tools: ['scikit-learn', 'XGBoost', 'LightGBM', 'Isolation Forest', 'PyTorch'],
     example: '<strong>Fraude bancario:</strong> Se entrena un XGBoost con SMOTE para balancear clases (fraude ~0.1 %). Validación con k-fold estratificado. Se optimiza recall para minimizar falsos negativos.',
-    color: '#d29922',
+    color: '#FF9500',
   },
   {
     label: 'Interpretación',
@@ -489,7 +489,7 @@ const STEPS = [
     what: 'Evaluar resultados, validar si el conocimiento descubierto es útil y novedoso, visualizar para comunicar a los stakeholders y decidir acciones concretas.',
     tools: ['SHAP', 'LIME', 'matplotlib', 'Plotly', 'MLflow'],
     example: '<strong>Fraude bancario:</strong> SHAP muestra que "país inusual" y "monto > 5× promedio" son los factores más influyentes. El modelo reduce pérdidas anuales un 34 %. Se despliega en tiempo real via API REST.',
-    color: '#f85149',
+    color: '#FF3B30',
   },
 ];
 
@@ -570,9 +570,9 @@ function drawPipeline() {
     const cx = b.x + 18, cy = b.y + 18;
     ctx.beginPath();
     ctx.arc(cx, cy, 11, 0, Math.PI * 2);
-    ctx.fillStyle = active ? b.color : 'rgba(88,166,255,0.15)';
+    ctx.fillStyle = active ? b.color : 'rgba(0,122,255,0.15)';
     ctx.fill();
-    ctx.fillStyle = active ? '#0d1117' : '#58a6ff';
+    ctx.fillStyle = active ? '#0d1117' : '#007AFF';
     ctx.font      = `700 11px 'JetBrains Mono', monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

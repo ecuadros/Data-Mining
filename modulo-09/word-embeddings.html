@@ -10,7 +10,7 @@ next_title: Análisis de Sentimiento
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -24,7 +24,7 @@ select{background:var(--surface2);border:1px solid var(--border);border-radius:v
 .nn-row{display:flex;align-items:center;gap:.6rem;padding:.3rem 0;font-size:.82rem;font-family:var(--font-mono);}
 .nn-rank{color:var(--muted);width:20px;}
 .nn-dist{color:var(--muted);font-size:.72rem;margin-left:auto;}
-.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.82rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+.formula-box{background:#0d1117;border:1px solid rgba(0,122,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.82rem;color:var(--accent);text-align:center;margin:.5rem 0;}
 .analogy-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.5rem;}
 .analogy-row select{flex:1;min-width:80px;}
 .analogy-row span{color:var(--muted);font-size:.9rem;}
@@ -65,7 +65,7 @@ select{background:var(--surface2);border:1px solid var(--border);border-radius:v
       <select id="wA"></select><span>−</span><select id="wB"></select><span>+</span><select id="wC"></select>
     </div>
     <div style="margin-top:.6rem;font-size:.82rem;color:var(--muted);">Resultado: <span id="analogyResult" style="color:var(--accent);font-weight:700;">—</span></div>
-    <button style="margin-top:.5rem;display:inline-flex;align-items:center;padding:.35rem .8rem;border-radius:var(--radius-sm);font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);" onclick="computeAnalogy()">Calcular →</button>
+    <button style="margin-top:.5rem;display:inline-flex;align-items:center;padding:.35rem .8rem;border-radius:var(--radius-sm);font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);" onclick="computeAnalogy()">Calcular →</button>
   </div>
   <div class="legend" id="legendPanel"></div>
 </aside>
@@ -115,7 +115,7 @@ const WORDS=[
 ];
 
 const CATEGORIES=[...new Set(WORDS.map(w=>w.cat))];
-const CAT_COLS={'Animales':'#3fb950','Comida':'#d29922','Profesiones':'#58a6ff','Realeza':'#bc8cff','Género':'#f85149','Tecnología':'#79c0ff','Deportes':'#ff7b72','Ciencia':'#56d364'};
+const CAT_COLS={'Animales':'#34C759','Comida':'#FF9500','Profesiones':'#007AFF','Realeza':'#AF52DE','Género':'#FF3B30','Tecnología':'#5AC8FA','Deportes':'#FF375F','Ciencia':'#30D158'};
 
 let selected=null,analogyHighlight=null;
 
@@ -138,14 +138,14 @@ function draw(){
   // Draw lines to neighbors
   if(selected){
     nearest(selected).forEach(n=>{
-      ctx.save();ctx.strokeStyle='rgba(210,153,34,.3)';ctx.lineWidth=1;
+      ctx.save();ctx.strokeStyle='rgba(255,149,0,.3)';ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(toX(selected.x),toY(selected.y));ctx.lineTo(toX(n.x),toY(n.y));ctx.stroke();ctx.restore();
     });
   }
 
   // Analogy arrow
   if(analogyHighlight){
-    ctx.save();ctx.strokeStyle='rgba(188,140,255,.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+    ctx.save();ctx.strokeStyle='rgba(175,82,222,.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
     ctx.beginPath();ctx.moveTo(toX(analogyHighlight.from.x),toY(analogyHighlight.from.y));
     ctx.lineTo(toX(analogyHighlight.to.x),toY(analogyHighlight.to.y));ctx.stroke();ctx.setLineDash([]);ctx.restore();
   }
@@ -158,10 +158,10 @@ function draw(){
     const r=isSel?9:isNN?7:6;
     ctx.save();
     ctx.fillStyle=isSel||isNN||isAnalogy?col:col+'99';
-    ctx.strokeStyle=isSel?'#fff':isAnalogy?'#bc8cff':isNN?'#fff':'rgba(0,0,0,.2)';
+    ctx.strokeStyle=isSel?'#fff':isAnalogy?'#AF52DE':isNN?'#fff':'rgba(0,0,0,.2)';
     ctx.lineWidth=isSel||isAnalogy?2:1;
     ctx.beginPath();ctx.arc(toX(w.x),toY(w.y),r,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle=isSel||isNN?'rgba(230,237,243,.95)':isAnalogy?'#bc8cff':'rgba(230,237,243,.55)';
+    ctx.fillStyle=isSel||isNN?'rgba(230,237,243,.95)':isAnalogy?'#AF52DE':'rgba(230,237,243,.55)';
     ctx.font=(isSel?'bold ':'')+`${isSel?11:9}px JetBrains Mono,monospace`;
     ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillText(w.w,toX(w.x),toY(w.y)-r-2);

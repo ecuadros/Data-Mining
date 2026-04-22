@@ -8,7 +8,7 @@ prev_title: Random Forest
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -17,15 +17,15 @@ h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;ba
 .tb h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;}
 .tb p,.tb li{font-size:.88rem;color:var(--muted);line-height:1.65;margin:0 0 .4rem;}
 .tb ul{padding-left:1.1rem;}
-.formula-box{background:#0d1117;border:1px solid rgba(88,166,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.8rem;color:var(--accent);text-align:center;margin:.5rem 0;}
+.formula-box{background:#0d1117;border:1px solid rgba(0,122,255,.35);border-radius:8px;padding:.65rem 1rem;font-family:var(--font-mono);font-size:.8rem;color:var(--accent);text-align:center;margin:.5rem 0;}
 canvas{display:block;border-radius:var(--radius-md);}
 .cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
-.btn:hover{background:rgba(88,166,255,.2);}
-.btn-accent2{border-color:rgba(188,140,255,.35);background:rgba(188,140,255,.1);color:var(--accent2);}
-.btn-accent2:hover{background:rgba(188,140,255,.2);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(0,122,255,.2);}
+.btn-accent2{border-color:rgba(175,82,222,.35);background:rgba(175,82,222,.1);color:var(--accent2);}
+.btn-accent2:hover{background:rgba(175,82,222,.2);}
 .step-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;font-size:.82rem;color:var(--muted);margin-bottom:.8rem;}
 .step-info strong{color:var(--text);}
 .stumps-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;}
@@ -221,13 +221,13 @@ function updateStumpPanel(){
   panel.innerHTML='<h3 style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin:0 0 .85rem;">Stumps entrenados</h3>'
     +'<div class="stumps-row">'
     +stumps.map((s,i)=>{
-      const col=alphas[i]>0?'rgba(88,166,255,.8)':'rgba(248,81,73,.8)';
-      const brd=alphas[i]>0?'rgba(88,166,255,.5)':'rgba(248,81,73,.5)';
+      const col=alphas[i]>0?'rgba(0,122,255,.8)':'rgba(255,59,48,.8)';
+      const brd=alphas[i]>0?'rgba(0,122,255,.5)':'rgba(255,59,48,.5)';
       return `<span class="stump-badge" style="color:${col};border-color:${brd};">h${i+1}: ${FEAT_NAMES[s.feat]}${s.pol>0?'':' !'}≤${s.thr.toFixed(2)} α=${alphas[i].toFixed(2)}</span>`;
     }).join('')+'</div>';
 }
 
-const COLS_BIN=['#58a6ff','#f85149'];
+const COLS_BIN=['#007AFF','#FF3B30'];
 function drawMain(){
   const canvas=document.getElementById('mainCanvas');
   const ctx=canvas.getContext('2d');
@@ -249,7 +249,7 @@ function drawMain(){
     }
     // Stump line (last)
     const s=stumps[stumps.length-1];
-    ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.save();ctx.strokeStyle='#FF9500';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
     if(s.feat===0){
       const sx=PAD+s.thr*(W-2*PAD);
       ctx.beginPath();ctx.moveTo(sx,PAD);ctx.lineTo(sx,H-PAD);ctx.stroke();
@@ -295,7 +295,7 @@ function drawAlphaChart(){
   alphas.forEach((a,i)=>{
     const x=PAD+i*(W-2*PAD)/(MAX_STEPS-1);
     const barH=(a/maxA)*(H/2-PAD);
-    const col=a>0?'#58a6ff':'#f85149';
+    const col=a>0?'#007AFF':'#FF3B30';
     ctx.fillStyle=col+'cc';
     ctx.fillRect(x-6,H/2-barH,12,barH);
     ctx.save();ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';

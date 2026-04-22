@@ -10,7 +10,7 @@ next_title: Dendrograma Jerárquico
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -24,8 +24,8 @@ canvas{display:block;border-radius:var(--radius-md);}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
 input[type=range]{accent-color:var(--accent);width:110px;}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
-.btn:hover{background:rgba(88,166,255,.2);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(0,122,255,.2);}
 .legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;}
 .leg-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
 .leg-dot{width:10px;height:10px;border-radius:50%;}
@@ -53,8 +53,8 @@ input[type=range]{accent-color:var(--accent);width:110px;}
   <div class="tb">
     <h3>Tres tipos de puntos</h3>
     <ul>
-      <li><strong style="color:#58a6ff;">Núcleo (core)</strong>: tiene ≥ minPts vecinos en radio ε</li>
-      <li><strong style="color:#d29922;">Frontera (border)</strong>: dentro del radio ε de un núcleo, pero sin suficientes vecinos propios</li>
+      <li><strong style="color:#007AFF;">Núcleo (core)</strong>: tiene ≥ minPts vecinos en radio ε</li>
+      <li><strong style="color:#FF9500;">Frontera (border)</strong>: dentro del radio ε de un núcleo, pero sin suficientes vecinos propios</li>
       <li><strong style="color:#8b949e;">Ruido (noise)</strong>: no es núcleo ni frontera — outlier</li>
     </ul>
   </div>
@@ -91,8 +91,8 @@ input[type=range]{accent-color:var(--accent);width:110px;}
   </div>
 
   <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:#58a6ff;"></div>Núcleo</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#d29922;border:2px solid #d29922;background:transparent;outline:2px solid #d29922;"></div>Frontera</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#007AFF;"></div>Núcleo</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FF9500;border:2px solid #FF9500;background:transparent;outline:2px solid #FF9500;"></div>Frontera</div>
     <div class="leg-item"><div class="leg-dot" style="background:#444c56;"></div>Ruido</div>
   </div>
 
@@ -103,11 +103,11 @@ input[type=range]{accent-color:var(--accent);width:110px;}
     </div>
     <div class="metric">
       <div class="m-name">Puntos núcleo</div>
-      <div class="m-val" id="coreVal" style="color:#58a6ff;">—</div>
+      <div class="m-val" id="coreVal" style="color:#007AFF;">—</div>
     </div>
     <div class="metric">
       <div class="m-name">Frontera</div>
-      <div class="m-val" id="borderVal" style="color:#d29922;">—</div>
+      <div class="m-val" id="borderVal" style="color:#FF9500;">—</div>
     </div>
     <div class="metric">
       <div class="m-name">Ruido</div>
@@ -200,7 +200,7 @@ function dbscan(pts,eps,minPts){
   return {labels,isCore,numClusters:cluster};
 }
 
-const PALETTE=['#58a6ff','#3fb950','#f85149','#bc8cff','#d29922','#79c0ff','#56d364','#ff7b72','#ffa657','#e3b341'];
+const PALETTE=['#007AFF','#34C759','#FF3B30','#AF52DE','#FF9500','#5AC8FA','#30D158','#FF375F','#FF6B35','#FFD60A'];
 
 let lastResult=null;
 let mousePos=null;

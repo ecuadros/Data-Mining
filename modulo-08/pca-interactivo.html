@@ -8,7 +8,7 @@ next_title: t-SNE Proyección
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:680px;line-height:1.6;margin:0 0 2.5rem;}
 .layout-top{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
@@ -24,9 +24,9 @@ canvas{display:block;border-radius:var(--radius-md);}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
 input[type=range]{accent-color:var(--accent);width:140px;}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
-.btn:hover{background:rgba(88,166,255,.2);}
-.btn.active{background:rgba(88,166,255,.3);border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(0,122,255,.2);}
+.btn.active{background:rgba(0,122,255,.3);border-color:var(--accent);}
 .metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap;}
 .metric{flex:1;min-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
 .m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
@@ -147,7 +147,7 @@ function mulberry32(seed){
   };
 }
 
-const COLORS=['#58a6ff','#3fb950','#bc8cff'];
+const COLORS=['#007AFF','#34C759','#AF52DE'];
 let DATA=[], pcaResult=null, showPCA=true, currentAngle=0, currentSeed=42;
 
 function generateData(seed){
@@ -262,7 +262,7 @@ function drawScatter(){
   const radAngle=currentAngle*Math.PI/180;
   const axLen=Math.min(W,H)*0.38;
   ctx.save();
-  ctx.strokeStyle='rgba(210,153,34,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+  ctx.strokeStyle='rgba(255,149,0,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
   ctx.beginPath();
   ctx.moveTo(cx-Math.cos(radAngle)*axLen,cy-Math.sin(radAngle)*axLen);
   ctx.lineTo(cx+Math.cos(radAngle)*axLen,cy+Math.sin(radAngle)*axLen);
@@ -273,24 +273,24 @@ function drawScatter(){
     const scale1=Math.sqrt(pca.lam1)*180;
     const scale2=Math.sqrt(pca.lam2)*140;
     ctx.save();
-    ctx.strokeStyle='#58a6ff';ctx.lineWidth=3;
+    ctx.strokeStyle='#007AFF';ctx.lineWidth=3;
     ctx.beginPath();
     ctx.moveTo(cx,cy);
     ctx.lineTo(cx+pca.ev1[0]*scale1,cy+pca.ev1[1]*scale1);
     ctx.stroke();
     // Arrowhead PC1
-    drawArrow(ctx,cx,cy,cx+pca.ev1[0]*scale1,cy+pca.ev1[1]*scale1,'#58a6ff');
+    drawArrow(ctx,cx,cy,cx+pca.ev1[0]*scale1,cy+pca.ev1[1]*scale1,'#007AFF');
     // PC2 arrow
-    ctx.strokeStyle='#bc8cff';ctx.lineWidth=2;
+    ctx.strokeStyle='#AF52DE';ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(cx,cy);
     ctx.lineTo(cx+pca.ev2[0]*scale2,cy+pca.ev2[1]*scale2);
     ctx.stroke();
-    drawArrow(ctx,cx,cy,cx+pca.ev2[0]*scale2,cy+pca.ev2[1]*scale2,'#bc8cff');
+    drawArrow(ctx,cx,cy,cx+pca.ev2[0]*scale2,cy+pca.ev2[1]*scale2,'#AF52DE');
     ctx.restore();
     // Labels
-    ctx.fillStyle='#58a6ff';ctx.font='bold 12px var(--font-mono)';
+    ctx.fillStyle='#007AFF';ctx.font='bold 12px var(--font-mono)';
     ctx.fillText('PC1',cx+pca.ev1[0]*scale1+6,cy+pca.ev1[1]*scale1);
-    ctx.fillStyle='#bc8cff';
+    ctx.fillStyle='#AF52DE';
     ctx.fillText('PC2',cx+pca.ev2[0]*scale2+6,cy+pca.ev2[1]*scale2);
   }
 
@@ -299,7 +299,7 @@ function drawScatter(){
   ctx.fillStyle='rgba(0,0,0,.6)';ctx.beginPath();ctx.arc(cx,cy,2,0,Math.PI*2);ctx.fill();
 
   // Axis label
-  ctx.fillStyle='rgba(210,153,34,.9)';ctx.font='11px var(--font-mono)';
+  ctx.fillStyle='rgba(255,149,0,.9)';ctx.font='11px var(--font-mono)';
   const lx=cx+Math.cos(radAngle)*axLen+6,ly=cy+Math.sin(radAngle)*axLen;
   ctx.fillText(`${currentAngle}°`,lx,ly);
 }
@@ -358,22 +358,22 @@ function drawProjection(){
   if(showPCA){
     const pc1angle=Math.atan2(pca.ev1[1],pca.ev1[0]);
     const pc1projY=lineY-60;
-    ctx.fillStyle='rgba(88,166,255,.15)';ctx.font='10px var(--font-mono)';
-    ctx.fillStyle='rgba(88,166,255,.5)';
+    ctx.fillStyle='rgba(0,122,255,.15)';ctx.font='10px var(--font-mono)';
+    ctx.fillStyle='rgba(0,122,255,.5)';
     ctx.fillText('← PC1 (referencia)',PAD,pc1projY-10);
     pc1proj.forEach((v,i)=>{
       ctx.fillStyle=COLORS[DATA[i].cls]+'50';
       ctx.beginPath();ctx.arc(toSX(v),pc1projY,3.5,0,Math.PI*2);ctx.fill();
     });
     // PC1 axis line
-    ctx.strokeStyle='rgba(88,166,255,.2)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.strokeStyle='rgba(0,122,255,.2)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
     ctx.beginPath();ctx.moveTo(PAD,pc1projY);ctx.lineTo(W-PAD,pc1projY);ctx.stroke();
     ctx.setLineDash([]);
   }
 
   // Manual projection points
   const projY2=lineY+70;
-  ctx.fillStyle='rgba(210,153,34,.7)';ctx.font='10px var(--font-mono)';
+  ctx.fillStyle='rgba(255,149,0,.7)';ctx.font='10px var(--font-mono)';
   ctx.fillText(`← Proyección manual (${currentAngle}°)`,PAD,projY2-10);
   projections.forEach((v,i)=>{
     ctx.fillStyle=COLORS[DATA[i].cls];
@@ -395,9 +395,9 @@ function drawProjection(){
   ctx.fillStyle='rgba(255,255,255,.05)';
   ctx.fillRect(PAD,barY,barW,barH);
   const fracVar=varPC1>0?Math.min(1,varProj/varPC1):0;
-  ctx.fillStyle='rgba(210,153,34,.6)';
+  ctx.fillStyle='rgba(255,149,0,.6)';
   ctx.fillRect(PAD,barY,barW*fracVar,barH);
-  ctx.strokeStyle='rgba(88,166,255,.6)';ctx.lineWidth=2;
+  ctx.strokeStyle='rgba(0,122,255,.6)';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(PAD+barW,barY);ctx.lineTo(PAD+barW,barY+barH);ctx.stroke();
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='10px var(--font-mono)';
   ctx.fillText(`Varianza relativa al PC1: ${varPC1>0?(varProj/varPC1*100).toFixed(1):'—'}%`,PAD,barY-5);

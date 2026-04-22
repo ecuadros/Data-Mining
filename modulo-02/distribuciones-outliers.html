@@ -117,8 +117,8 @@ next_title: Matriz de Correlaciones
   .boxplot-legend strong { color: var(--text); }
 
   .insight-box {
-    background: rgba(248,81,73,0.06);
-    border: 1px solid rgba(248,81,73,0.2);
+    background: rgba(255,59,48,0.06);
+    border: 1px solid rgba(255,59,48,0.2);
     border-radius: var(--radius-sm);
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
@@ -212,9 +212,9 @@ next_title: Matriz de Correlaciones
     transition: all 180ms ease;
     user-select: none;
   }
-  .toggle-btn.on { color: var(--danger); border-color: rgba(248,81,73,0.5); background: rgba(248,81,73,0.08); }
+  .toggle-btn.on { color: var(--danger); border-color: rgba(255,59,48,0.5); background: rgba(255,59,48,0.08); }
   .toggle-btn.method-iqr.on  { color: var(--accent3); border-color: rgba(63,185,80,0.5); background: rgba(63,185,80,0.08); }
-  .toggle-btn.method-z.on    { color: var(--warn);    border-color: rgba(210,153,34,0.5); background: rgba(210,153,34,0.08); }
+  .toggle-btn.method-z.on    { color: var(--warn);    border-color: rgba(255,149,0,0.5); background: rgba(255,149,0,0.08); }
 
   .canvas-wrapper {
     background: var(--surface2);
@@ -267,7 +267,7 @@ next_title: Matriz de Correlaciones
   </nav>
 
   <header style="margin-bottom:2.5rem;">
-    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
     <h1 style="font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Distribuciones y Detección de Outliers</h1>
     <p style="font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;">Visualiza histogramas y box plots de distintas distribuciones. Compara los métodos IQR y Z-score para detectar valores atípicos.</p>
   </header>
@@ -569,16 +569,16 @@ next_title: Matriz de Correlaciones
       const by   = PAD_TOP_HIST + HIST_H - barH;
 
       // Normal part
-      ctx.fillStyle   = 'rgba(88,166,255,0.55)';
-      ctx.strokeStyle = 'rgba(88,166,255,0.3)';
+      ctx.fillStyle   = 'rgba(0,122,255,0.55)';
+      ctx.strokeStyle = 'rgba(0,122,255,0.3)';
       ctx.lineWidth   = 0.5;
       ctx.fillRect(bx + 0.5, by, bw - 1, barH - outH);
       ctx.strokeRect(bx + 0.5, by, bw - 1, barH - outH);
 
       // Outlier part (stacked on top)
       if (outH > 0) {
-        ctx.fillStyle   = 'rgba(248,81,73,0.7)';
-        ctx.strokeStyle = 'rgba(248,81,73,0.4)';
+        ctx.fillStyle   = 'rgba(255,59,48,0.7)';
+        ctx.strokeStyle = 'rgba(255,59,48,0.4)';
         ctx.fillRect(bx + 0.5, by, bw - 1, outH);
         ctx.strokeRect(bx + 0.5, by, bw - 1, outH);
       }
@@ -623,8 +623,8 @@ next_title: Matriz de Correlaciones
     ctx.stroke();
 
     // IQR box
-    ctx.fillStyle   = 'rgba(88,166,255,0.15)';
-    ctx.strokeStyle = 'rgba(88,166,255,0.6)';
+    ctx.fillStyle   = 'rgba(0,122,255,0.15)';
+    ctx.strokeStyle = 'rgba(0,122,255,0.6)';
     ctx.lineWidth   = 1.5;
     ctx.beginPath();
     ctx.roundRect(q1x, bpBoxY, q3x - q1x, bpBoxH, 3);
@@ -632,7 +632,7 @@ next_title: Matriz de Correlaciones
     ctx.stroke();
 
     // Median line
-    ctx.strokeStyle = '#58a6ff';
+    ctx.strokeStyle = '#007AFF';
     ctx.lineWidth   = 2.5;
     ctx.beginPath();
     ctx.moveTo(medX, bpBoxY);
@@ -645,20 +645,20 @@ next_title: Matriz de Correlaciones
       const ox = toX(v);
       ctx.beginPath();
       ctx.arc(ox, bpMidY, 4, 0, Math.PI * 2);
-      ctx.fillStyle   = 'rgba(248,81,73,0.85)';
-      ctx.strokeStyle = 'rgba(248,81,73,0.4)';
+      ctx.fillStyle   = 'rgba(255,59,48,0.85)';
+      ctx.strokeStyle = 'rgba(255,59,48,0.4)';
       ctx.lineWidth   = 1;
       ctx.fill();
       ctx.stroke();
     });
 
     // Box plot labels
-    ctx.fillStyle = 'rgba(88,166,255,0.7)';
+    ctx.fillStyle = 'rgba(0,122,255,0.7)';
     ctx.font      = '9px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Q1', q1x, bpBoxY - 4);
     ctx.fillText('Q3', q3x, bpBoxY - 4);
-    ctx.fillStyle = '#58a6ff';
+    ctx.fillStyle = '#007AFF';
     ctx.fillText('Md', medX, bpBoxY + bpBoxH + 12);
 
     // ── X-axis ─────────────────────────────────────────────────────────────────
@@ -687,14 +687,14 @@ next_title: Matriz de Correlaciones
 
     // ── Legend ─────────────────────────────────────────────────────────────────
     const legY = H - 16;
-    ctx.fillStyle = 'rgba(88,166,255,0.85)';
+    ctx.fillStyle = 'rgba(0,122,255,0.85)';
     ctx.fillRect(PAD_L, legY - 7, 12, 7);
     ctx.fillStyle = '#8b949e';
     ctx.font      = '10px "JetBrains Mono", monospace';
     ctx.textAlign = 'left';
     ctx.fillText('Normal', PAD_L + 16, legY);
 
-    ctx.fillStyle = 'rgba(248,81,73,0.85)';
+    ctx.fillStyle = 'rgba(255,59,48,0.85)';
     ctx.fillRect(PAD_L + 80, legY - 7, 12, 7);
     ctx.fillStyle = '#8b949e';
     ctx.fillText('Outlier', PAD_L + 96, legY);
@@ -703,7 +703,7 @@ next_title: Matriz de Correlaciones
       ? 'Método: IQR (1.5 · IQR)'
       : `Método: Z-score (|z| > ${state.zThreshold.toFixed(1)})`;
     ctx.textAlign = 'right';
-    ctx.fillStyle = state.method === 'iqr' ? 'rgba(63,185,80,0.8)' : 'rgba(210,153,34,0.8)';
+    ctx.fillStyle = state.method === 'iqr' ? 'rgba(63,185,80,0.8)' : 'rgba(255,149,0,0.8)';
     ctx.fillText(methodLabel, PAD_L + plotW, legY);
 
     // ── Update outlier stats panel ─────────────────────────────────────────────

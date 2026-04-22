@@ -8,8 +8,8 @@ prev_title: Matriz de Correlaciones
   :root {
     --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
     --border: #30363d; --text: #e6edf3; --muted: #8b949e;
-    --accent: #58a6ff; --accent2: #bc8cff; --accent3: #3fb950;
-    --danger: #f85149; --warn: #d29922;
+    --accent: #007AFF; --accent2: #AF52DE; --accent3: #34C759;
+    --danger: #FF3B30; --warn: #FF9500;
     --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -160,7 +160,7 @@ prev_title: Matriz de Correlaciones
     cursor: pointer; transition: all 0.15s;
   }
   .btn-toggle:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-toggle.active { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .btn-toggle.active { background: rgba(0,122,255,0.15); border-color: var(--accent); color: var(--accent); }
 
   .hover-panel {
     background: var(--surface); border: 1px solid var(--border);
@@ -257,15 +257,15 @@ prev_title: Matriz de Correlaciones
         <canvas id="pcCanvas" width="760" height="340"></canvas>
         <div class="legend-row">
           <div class="legend-item">
-            <div class="legend-dot" style="background:#58a6ff"></div>
+            <div class="legend-dot" style="background:#007AFF"></div>
             Setosa (50)
           </div>
           <div class="legend-item">
-            <div class="legend-dot" style="background:#bc8cff"></div>
+            <div class="legend-dot" style="background:#AF52DE"></div>
             Versicolor (50)
           </div>
           <div class="legend-item">
-            <div class="legend-dot" style="background:#3fb950"></div>
+            <div class="legend-dot" style="background:#34C759"></div>
             Virginica (50)
           </div>
         </div>
@@ -278,17 +278,17 @@ prev_title: Matriz de Correlaciones
           <div class="checkbox-row">
             <label class="cls-check">
               <input type="checkbox" id="chk0" checked>
-              <div class="cls-dot" style="background:#58a6ff"></div>
+              <div class="cls-dot" style="background:#007AFF"></div>
               Setosa
             </label>
             <label class="cls-check">
               <input type="checkbox" id="chk1" checked>
-              <div class="cls-dot" style="background:#bc8cff"></div>
+              <div class="cls-dot" style="background:#AF52DE"></div>
               Versicolor
             </label>
             <label class="cls-check">
               <input type="checkbox" id="chk2" checked>
-              <div class="cls-dot" style="background:#3fb950"></div>
+              <div class="cls-dot" style="background:#34C759"></div>
               Virginica
             </label>
           </div>
@@ -380,7 +380,7 @@ prev_title: Matriz de Correlaciones
   const FEATURES = ['Sepal\nLength','Sepal\nWidth','Petal\nLength','Petal\nWidth'];
   const FEATURES_FULL = ['Sepal Length','Sepal Width','Petal Length','Petal Width'];
   const CLASS_NAMES = ['Setosa','Versicolor','Virginica'];
-  const CLASS_COLORS = ['#58a6ff','#bc8cff','#3fb950'];
+  const CLASS_COLORS = ['#007AFF','#AF52DE','#34C759'];
 
   const N = IRIS.length;
   const P = 4;
@@ -492,7 +492,7 @@ prev_title: Matriz de Correlaciones
       const isHL = (j === highlightAxis);
 
       // Línea del eje
-      ctx.strokeStyle = isHL ? '#58a6ff' : '#30363d';
+      ctx.strokeStyle = isHL ? '#007AFF' : '#30363d';
       ctx.lineWidth = isHL ? 2.5 : 1.5;
       ctx.beginPath();
       ctx.moveTo(x, PAD_TOP);
@@ -524,7 +524,7 @@ prev_title: Matriz de Correlaciones
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.font = isHL ? 'bold 11px Inter, system-ui, sans-serif' : '10px Inter, system-ui, sans-serif';
-      ctx.fillStyle = isHL ? '#58a6ff' : '#e6edf3';
+      ctx.fillStyle = isHL ? '#007AFF' : '#e6edf3';
       lines.forEach((line, li) => {
         ctx.fillText(line, x, PAD_TOP - 8 + li*12 - (lines.length-1)*12 + (lines.length-1)*12);
       });

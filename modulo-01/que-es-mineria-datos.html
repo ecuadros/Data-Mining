@@ -36,8 +36,8 @@ next_title: Tipos de Atributos
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(88,166,255,0.08);
-  border: 1px solid rgba(88,166,255,0.2);
+  background: rgba(0,122,255,0.08);
+  border: 1px solid rgba(0,122,255,0.2);
   border-radius: 20px;
   padding: 0.2rem 0.85rem;
   margin-bottom: 0.9rem;
@@ -112,8 +112,8 @@ next_title: Tipos de Atributos
 }
 
 .definition-box {
-  background: rgba(88,166,255,0.06);
-  border: 1px solid rgba(88,166,255,0.2);
+  background: rgba(0,122,255,0.06);
+  border: 1px solid rgba(0,122,255,0.2);
   border-radius: var(--radius-md);
   padding: 1rem 1.2rem;
   margin-top: 0.8rem;
@@ -228,15 +228,15 @@ next_title: Tipos de Atributos
 }
 
 .app-card:hover {
-  border-color: rgba(88,166,255,0.5);
+  border-color: rgba(0,122,255,0.5);
   background: var(--surface2);
   transform: translateY(-2px);
 }
 
 .app-card.active {
   border-color: var(--accent);
-  background: rgba(88,166,255,0.07);
-  box-shadow: 0 0 0 1px rgba(88,166,255,0.15), 0 4px 16px rgba(88,166,255,0.12);
+  background: rgba(0,122,255,0.07);
+  box-shadow: 0 0 0 1px rgba(0,122,255,0.15), 0 4px 16px rgba(0,122,255,0.12);
 }
 
 .app-emoji {
@@ -505,23 +505,23 @@ next_title: Tipos de Atributos
         <h2>Tareas Principales</h2>
         <div class="task-grid">
           <div class="task-pill">
-            <span class="task-dot" style="background:#58a6ff"></span>
+            <span class="task-dot" style="background:#007AFF"></span>
             Clasificación
           </div>
           <div class="task-pill">
-            <span class="task-dot" style="background:#bc8cff"></span>
+            <span class="task-dot" style="background:#AF52DE"></span>
             Regresión
           </div>
           <div class="task-pill">
-            <span class="task-dot" style="background:#3fb950"></span>
+            <span class="task-dot" style="background:#34C759"></span>
             Clustering
           </div>
           <div class="task-pill">
-            <span class="task-dot" style="background:#d29922"></span>
+            <span class="task-dot" style="background:#FF9500"></span>
             Asociación
           </div>
           <div class="task-pill" style="grid-column:span 2">
-            <span class="task-dot" style="background:#f85149"></span>
+            <span class="task-dot" style="background:#FF3B30"></span>
             Detección de Anomalías
           </div>
         </div>
@@ -608,10 +608,10 @@ next_title: Tipos de Atributos
 <script>
 (function () {
   const TASK_COLORS = {
-    'Reglas de Asociación':    { bg: 'rgba(210,153,34,0.12)',  color: '#d29922', border: 'rgba(210,153,34,0.3)'  },
-    'Detección de Anomalías':  { bg: 'rgba(248,81,73,0.12)',   color: '#f85149', border: 'rgba(248,81,73,0.3)'   },
-    'Clasificación':           { bg: 'rgba(88,166,255,0.12)',  color: '#58a6ff', border: 'rgba(88,166,255,0.3)'  },
-    'Clustering':              { bg: 'rgba(63,185,80,0.12)',   color: '#3fb950', border: 'rgba(63,185,80,0.3)'   },
+    'Reglas de Asociación':    { bg: 'rgba(255,149,0,0.12)',  color: '#FF9500', border: 'rgba(255,149,0,0.3)'  },
+    'Detección de Anomalías':  { bg: 'rgba(255,59,48,0.12)',   color: '#FF3B30', border: 'rgba(255,59,48,0.3)'   },
+    'Clasificación':           { bg: 'rgba(0,122,255,0.12)',  color: '#007AFF', border: 'rgba(0,122,255,0.3)'  },
+    'Clustering':              { bg: 'rgba(63,185,80,0.12)',   color: '#34C759', border: 'rgba(63,185,80,0.3)'   },
   };
 
   const APPS = [

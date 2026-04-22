@@ -38,8 +38,8 @@ next_title: El Proceso KDD
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(88,166,255,0.08);
-  border: 1px solid rgba(88,166,255,0.2);
+  background: rgba(0,122,255,0.08);
+  border: 1px solid rgba(0,122,255,0.2);
   border-radius: 20px;
   padding: 0.2rem 0.85rem;
   margin-bottom: 0.9rem;
@@ -141,9 +141,9 @@ next_title: El Proceso KDD
 }
 
 .noir-n { background: rgba(139,148,158,0.15); color: #8b949e; }
-.noir-o { background: rgba(210,153,34,0.12);  color: #d29922; }
-.noir-i { background: rgba(88,166,255,0.12);  color: #58a6ff; }
-.noir-r { background: rgba(63,185,80,0.12);   color: #3fb950; }
+.noir-o { background: rgba(255,149,0,0.12);  color: #FF9500; }
+.noir-i { background: rgba(0,122,255,0.12);  color: #007AFF; }
+.noir-r { background: rgba(63,185,80,0.12);   color: #34C759; }
 
 /* Scale detail table */
 .scale-table {
@@ -178,9 +178,9 @@ next_title: El Proceso KDD
 .scale-table tr:last-child td { border-bottom: none; }
 
 .scale-n td:first-child { color: #8b949e; }
-.scale-o td:first-child { color: #d29922; }
-.scale-i td:first-child { color: #58a6ff; }
-.scale-r td:first-child { color: #3fb950; }
+.scale-o td:first-child { color: #FF9500; }
+.scale-i td:first-child { color: #007AFF; }
+.scale-r td:first-child { color: #34C759; }
 
 /* Additional types */
 .type-chips {
@@ -310,7 +310,7 @@ next_title: El Proceso KDD
 }
 .attr-chip.selected {
   border-color: var(--accent2);
-  box-shadow: 0 0 0 2px rgba(188,140,255,0.2);
+  box-shadow: 0 0 0 2px rgba(175,82,222,0.2);
   color: var(--accent2);
 }
 .attr-chip .chip-example {
@@ -337,8 +337,8 @@ next_title: El Proceso KDD
 }
 .zone:hover, .zone.droppable {
   border-style: solid;
-  border-color: rgba(88,166,255,0.5);
-  background: rgba(88,166,255,0.03);
+  border-color: rgba(0,122,255,0.5);
+  background: rgba(0,122,255,0.03);
 }
 .zone-header {
   display: flex;
@@ -376,8 +376,8 @@ next_title: El Proceso KDD
   align-items: center;
   gap: 0.35rem;
 }
-.zone-chip.correct   { background: rgba(63,185,80,0.15);  color: #3fb950; border: 1px solid rgba(63,185,80,0.3);  }
-.zone-chip.incorrect { background: rgba(248,81,73,0.15);  color: #f85149; border: 1px solid rgba(248,81,73,0.3);  }
+.zone-chip.correct   { background: rgba(63,185,80,0.15);  color: #34C759; border: 1px solid rgba(63,185,80,0.3);  }
+.zone-chip.incorrect { background: rgba(255,59,48,0.15);  color: #FF3B30; border: 1px solid rgba(255,59,48,0.3);  }
 .zone-chip.correct::before   { content: '✓'; font-size: 0.7rem; }
 .zone-chip.incorrect::before { content: '✗'; font-size: 0.7rem; }
 
@@ -390,8 +390,8 @@ next_title: El Proceso KDD
   animation: fadeInUp 0.25s ease both;
   display: none;
 }
-.feedback-toast.correct   { background: rgba(63,185,80,0.1);  border: 1px solid rgba(63,185,80,0.3);  color: #3fb950; }
-.feedback-toast.incorrect { background: rgba(248,81,73,0.1);  border: 1px solid rgba(248,81,73,0.3);  color: #f85149; }
+.feedback-toast.correct   { background: rgba(63,185,80,0.1);  border: 1px solid rgba(63,185,80,0.3);  color: #34C759; }
+.feedback-toast.incorrect { background: rgba(255,59,48,0.1);  border: 1px solid rgba(255,59,48,0.3);  color: #FF3B30; }
 .feedback-toast.visible   { display: block; }
 .feedback-icon { font-size: 1rem; margin-right: 0.4rem; }
 
@@ -442,9 +442,9 @@ next_title: El Proceso KDD
   color: var(--muted);
 }
 .op-valid   { border-color: rgba(63,185,80,0.4);  background: rgba(63,185,80,0.06); }
-.op-invalid { border-color: rgba(248,81,73,0.3);  background: rgba(248,81,73,0.04); opacity: 0.55; }
-.op-valid   .op-symbol { color: #3fb950; }
-.op-invalid .op-symbol { color: #f85149; }
+.op-invalid { border-color: rgba(255,59,48,0.3);  background: rgba(255,59,48,0.04); opacity: 0.55; }
+.op-valid   .op-symbol { color: #34C759; }
+.op-invalid .op-symbol { color: #FF3B30; }
 
 .ops-placeholder {
   font-size: 0.82rem;
@@ -501,9 +501,9 @@ next_title: El Proceso KDD
   letter-spacing: 0.05em;
 }
 .sc-n { background: rgba(139,148,158,0.12); color: #8b949e; }
-.sc-o { background: rgba(210,153,34,0.12);  color: #d29922; }
-.sc-i { background: rgba(88,166,255,0.12);  color: #58a6ff; }
-.sc-r { background: rgba(63,185,80,0.12);   color: #3fb950; }
+.sc-o { background: rgba(255,149,0,0.12);  color: #FF9500; }
+.sc-i { background: rgba(0,122,255,0.12);  color: #007AFF; }
+.sc-r { background: rgba(63,185,80,0.12);   color: #34C759; }
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(10px); }
@@ -638,21 +638,21 @@ next_title: El Proceso KDD
         </div>
         <div class="zone" data-scale="Ordinal" id="zone-Ordinal">
           <div class="zone-header">
-            <span class="zone-name" style="color:#d29922">Ordinal</span>
+            <span class="zone-name" style="color:#FF9500">Ordinal</span>
             <span class="zone-hint">Orden definido — distancias no uniformes</span>
           </div>
           <div class="zone-chips" id="chips-Ordinal"></div>
         </div>
         <div class="zone" data-scale="Intervalo" id="zone-Intervalo">
           <div class="zone-header">
-            <span class="zone-name" style="color:#58a6ff">Intervalo</span>
+            <span class="zone-name" style="color:#007AFF">Intervalo</span>
             <span class="zone-hint">Distancias uniformes — cero arbitrario</span>
           </div>
           <div class="zone-chips" id="chips-Intervalo"></div>
         </div>
         <div class="zone" data-scale="Razón" id="zone-Razón">
           <div class="zone-header">
-            <span class="zone-name" style="color:#3fb950">Razón</span>
+            <span class="zone-name" style="color:#34C759">Razón</span>
             <span class="zone-hint">Cero absoluto — ratios válidos</span>
           </div>
           <div class="zone-chips" id="chips-Razón"></div>
@@ -756,9 +756,9 @@ next_title: El Proceso KDD
 
   var SCALE_COLORS = {
     Nominal:   '#8b949e',
-    Ordinal:   '#d29922',
-    Intervalo: '#58a6ff',
-    Razón:     '#3fb950',
+    Ordinal:   '#FF9500',
+    Intervalo: '#007AFF',
+    Razón:     '#34C759',
   };
 
   var SCALE_CSS = {

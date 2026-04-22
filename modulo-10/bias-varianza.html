@@ -8,7 +8,7 @@ prev_title: Validación Cruzada
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -45,7 +45,7 @@ input[type=range]{accent-color:var(--accent);width:140px;}
 <aside>
   <div class="tb">
     <h3>Descomposición del error</h3>
-    <p style="font-family:var(--font-mono);font-size:.8rem;color:var(--accent);background:#0d1117;padding:.5rem .8rem;border-radius:6px;border:1px solid rgba(88,166,255,.3);">Error = Sesgo² + Varianza + Ruido</p>
+    <p style="font-family:var(--font-mono);font-size:.8rem;color:var(--accent);background:#0d1117;padding:.5rem .8rem;border-radius:6px;border:1px solid rgba(0,122,255,.3);">Error = Sesgo² + Varianza + Ruido</p>
     <ul>
       <li><strong style="color:var(--danger)">Sesgo (Bias)</strong>: error por suposiciones incorrectas en el modelo — underfitting</li>
       <li><strong style="color:var(--warn)">Varianza</strong>: sensibilidad a fluctuaciones del dataset de entrenamiento — overfitting</li>
@@ -174,7 +174,7 @@ function drawFit(mainData,allCoeffs,deg){
   ctx.beginPath();ctx.moveTo(PAD,H/2);ctx.lineTo(W-PAD,H/2);ctx.stroke();ctx.restore();
 
   // True function
-  ctx.save();ctx.strokeStyle='rgba(210,153,34,.5)';ctx.lineWidth=2;ctx.setLineDash([5,5]);
+  ctx.save();ctx.strokeStyle='rgba(255,149,0,.5)';ctx.lineWidth=2;ctx.setLineDash([5,5]);
   ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;if(i===0)ctx.moveTo(toX(x),toY(trueFn(x)));else ctx.lineTo(toX(x),toY(trueFn(x)));}ctx.stroke();ctx.setLineDash([]);ctx.restore();
 
   // All fitted curves (grey)
@@ -184,7 +184,7 @@ function drawFit(mainData,allCoeffs,deg){
   });
 
   // Mean curve (blue)
-  ctx.save();ctx.strokeStyle='#58a6ff';ctx.lineWidth=2.5;
+  ctx.save();ctx.strokeStyle='#007AFF';ctx.lineWidth=2.5;
   ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;const y=allCoeffs.reduce((s,c)=>s+polyEval(c,x),0)/allCoeffs.length;const yc=Math.max(-2,Math.min(2,y));if(i===0)ctx.moveTo(toX(x),toY(yc));else ctx.lineTo(toX(x),toY(yc));}ctx.stroke();ctx.restore();
 
   // Data points
@@ -195,8 +195,8 @@ function drawFit(mainData,allCoeffs,deg){
 
   // Legend
   ctx.save();ctx.font='9px JetBrains Mono,monospace';
-  ctx.fillStyle='#d29922';ctx.fillText('Verdadero',PAD+2,14);
-  ctx.fillStyle='#58a6ff';ctx.fillText('Media ajuste',PAD+70,14);
+  ctx.fillStyle='#FF9500';ctx.fillText('Verdadero',PAD+2,14);
+  ctx.fillStyle='#007AFF';ctx.fillText('Media ajuste',PAD+70,14);
   ctx.fillStyle='rgba(139,148,158,.6)';ctx.fillText('Realizaciones',PAD+155,14);
   ctx.restore();
 }
@@ -229,23 +229,23 @@ function drawComplexity(curDeg){
   function drawLine(vals,color,label){
     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';
     ctx.beginPath();vals.forEach((v,i)=>{const x=toX(i+1),y=toY(v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
-    vals.forEach((v,i)=>{const iscur=(i+1)===curDeg;ctx.fillStyle=iscur?'#d29922':color;ctx.beginPath();ctx.arc(toX(i+1),toY(v),iscur?7:4,0,Math.PI*2);ctx.fill();});
+    vals.forEach((v,i)=>{const iscur=(i+1)===curDeg;ctx.fillStyle=iscur?'#FF9500':color;ctx.beginPath();ctx.arc(toX(i+1),toY(v),iscur?7:4,0,Math.PI*2);ctx.fill();});
     ctx.restore();
   }
 
-  drawLine(ERRORS.map(e=>e.train),'#3fb950');
-  drawLine(ERRORS.map(e=>e.test),'#f85149');
+  drawLine(ERRORS.map(e=>e.train),'#34C759');
+  drawLine(ERRORS.map(e=>e.test),'#FF3B30');
 
   // Current degree line
-  ctx.save();ctx.strokeStyle='#d29922';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+  ctx.save();ctx.strokeStyle='#FF9500';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
   ctx.beginPath();ctx.moveTo(toX(curDeg),PAD);ctx.lineTo(toX(curDeg),H-PAD);ctx.stroke();ctx.setLineDash([]);ctx.restore();
 
   // Labels
   ctx.save();ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='rgba(139,148,158,.7)';ctx.textAlign='center';
   DEGREES.forEach(d=>ctx.fillText(d,toX(d),H-PAD+13));
   ctx.fillText('Grado del polinomio',W/2,H-2);
-  ctx.fillStyle='#3fb950';ctx.textAlign='right';ctx.fillText('Train MSE',W-PAD-2,PAD+12);
-  ctx.fillStyle='#f85149';ctx.fillText('Test MSE',W-PAD-2,PAD+26);
+  ctx.fillStyle='#34C759';ctx.textAlign='right';ctx.fillText('Train MSE',W-PAD-2,PAD+12);
+  ctx.fillStyle='#FF3B30';ctx.fillText('Test MSE',W-PAD-2,PAD+26);
   ctx.restore();
 }
 

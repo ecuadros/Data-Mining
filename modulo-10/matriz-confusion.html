@@ -8,7 +8,7 @@ next_title: Curvas ROC y AUC
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -22,9 +22,9 @@ canvas{display:block;border-radius:var(--radius-md);}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
 input[type=range]{accent-color:var(--accent);width:140px;}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);transition:background .15s;}
-.btn:hover{background:rgba(88,166,255,.2);}
-.btn.active{background:rgba(88,166,255,.3);border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);transition:background .15s;}
+.btn:hover{background:rgba(0,122,255,.2);}
+.btn.active{background:rgba(0,122,255,.3);border-color:var(--accent);}
 .metric-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem;}
 .metric{flex:1;min-width:90px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
 .m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
@@ -55,10 +55,10 @@ input[type=range]{accent-color:var(--accent);width:140px;}
   <div class="tb">
     <h3>Las cuatro celdas</h3>
     <ul>
-      <li><strong style="color:#3fb950;">TP (Verdadero Positivo)</strong>: spam predicho como spam</li>
-      <li><strong style="color:#3fb950;">TN (Verdadero Negativo)</strong>: legítimo predicho como legítimo</li>
-      <li><strong style="color:#f85149;">FP (Falso Positivo)</strong>: legítimo predicho como spam (Error tipo I)</li>
-      <li><strong style="color:#d29922;">FN (Falso Negativo)</strong>: spam predicho como legítimo (Error tipo II)</li>
+      <li><strong style="color:#34C759;">TP (Verdadero Positivo)</strong>: spam predicho como spam</li>
+      <li><strong style="color:#34C759;">TN (Verdadero Negativo)</strong>: legítimo predicho como legítimo</li>
+      <li><strong style="color:#FF3B30;">FP (Falso Positivo)</strong>: legítimo predicho como spam (Error tipo I)</li>
+      <li><strong style="color:#FF9500;">FN (Falso Negativo)</strong>: spam predicho como legítimo (Error tipo II)</li>
     </ul>
   </div>
   <div class="tb">
@@ -92,8 +92,8 @@ input[type=range]{accent-color:var(--accent);width:140px;}
   </div>
 
   <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:#f85149;"></div>Spam (positivo)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#58a6ff;"></div>Legítimo (negativo)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FF3B30;"></div>Spam (positivo)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#007AFF;"></div>Legítimo (negativo)</div>
   </div>
 
   <div class="canvases-row">
@@ -114,19 +114,19 @@ input[type=range]{accent-color:var(--accent);width:140px;}
     </div>
     <div class="metric">
       <div class="m-name">Precision</div>
-      <div class="m-val" id="mPre" style="color:#3fb950;">—</div>
+      <div class="m-val" id="mPre" style="color:#34C759;">—</div>
     </div>
     <div class="metric">
       <div class="m-name">Recall</div>
-      <div class="m-val" id="mRec" style="color:#3fb950;">—</div>
+      <div class="m-val" id="mRec" style="color:#34C759;">—</div>
     </div>
     <div class="metric">
       <div class="m-name">F1-Score</div>
-      <div class="m-val" id="mF1" style="color:#d29922;">—</div>
+      <div class="m-val" id="mF1" style="color:#FF9500;">—</div>
     </div>
     <div class="metric">
       <div class="m-name">Specificity</div>
-      <div class="m-val" id="mSpec" style="color:#58a6ff;">—</div>
+      <div class="m-val" id="mSpec" style="color:#007AFF;">—</div>
     </div>
   </div>
 </div>
@@ -275,16 +275,16 @@ function drawScatter(thr){
   binaryData.forEach(p=>{
     const pred=p.score>=thr?1:0;
     let fill;
-    if(p.label===1&&pred===1) fill='#3fb950'; // TP
-    else if(p.label===0&&pred===0) fill='#58a6ff'; // TN
-    else if(p.label===0&&pred===1) fill='#f85149'; // FP
-    else fill='#d29922'; // FN
+    if(p.label===1&&pred===1) fill='#34C759'; // TP
+    else if(p.label===0&&pred===0) fill='#007AFF'; // TN
+    else if(p.label===0&&pred===1) fill='#FF3B30'; // FP
+    else fill='#FF9500'; // FN
     ctx.beginPath();ctx.arc(toX(p.x1),toY(p.x2),3.5,0,Math.PI*2);
     ctx.fillStyle=fill;ctx.fill();
   });
 
   // Legend top-left
-  const lg=[['#3fb950','TP'],['#58a6ff','TN'],['#f85149','FP'],['#d29922','FN']];
+  const lg=[['#34C759','TP'],['#007AFF','TN'],['#FF3B30','FP'],['#FF9500','FN']];
   lg.forEach(([c,l],i)=>{
     ctx.fillStyle=c;ctx.beginPath();ctx.arc(PAD+8,PAD+8+i*14,4,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#8b949e';ctx.font='9px monospace';ctx.textAlign='left';
@@ -312,10 +312,10 @@ function drawBinaryMatrix(TP,FP,TN,FN,total){
   ctx.fillText('Legítimo',0,0);ctx.restore();
 
   const cells=[
-    {v:TP,label:'TP',bg:'rgba(63,185,80,0.25)',border:'#3fb950',row:0,col:0},
-    {v:FN,label:'FN',bg:'rgba(210,153,34,0.2)',border:'#d29922',row:0,col:1},
-    {v:FP,label:'FP',bg:'rgba(248,81,73,0.2)',border:'#f85149',row:1,col:0},
-    {v:TN,label:'TN',bg:'rgba(63,185,80,0.15)',border:'#3fb950',row:1,col:1},
+    {v:TP,label:'TP',bg:'rgba(63,185,80,0.25)',border:'#34C759',row:0,col:0},
+    {v:FN,label:'FN',bg:'rgba(255,149,0,0.2)',border:'#FF9500',row:0,col:1},
+    {v:FP,label:'FP',bg:'rgba(255,59,48,0.2)',border:'#FF3B30',row:1,col:0},
+    {v:TN,label:'TN',bg:'rgba(63,185,80,0.15)',border:'#34C759',row:1,col:1},
   ];
 
   cells.forEach(cell=>{
@@ -396,7 +396,7 @@ function drawMultiScatter(){
   ctx.strokeStyle='#30363d';ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
 
-  const cols=['#58a6ff','#3fb950','#f85149'];
+  const cols=['#007AFF','#34C759','#FF3B30'];
   const lbls=['Ham','Promo','Spam'];
   multiData.forEach(p=>{
     const pred=p.probs.indexOf(Math.max(...p.probs));
@@ -405,7 +405,7 @@ function drawMultiScatter(){
     ctx.fillStyle=cols[p.label];
     ctx.globalAlpha=correct?0.85:0.4;
     ctx.fill();
-    if(!correct){ctx.strokeStyle='#f85149';ctx.lineWidth=1.5;ctx.stroke();}
+    if(!correct){ctx.strokeStyle='#FF3B30';ctx.lineWidth=1.5;ctx.stroke();}
     ctx.globalAlpha=1;ctx.lineWidth=1;
   });
 

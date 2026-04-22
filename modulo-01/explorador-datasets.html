@@ -25,8 +25,8 @@ prev_title: El Proceso KDD
   font-size: .72rem;
   font-weight: 500;
   color: var(--accent);
-  background: rgba(88,166,255,.08);
-  border: 1px solid rgba(88,166,255,.25);
+  background: rgba(0,122,255,.08);
+  border: 1px solid rgba(0,122,255,.25);
   border-radius: 20px;
   padding: .2rem .75rem;
   margin-bottom: 1rem;
@@ -176,7 +176,7 @@ prev_title: El Proceso KDD
 .ds-btn:hover { border-color: var(--accent); color: var(--accent); }
 .ds-btn.active {
   border-color: var(--accent);
-  background: rgba(88,166,255,.1);
+  background: rgba(0,122,255,.1);
   color: var(--accent);
 }
 
@@ -199,10 +199,10 @@ prev_title: El Proceso KDD
   border: 1px solid;
 }
 
-.dim-pill.inst  { background: rgba(88,166,255,.1);  border-color: rgba(88,166,255,.3);  color: #58a6ff; }
-.dim-pill.attr  { background: rgba(188,140,255,.1); border-color: rgba(188,140,255,.3); color: #bc8cff; }
-.dim-pill.cls   { background: rgba(63,185,80,.1);   border-color: rgba(63,185,80,.3);   color: #3fb950; }
-.dim-pill.miss  { background: rgba(210,153,34,.1);  border-color: rgba(210,153,34,.3);  color: #d29922; }
+.dim-pill.inst  { background: rgba(0,122,255,.1);  border-color: rgba(0,122,255,.3);  color: #007AFF; }
+.dim-pill.attr  { background: rgba(175,82,222,.1); border-color: rgba(175,82,222,.3); color: #AF52DE; }
+.dim-pill.cls   { background: rgba(63,185,80,.1);   border-color: rgba(63,185,80,.3);   color: #34C759; }
+.dim-pill.miss  { background: rgba(255,149,0,.1);  border-color: rgba(255,149,0,.3);  color: #FF9500; }
 
 /* ── Section title inside interactive ───────────────────────── */
 .section-card {
@@ -246,9 +246,9 @@ prev_title: El Proceso KDD
   top: 0;
 }
 
-.preview-table th.num  { background: rgba(88,166,255,.15);  color: #58a6ff; }
-.preview-table th.nom  { background: rgba(188,140,255,.15); color: #bc8cff; }
-.preview-table th.cls  { background: rgba(63,185,80,.15);   color: #3fb950; }
+.preview-table th.num  { background: rgba(0,122,255,.15);  color: #007AFF; }
+.preview-table th.nom  { background: rgba(175,82,222,.15); color: #AF52DE; }
+.preview-table th.cls  { background: rgba(63,185,80,.15);   color: #34C759; }
 
 .preview-table td {
   padding: .35rem .7rem;
@@ -257,7 +257,7 @@ prev_title: El Proceso KDD
 }
 
 .preview-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
-.preview-table tr:hover td { background: rgba(88,166,255,.05); }
+.preview-table tr:hover td { background: rgba(0,122,255,.05); }
 
 .th-type-legend {
   display: flex;
@@ -281,8 +281,8 @@ prev_title: El Proceso KDD
   height: 10px;
   border-radius: 2px;
 }
-.th-type-dot.num::before  { background: rgba(88,166,255,.4); }
-.th-type-dot.nom::before  { background: rgba(188,140,255,.4); }
+.th-type-dot.num::before  { background: rgba(0,122,255,.4); }
+.th-type-dot.nom::before  { background: rgba(175,82,222,.4); }
 .th-type-dot.cls::before  { background: rgba(63,185,80,.4); }
 
 /* ── Attribute summary ──────────────────────────────────────── */
@@ -322,9 +322,9 @@ prev_title: El Proceso KDD
   font-family: var(--font-mono);
   font-weight: 600;
 }
-.type-badge.num  { background: rgba(88,166,255,.15);  color: #58a6ff; }
-.type-badge.nom  { background: rgba(188,140,255,.15); color: #bc8cff; }
-.type-badge.cls  { background: rgba(63,185,80,.15);   color: #3fb950; }
+.type-badge.num  { background: rgba(0,122,255,.15);  color: #007AFF; }
+.type-badge.nom  { background: rgba(175,82,222,.15); color: #AF52DE; }
+.type-badge.cls  { background: rgba(63,185,80,.15);   color: #34C759; }
 
 /* ── Class balance ──────────────────────────────────────────── */
 .class-rows { display: flex; flex-direction: column; gap: .5rem; }
@@ -403,15 +403,15 @@ prev_title: El Proceso KDD
         <div class="theory-title">¿Qué es un Dataset de DM?</div>
         <ul class="concept-list">
           <li>
-            <span class="dot" style="background:#58a6ff"></span>
+            <span class="dot" style="background:#007AFF"></span>
             <div><strong>Instancias</strong> Cada fila es un objeto, ejemplo o registro individual.</div>
           </li>
           <li>
-            <span class="dot" style="background:#bc8cff"></span>
+            <span class="dot" style="background:#AF52DE"></span>
             <div><strong>Atributos</strong> Cada columna describe una característica (numérica, nominal, ordinal…).</div>
           </li>
           <li>
-            <span class="dot" style="background:#3fb950"></span>
+            <span class="dot" style="background:#34C759"></span>
             <div><strong>Clase (target)</strong> Atributo especial que el modelo intenta predecir.</div>
           </li>
         </ul>
@@ -436,19 +436,19 @@ prev_title: El Proceso KDD
         <div class="theory-title">Métricas de inspección</div>
         <ul class="concept-list">
           <li>
-            <span class="dot" style="background:#58a6ff"></span>
+            <span class="dot" style="background:#007AFF"></span>
             <div><strong>Dimensiones</strong> n instancias × p atributos.</div>
           </li>
           <li>
-            <span class="dot" style="background:#bc8cff"></span>
+            <span class="dot" style="background:#AF52DE"></span>
             <div><strong>Tipos de atributos</strong> Numéricos vs nominales vs binarios.</div>
           </li>
           <li>
-            <span class="dot" style="background:#3fb950"></span>
+            <span class="dot" style="background:#34C759"></span>
             <div><strong>Balance de clases</strong> ¿Están las clases representadas por igual?</div>
           </li>
           <li>
-            <span class="dot" style="background:#d29922"></span>
+            <span class="dot" style="background:#FF9500"></span>
             <div><strong>Valores faltantes</strong> % de NaN por atributo — afecta el preprocesamiento.</div>
           </li>
         </ul>
@@ -655,7 +655,7 @@ const DATASETS = {
 };
 
 // Class colors cycling
-const CLASS_COLORS = ['#58a6ff','#bc8cff','#3fb950','#d29922','#f85149','#79b9ff'];
+const CLASS_COLORS = ['#007AFF','#AF52DE','#34C759','#FF9500','#FF3B30','#5AC8FA'];
 
 // ── Helpers ───────────────────────────────────────────────────────
 function isNumericHeader(h) { return h.type === T_NUM; }

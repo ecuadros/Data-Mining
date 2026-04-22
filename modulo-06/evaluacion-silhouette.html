@@ -8,7 +8,7 @@ prev_title: Dendrograma Jerárquico
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -22,8 +22,8 @@ canvas{display:block;border-radius:var(--radius-md);}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
 input[type=range]{accent-color:var(--accent);width:100px;}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
-.btn:hover{background:rgba(88,166,255,.2);}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(0,122,255,.2);}
 .metric-row{display:flex;gap:.6rem;margin-bottom:.75rem;}
 .metric{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .7rem;}
 .m-name{font-size:.65rem;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
@@ -48,7 +48,7 @@ input[type=range]{accent-color:var(--accent);width:100px;}
 <aside>
   <div class="tb">
     <h3>Fórmula</h3>
-    <p style="font-family:var(--font-mono);font-size:.82rem;color:var(--accent);background:#0d1117;padding:.6rem .9rem;border-radius:6px;border:1px solid rgba(88,166,255,.3);">s(i) = (b(i) − a(i)) / max(a(i), b(i))</p>
+    <p style="font-family:var(--font-mono);font-size:.82rem;color:var(--accent);background:#0d1117;padding:.6rem .9rem;border-radius:6px;border:1px solid rgba(0,122,255,.3);">s(i) = (b(i) − a(i)) / max(a(i), b(i))</p>
     <ul>
       <li><strong style="color:var(--accent)">a(i)</strong>: distancia media al resto de puntos en el mismo cluster (cohesión)</li>
       <li><strong style="color:var(--accent2)">b(i)</strong>: distancia media al cluster vecino más cercano (separación)</li>
@@ -57,9 +57,9 @@ input[type=range]{accent-color:var(--accent);width:100px;}
   <div class="tb">
     <h3>Interpretación</h3>
     <ul>
-      <li><strong style="color:#3fb950;">s ≈ +1</strong>: punto bien dentro de su cluster</li>
-      <li><strong style="color:#d29922;">s ≈ 0</strong>: punto en la frontera entre clusters</li>
-      <li><strong style="color:#f85149;">s ≈ −1</strong>: punto probablemente mal clasificado</li>
+      <li><strong style="color:#34C759;">s ≈ +1</strong>: punto bien dentro de su cluster</li>
+      <li><strong style="color:#FF9500;">s ≈ 0</strong>: punto en la frontera entre clusters</li>
+      <li><strong style="color:#FF3B30;">s ≈ −1</strong>: punto probablemente mal clasificado</li>
     </ul>
     <p>El coeficiente global es la media de todos los s(i). Usar el k que maximiza el silhouette global.</p>
   </div>
@@ -119,7 +119,7 @@ input[type=range]{accent-color:var(--accent);width:100px;}
 
 <script>
 function rng(s){let x=s;return()=>{x=Math.imul(x^x>>>15,1|x);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296;};}
-const PALETTE=['#58a6ff','#3fb950','#f85149','#d29922','#bc8cff','#79c0ff','#56d364','#ff7b72'];
+const PALETTE=['#007AFF','#34C759','#FF3B30','#FF9500','#AF52DE','#5AC8FA','#30D158','#FF375F'];
 
 let PTS=[];
 
@@ -242,7 +242,7 @@ function drawSilPlot(scores,labels,k){
   all.forEach((item,idx)=>{
     const y=PAD_T+idx*barH;
     const s=item.s;
-    const col=s>0.5?'#3fb950':s>0?'#d29922':'#f85149';
+    const col=s>0.5?'#34C759':s>0?'#FF9500':'#FF3B30';
     const x0=toX(0),bw=(s/1)*(W-PAD_L-PAD_R)/2;
     ctx.fillStyle=col+'cc';
     ctx.fillRect(s>=0?x0:x0+bw,y,Math.abs(bw),Math.max(1,barH-.5));
@@ -282,12 +282,12 @@ function drawKChart(silVals,curK){
   ctx.save();ctx.strokeStyle='rgba(48,54,61,.6)';ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();ctx.restore();
 
-  ctx.save();ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.save();ctx.strokeStyle='#007AFF';ctx.lineWidth=2;ctx.lineJoin='round';
   ctx.beginPath();vals.forEach((v,i)=>{if(i===0)ctx.moveTo(cx(i),cy(v));else ctx.lineTo(cx(i),cy(v));});ctx.stroke();
 
   vals.forEach((v,i)=>{
     const kcur=keys[i]===curK;
-    ctx.fillStyle=kcur?'#d29922':'#58a6ff';
+    ctx.fillStyle=kcur?'#FF9500':'#007AFF';
     ctx.beginPath();ctx.arc(cx(i),cy(v),kcur?6:4,0,Math.PI*2);ctx.fill();
     if(kcur){ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx(i),cy(v),6,0,Math.PI*2);ctx.stroke();}
   });

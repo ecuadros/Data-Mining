@@ -87,8 +87,8 @@ next_title: Selección de Features
   .concept-list li strong { color: var(--text); }
 
   .insight-box {
-    background: rgba(188,140,255,0.06);
-    border: 1px solid rgba(188,140,255,0.2);
+    background: rgba(175,82,222,0.06);
+    border: 1px solid rgba(175,82,222,0.2);
     border-radius: var(--radius-sm);
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
@@ -98,8 +98,8 @@ next_title: Selección de Features
   .insight-box strong { color: var(--accent2); }
 
   .warn-box {
-    background: rgba(210,153,34,0.07);
-    border: 1px solid rgba(210,153,34,0.25);
+    background: rgba(255,149,0,0.07);
+    border: 1px solid rgba(255,149,0,0.25);
     border-radius: var(--radius-sm);
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
@@ -161,8 +161,8 @@ next_title: Selección de Features
     cursor: pointer;
     transition: all 180ms ease;
   }
-  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(88,166,255,0.08); }
-  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.12); }
+  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(0,122,255,0.08); }
+  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(0,122,255,0.12); }
 
   .slider-row {
     display: flex;
@@ -255,7 +255,7 @@ next_title: Selección de Features
   </nav>
 
   <header style="margin-bottom:2.5rem;">
-    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 03 · Minería de Datos · Ciencia de la Computación</div>
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 03 · Minería de Datos · Ciencia de la Computación</div>
     <h1 style="font-size:clamp(1.8rem,4vw,2.4rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Discretización de Atributos</h1>
     <p style="font-size:1.05rem;color:var(--muted);max-width:640px;line-height:1.6;">Convierte atributos continuos en intervalos o categorías. Compara Equal-Width, Equal-Frequency y Jenks Natural Breaks de forma visual e interactiva.</p>
   </header>
@@ -390,8 +390,8 @@ next_title: Selección de Features
 
   // Palette for intervals (up to 10)
   const PALETTE = [
-    '#58a6ff', '#bc8cff', '#3fb950', '#f78166', '#d29922',
-    '#79c0ff', '#e8b4ff', '#85e89d', '#ffa198', '#ffd68f'
+    '#007AFF', '#AF52DE', '#34C759', '#FF3B30', '#FF9500',
+    '#5AC8FA', '#BF5AF2', '#30D158', '#FF375F', '#FFD60A'
   ];
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -564,7 +564,7 @@ next_title: Selección de Features
 
       // find interval for bin midpoint
       const mid = (bin.lo + bin.hi) / 2;
-      let color = '#58a6ff';
+      let color = '#007AFF';
       for (let i = 0; i < intervals.length; i++) {
         const iv = intervals[i];
         const isLast = i === intervals.length - 1;
@@ -588,13 +588,13 @@ next_title: Selección de Features
       const cx = xToCanvas(cut);
       // glow
       const grad = ctx.createLinearGradient(cx - 3, 0, cx + 3, 0);
-      grad.addColorStop(0, 'rgba(188,140,255,0)');
-      grad.addColorStop(0.5, 'rgba(188,140,255,0.35)');
-      grad.addColorStop(1, 'rgba(188,140,255,0)');
+      grad.addColorStop(0, 'rgba(175,82,222,0)');
+      grad.addColorStop(0.5, 'rgba(175,82,222,0.35)');
+      grad.addColorStop(1, 'rgba(175,82,222,0)');
       ctx.fillStyle = grad;
       ctx.fillRect(cx - 3, PAD_TOP, 6, PLOT_H);
 
-      ctx.strokeStyle = '#bc8cff';
+      ctx.strokeStyle = '#AF52DE';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 3]);
       ctx.beginPath();
@@ -604,7 +604,7 @@ next_title: Selección de Features
       ctx.setLineDash([]);
 
       // cut label
-      ctx.fillStyle = '#bc8cff';
+      ctx.fillStyle = '#AF52DE';
       ctx.font = '9px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       const label = cut.toFixed(1);

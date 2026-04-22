@@ -84,8 +84,8 @@ next_title: Distribuciones y Outliers
   .concept-list li strong { color: var(--text); }
 
   .insight-box {
-    background: rgba(88,166,255,0.06);
-    border: 1px solid rgba(88,166,255,0.2);
+    background: rgba(0,122,255,0.06);
+    border: 1px solid rgba(0,122,255,0.2);
     border-radius: var(--radius-sm);
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
@@ -142,10 +142,10 @@ next_title: Distribuciones y Outliers
     cursor: pointer;
     transition: all 180ms ease;
   }
-  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(88,166,255,0.08); }
-  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.12); }
-  .btn.danger { color: var(--danger); border-color: rgba(248,81,73,0.4); }
-  .btn.danger:hover { background: rgba(248,81,73,0.1); border-color: var(--danger); }
+  .btn:hover { color: var(--text); border-color: var(--accent); background: rgba(0,122,255,0.08); }
+  .btn.active { color: var(--accent); border-color: var(--accent); background: rgba(0,122,255,0.12); }
+  .btn.danger { color: var(--danger); border-color: rgba(255,59,48,0.4); }
+  .btn.danger:hover { background: rgba(255,59,48,0.1); border-color: var(--danger); }
 
   .outlier-row {
     display: flex;
@@ -233,7 +233,7 @@ next_title: Distribuciones y Outliers
   </nav>
 
   <header style="margin-bottom:2.5rem;">
-    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
+    <div style="display:inline-block;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.25);border-radius:20px;padding:0.25rem 0.75rem;margin-bottom:0.75rem;font-family:var(--font-mono);">Módulo 02 · Minería de Datos · Ciencia de la Computación</div>
     <h1 style="font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:0.25rem 0 0.75rem;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Estadísticas Descriptivas</h1>
     <p style="font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;">Explora media, mediana, moda, varianza e IQR de forma interactiva. Añade puntos al canvas y observa cómo cambian las métricas en tiempo real.</p>
   </header>
@@ -329,8 +329,8 @@ next_title: Distribuciones y Outliers
       </div>
 
       <div class="legend-row">
-        <div class="legend-item"><div class="legend-dot" style="background:#f85149;height:3px;"></div> Media</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff;height:3px;"></div> Mediana</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF3B30;height:3px;"></div> Media</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#007AFF;height:3px;"></div> Mediana</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(63,185,80,0.25);width:18px;height:12px;border-radius:3px;"></div> IQR [Q1, Q3]</div>
       </div>
 
@@ -491,8 +491,8 @@ next_title: Distribuciones y Outliers
 
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle   = 'rgba(88,166,255,0.85)';
-      ctx.strokeStyle = 'rgba(88,166,255,0.4)';
+      ctx.fillStyle   = 'rgba(0,122,255,0.85)';
+      ctx.strokeStyle = 'rgba(0,122,255,0.4)';
       ctx.lineWidth   = 1;
       ctx.fill();
       ctx.stroke();
@@ -500,7 +500,7 @@ next_title: Distribuciones y Outliers
 
     // Median line (blue)
     const medX = xToCanvas(st.med);
-    ctx.strokeStyle = '#58a6ff';
+    ctx.strokeStyle = '#007AFF';
     ctx.lineWidth   = 2;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
@@ -508,14 +508,14 @@ next_title: Distribuciones y Outliers
     ctx.lineTo(medX, axisY + 20);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle   = '#58a6ff';
+    ctx.fillStyle   = '#007AFF';
     ctx.font        = '10px "JetBrains Mono", monospace';
     ctx.textAlign   = 'center';
     ctx.fillText('Md=' + st.med.toFixed(1), medX, axisY + 30);
 
     // Mean line (red)
     const meanX = xToCanvas(st.mean);
-    ctx.strokeStyle = '#f85149';
+    ctx.strokeStyle = '#FF3B30';
     ctx.lineWidth   = 2;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
@@ -523,7 +523,7 @@ next_title: Distribuciones y Outliers
     ctx.lineTo(meanX, axisY + 8);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle   = '#f85149';
+    ctx.fillStyle   = '#FF3B30';
     ctx.font        = '10px "JetBrains Mono", monospace';
     ctx.textAlign   = 'center';
     ctx.fillText('μ=' + st.mean.toFixed(1), meanX, axisY + 42);

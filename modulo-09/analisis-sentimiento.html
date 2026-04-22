@@ -8,7 +8,7 @@ prev_title: Word Embeddings
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.3fr;gap:2.5rem;align-items:start;}
@@ -130,13 +130,13 @@ function analyze(){
   const sentimentWords=scored.filter(s=>s.score!==0);
   const total=sentimentWords.length?sentimentWords.reduce((s,w)=>s+w.score,0)/tokens.length:0;
 
-  const col=total>0.1?'#3fb950':total<-0.1?'#f85149':'#d29922';
+  const col=total>0.1?'#34C759':total<-0.1?'#FF3B30':'#FF9500';
   const label=total>0.5?'Muy positivo':total>0.1?'Positivo':total<-0.5?'Muy negativo':total<-0.1?'Negativo':'Neutro';
   document.getElementById('scoreDisplay').innerHTML=
     `Score: <span class="score-pill" style="background:${col}20;color:${col};border:1px solid ${col}50;">${total.toFixed(3)}</span> — ${label}`;
 
   document.getElementById('wordBreakdown').innerHTML=scored.filter(s=>s.score!==0).map(({w,score})=>{
-    const c=score>0?'#3fb950':'#f85149';
+    const c=score>0?'#34C759':'#FF3B30';
     return `<span class="word-chip" style="background:${c}20;color:${c};border:1px solid ${c}30;">${w} ${score>0?'+':''}${score.toFixed(1)}</span>`;
   }).join('');
 
@@ -157,7 +157,7 @@ function drawGauge(score){
 
   // Gradient arc (neg to pos)
   const grad=ctx.createLinearGradient(cx-r,cy,cx+r,cy);
-  grad.addColorStop(0,'#f85149');grad.addColorStop(0.5,'#d29922');grad.addColorStop(1,'#3fb950');
+  grad.addColorStop(0,'#FF3B30');grad.addColorStop(0.5,'#FF9500');grad.addColorStop(1,'#34C759');
   ctx.save();ctx.strokeStyle=grad;ctx.lineWidth=18;ctx.lineCap='butt';
   ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.stroke();ctx.restore();
 
@@ -169,9 +169,9 @@ function drawGauge(score){
   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();ctx.restore();
 
   // Labels
-  ctx.save();ctx.font='11px JetBrains Mono,monospace';ctx.fillStyle='#f85149';ctx.textAlign='left';ctx.fillText('-1.0',cx-r-5,cy+18);
-  ctx.fillStyle='#d29922';ctx.textAlign='center';ctx.fillText('0',cx,cy-r-8);
-  ctx.fillStyle='#3fb950';ctx.textAlign='right';ctx.fillText('+1.0',cx+r+5,cy+18);
+  ctx.save();ctx.font='11px JetBrains Mono,monospace';ctx.fillStyle='#FF3B30';ctx.textAlign='left';ctx.fillText('-1.0',cx-r-5,cy+18);
+  ctx.fillStyle='#FF9500';ctx.textAlign='center';ctx.fillText('0',cx,cy-r-8);
+  ctx.fillStyle='#34C759';ctx.textAlign='right';ctx.fillText('+1.0',cx+r+5,cy+18);
   ctx.fillStyle='rgba(230,237,243,.7)';ctx.font='bold 18px JetBrains Mono,monospace';ctx.textAlign='center';
   ctx.fillText(score.toFixed(3),cx,cy-30);ctx.restore();
 }
@@ -192,7 +192,7 @@ function drawCloud(tokens){
 
   tokens.forEach(({w,score})=>{
     const fs=score!==0?Math.round(10+Math.abs(score)/maxScore*22):10;
-    const col=score>0?`rgba(63,185,80,${0.5+Math.abs(score)*0.5})`:score<0?`rgba(248,81,73,${0.5+Math.abs(score)*0.5})`:'rgba(139,148,158,.5)';
+    const col=score>0?`rgba(63,185,80,${0.5+Math.abs(score)*0.5})`:score<0?`rgba(255,59,48,${0.5+Math.abs(score)*0.5})`:'rgba(139,148,158,.5)';
     ctx.font=`${fs}px JetBrains Mono,monospace`;
     const tw=ctx.measureText(w).width;
 

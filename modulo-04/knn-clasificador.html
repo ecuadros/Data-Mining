@@ -18,7 +18,7 @@ next_title: Diagrama de Voronoi
 .module-eyebrow {
   display:inline-block; font-family:var(--font-mono); font-size:0.72rem; font-weight:700;
   letter-spacing:0.1em; text-transform:uppercase; color:var(--accent);
-  background:rgba(88,166,255,0.08); border:1px solid rgba(88,166,255,0.2);
+  background:rgba(0,122,255,0.08); border:1px solid rgba(0,122,255,0.2);
   border-radius:20px; padding:0.2rem 0.85rem; margin-bottom:0.9rem;
 }
 .demo-header h1 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:700; letter-spacing:-0.03em; color:var(--text); margin-bottom:0.6rem; }
@@ -37,23 +37,23 @@ next_title: Diagrama de Voronoi
 
 .algo-steps { list-style:none; margin:0.75rem 0 0; padding:0; display:flex; flex-direction:column; gap:0.5rem; }
 .algo-steps li { display:flex; align-items:flex-start; gap:0.75rem; font-size:0.88rem; color:var(--muted); line-height:1.5; }
-.step-badge { background:rgba(88,166,255,0.12); color:var(--accent); border:1px solid rgba(88,166,255,0.25); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:0.7rem; font-weight:700; padding:0.15rem 0.5rem; flex-shrink:0; margin-top:0.1rem; }
+.step-badge { background:rgba(0,122,255,0.12); color:var(--accent); border:1px solid rgba(0,122,255,0.25); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:0.7rem; font-weight:700; padding:0.15rem 0.5rem; flex-shrink:0; margin-top:0.1rem; }
 
 .metric-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:0.75rem; }
 .metric-table th { text-align:left; padding:0.4rem 0.5rem; font-family:var(--font-mono); font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); border-bottom:1px solid var(--border); }
 .metric-table td { padding:0.45rem 0.5rem; color:var(--muted); border-bottom:1px solid rgba(48,54,61,0.5); vertical-align:top; line-height:1.45; }
 .metric-table td:first-child { font-weight:600; color:var(--text); white-space:nowrap; }
-.metric-formula { font-family:var(--font-mono); font-size:0.8rem; color:var(--accent2); background:rgba(188,140,255,0.06); border-radius:4px; padding:0.1rem 0.4rem; }
+.metric-formula { font-family:var(--font-mono); font-size:0.8rem; color:var(--accent2); background:rgba(175,82,222,0.06); border-radius:4px; padding:0.1rem 0.4rem; }
 
-.complexity-box { margin-top:0.75rem; background:rgba(248,81,73,0.06); border:1px solid rgba(248,81,73,0.2); border-radius:var(--radius-md); padding:0.75rem 1rem; font-size:0.85rem; color:var(--muted); }
-.complexity-box strong { color:#f85149; }
+.complexity-box { margin-top:0.75rem; background:rgba(255,59,48,0.06); border:1px solid rgba(255,59,48,0.2); border-radius:var(--radius-md); padding:0.75rem 1rem; font-size:0.85rem; color:var(--muted); }
+.complexity-box strong { color:#FF3B30; }
 
 .k-warn-box { margin-top:0.75rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
 .k-pill { border-radius:var(--radius-sm); padding:0.5rem 0.7rem; font-size:0.8rem; line-height:1.45; }
-.k-pill-over { background:rgba(248,81,73,0.07); border:1px solid rgba(248,81,73,0.2); color:var(--muted); }
+.k-pill-over { background:rgba(255,59,48,0.07); border:1px solid rgba(255,59,48,0.2); color:var(--muted); }
 .k-pill-under { background:rgba(63,185,80,0.07); border:1px solid rgba(63,185,80,0.2); color:var(--muted); }
 .k-pill strong { display:block; margin-bottom:0.2rem; }
-.k-pill-over strong { color:#f85149; }
+.k-pill-over strong { color:#FF3B30; }
 .k-pill-under strong { color:var(--accent3); }
 
 /* Interactive panel */
@@ -252,7 +252,7 @@ input[type=range].knn-slider::-webkit-slider-thumb {
   /* ── Constants ───────────────────────────────────────────── */
   const CANVAS_W = 520, CANVAS_H = 400;
   const PAD = 28;
-  const CLASS_COLORS = ['#58a6ff', '#bc8cff', '#3fb950'];
+  const CLASS_COLORS = ['#007AFF', '#AF52DE', '#34C759'];
   const CLASS_NAMES  = ['Clase A', 'Clase B', 'Clase C'];
   const GRID_STEPS   = 40;
 
@@ -483,17 +483,17 @@ input[type=range].knn-slider::-webkit-slider-thumb {
 
     // Query point (star)
     if (query) {
-      const starColor = predClass >= 0 ? CLASS_COLORS[predClass] : '#d29922';
+      const starColor = predClass >= 0 ? CLASS_COLORS[predClass] : '#FF9500';
       // glow
       ctx.beginPath();
       ctx.arc(query.x, query.y, 18, 0, Math.PI * 2);
       const grd = ctx.createRadialGradient(query.x, query.y, 0, query.x, query.y, 18);
-      const hexGlow = predClass >= 0 ? CLASS_COLORS[predClass] : '#d29922';
+      const hexGlow = predClass >= 0 ? CLASS_COLORS[predClass] : '#FF9500';
       grd.addColorStop(0, hexGlow + '55');
       grd.addColorStop(1, hexGlow + '00');
       ctx.fillStyle = grd;
       ctx.fill();
-      drawStar(query.x, query.y, 12, '#d29922');
+      drawStar(query.x, query.y, 12, '#FF9500');
     }
 
     // Legend

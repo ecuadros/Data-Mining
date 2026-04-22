@@ -8,7 +8,7 @@ prev_title: FP-Growth y FP-Tree
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start;}
@@ -23,7 +23,7 @@ canvas{display:block;border-radius:var(--radius-md);}
 input[type=range]{accent-color:var(--accent);width:100px;}
 .item-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem;}
 .item-cb{display:flex;align-items:center;gap:.4rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .6rem;cursor:pointer;transition:border-color .2s;}
-.item-cb.selected{border-color:var(--accent);background:rgba(88,166,255,.1);}
+.item-cb.selected{border-color:var(--accent);background:rgba(0,122,255,.1);}
 .item-cb input{accent-color:var(--accent);}
 .item-cb label{font-size:.78rem;font-family:var(--font-mono);cursor:pointer;}
 .rec-row{display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);margin-bottom:.4rem;}
@@ -98,7 +98,7 @@ const TRANSACTIONS=[
 ];
 const N=TRANSACTIONS.length;
 
-const PALETTE={'pan':'#58a6ff','leche':'#3fb950','huevos':'#f85149','cerveza':'#d29922','pañales':'#bc8cff','mantequilla':'#79c0ff','café':'#56d364','jugo':'#ff7b72'};
+const PALETTE={'pan':'#007AFF','leche':'#34C759','huevos':'#FF3B30','cerveza':'#FF9500','pañales':'#AF52DE','mantequilla':'#5AC8FA','café':'#30D158','jugo':'#FF375F'};
 
 let cart=new Set();
 

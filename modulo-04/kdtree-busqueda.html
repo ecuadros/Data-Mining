@@ -21,8 +21,8 @@ next_title: La Maldición de la Dimensionalidad
 .module-eyebrow {
   display:inline-block; font-family:var(--font-mono); font-size:.72rem;
   font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--accent); background:rgba(88,166,255,.08);
-  border:1px solid rgba(88,166,255,.2); border-radius:20px;
+  color:var(--accent); background:rgba(0,122,255,.08);
+  border:1px solid rgba(0,122,255,.2); border-radius:20px;
   padding:.2rem .85rem; margin-bottom:.9rem;
 }
 .demo-header h1 {
@@ -61,7 +61,7 @@ next_title: La Maldición de la Dimensionalidad
 .theory-block ul li strong { color:var(--text); }
 
 .complexity-box {
-  background:rgba(88,166,255,.06); border:1px solid rgba(88,166,255,.2);
+  background:rgba(0,122,255,.06); border:1px solid rgba(0,122,255,.2);
   border-radius:var(--radius-md); padding:.9rem 1.1rem;
   margin-top:.8rem; font-size:.85rem;
 }
@@ -131,8 +131,8 @@ input[type=range]::-webkit-slider-thumb {
   color:var(--text); transition:background 150ms,border-color 150ms;
 }
 .btn:hover { background:var(--surface); border-color:var(--accent); color:var(--accent); }
-.btn-primary { background:rgba(88,166,255,.12); border-color:rgba(88,166,255,.35); color:var(--accent); }
-.btn-primary:hover { background:rgba(88,166,255,.22); border-color:var(--accent); }
+.btn-primary { background:rgba(0,122,255,.12); border-color:rgba(0,122,255,.35); color:var(--accent); }
+.btn-primary:hover { background:rgba(0,122,255,.22); border-color:var(--accent); }
 
 .canvas-wrap {
   position:relative; background:#0d1117;
@@ -170,10 +170,10 @@ input[type=range]::-webkit-slider-thumb {
   padding:.05rem .4rem; border-radius:3px; margin-right:.5rem;
   text-transform:uppercase;
 }
-.tag-down { background:rgba(88,166,255,.15); color:var(--accent); }
+.tag-down { background:rgba(0,122,255,.15); color:var(--accent); }
 .tag-check { background:rgba(63,185,80,.15); color:var(--accent3); }
-.tag-prune { background:rgba(248,81,73,.15); color:var(--danger); }
-.tag-found { background:rgba(210,153,34,.15); color:var(--warn); }
+.tag-prune { background:rgba(255,59,48,.15); color:var(--danger); }
+.tag-found { background:rgba(255,149,0,.15); color:var(--warn); }
 
 /* ── Tree panel ── */
 .tree-card {
@@ -193,7 +193,7 @@ input[type=range]::-webkit-slider-thumb {
   user-select:none; border-radius:4px; padding:.1rem .3rem;
   transition:background 120ms;
 }
-.tree-node-line:hover { background:rgba(88,166,255,.07); }
+.tree-node-line:hover { background:rgba(0,122,255,.07); }
 .tree-toggle { color:var(--muted); font-size:.85rem; width:1rem; text-align:center; flex-shrink:0; }
 .tree-children { padding-left:1.2rem; }
 .tree-children.collapsed { display:none; }
@@ -201,8 +201,8 @@ input[type=range]::-webkit-slider-thumb {
   font-size:.65rem; font-weight:700; padding:.05rem .35rem;
   border-radius:3px; margin-left:.3rem;
 }
-.badge-x { background:rgba(88,166,255,.15); color:var(--accent); }
-.badge-y { background:rgba(188,140,255,.15); color:var(--accent2); }
+.badge-x { background:rgba(0,122,255,.15); color:var(--accent); }
+.badge-y { background:rgba(175,82,222,.15); color:var(--accent2); }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
@@ -318,13 +318,13 @@ input[type=range]::-webkit-slider-thumb {
         </div>
         <div class="legend-row">
           <div class="legend-item">
-            <div class="legend-swatch" style="background:#58a6ff"></div> Corte en X (azul)
+            <div class="legend-swatch" style="background:#007AFF"></div> Corte en X (azul)
           </div>
           <div class="legend-item">
-            <div class="legend-swatch" style="background:#bc8cff"></div> Corte en Y (violeta)
+            <div class="legend-swatch" style="background:#AF52DE"></div> Corte en Y (violeta)
           </div>
           <div class="legend-item">
-            <div class="legend-swatch" style="background:rgba(88,166,255,.4);height:2px"></div> Camino visitado
+            <div class="legend-swatch" style="background:rgba(0,122,255,.4);height:2px"></div> Camino visitado
           </div>
           <div class="legend-item">
             <div class="legend-dot" style="background:#ffd700"></div> Consulta
@@ -458,7 +458,7 @@ input[type=range]::-webkit-slider-thumb {
       ctx.beginPath();
       ctx.moveTo(cx, y0);
       ctx.lineTo(cx, y1);
-      ctx.strokeStyle = isActive ? 'rgba(88,166,255,0.85)' : 'rgba(88,166,255,' + (0.55 - depth * 0.07).toFixed(2) + ')';
+      ctx.strokeStyle = isActive ? 'rgba(0,122,255,0.85)' : 'rgba(0,122,255,' + (0.55 - depth * 0.07).toFixed(2) + ')';
       ctx.lineWidth   = isActive ? lw + 1.5 : lw;
       ctx.setLineDash(isActive ? [] : (depth > 2 ? [4, 4] : []));
       ctx.stroke();
@@ -476,7 +476,7 @@ input[type=range]::-webkit-slider-thumb {
       ctx.beginPath();
       ctx.moveTo(x0, cy);
       ctx.lineTo(x1, cy);
-      ctx.strokeStyle = isActive ? 'rgba(188,140,255,0.85)' : 'rgba(188,140,255,' + (0.55 - depth * 0.07).toFixed(2) + ')';
+      ctx.strokeStyle = isActive ? 'rgba(175,82,222,0.85)' : 'rgba(175,82,222,' + (0.55 - depth * 0.07).toFixed(2) + ')';
       ctx.lineWidth   = isActive ? lw + 1.5 : lw;
       ctx.setLineDash(isActive ? [] : (depth > 2 ? [4, 4] : []));
       ctx.stroke();
@@ -494,8 +494,8 @@ input[type=range]::-webkit-slider-thumb {
 
       ctx.beginPath();
       ctx.arc(c.x, c.y, isNearest ? 8 : 5.5, 0, Math.PI * 2);
-      ctx.fillStyle   = isNearest ? '#ff8c00' : 'rgba(88,166,255,0.75)';
-      ctx.strokeStyle = isNearest ? '#ffd700' : 'rgba(88,166,255,0.25)';
+      ctx.fillStyle   = isNearest ? '#ff8c00' : 'rgba(0,122,255,0.75)';
+      ctx.strokeStyle = isNearest ? '#ffd700' : 'rgba(0,122,255,0.25)';
       ctx.lineWidth   = isNearest ? 2.5 : 1;
       ctx.fill();
       ctx.stroke();

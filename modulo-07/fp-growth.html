@@ -10,7 +10,7 @@ next_title: Sistema de Recomendación
 .demo-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 5rem;font-family:var(--font-sans);color:var(--text);}
 .breadcrumb{font-size:.8rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:2rem;}
 .breadcrumb a{color:var(--accent);text-decoration:none;}.breadcrumb .sep{color:var(--accent);margin:0 .4rem;}
-.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(0,122,255,.1);border:1px solid rgba(0,122,255,.25);border-radius:20px;padding:.25rem .75rem;margin-bottom:.75rem;font-family:var(--font-mono);}
 h1.dt{font-size:clamp(2rem,5vw,2.5rem);font-weight:700;margin:.25rem 0 .75rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .demo-lead{font-size:1.1rem;color:var(--muted);max-width:620px;line-height:1.6;margin:0 0 2.5rem;}
 .layout{display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;align-items:start;}
@@ -23,11 +23,11 @@ canvas{display:block;border-radius:var(--radius-md);}
 .cw{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:.75rem;}
 .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:.9rem 1.25rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .ctrl label{font-size:.78rem;font-family:var(--font-mono);color:var(--muted);}
-.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(88,166,255,.35);background:rgba(88,166,255,.1);color:var(--accent);}
-.btn:hover{background:rgba(88,166,255,.2);}
-.txn-badge{display:inline-block;font-size:.72rem;font-family:var(--font-mono);padding:.15rem .45rem;border-radius:10px;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.25);color:var(--accent);margin:.15rem;}
+.btn{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(0,122,255,.35);background:rgba(0,122,255,.1);color:var(--accent);}
+.btn:hover{background:rgba(0,122,255,.2);}
+.txn-badge{display:inline-block;font-size:.72rem;font-family:var(--font-mono);padding:.15rem .45rem;border-radius:10px;background:rgba(0,122,255,.12);border:1px solid rgba(0,122,255,.25);color:var(--accent);margin:.15rem;}
 .txn-row{padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.8rem;color:var(--muted);}
-.txn-row.current{background:rgba(210,153,34,.1);border-radius:4px;padding:.3rem .5rem;}
+.txn-row.current{background:rgba(255,149,0,.1);border-radius:4px;padding:.3rem .5rem;}
 .freq-item{display:flex;justify-content:space-between;align-items:center;padding:.2rem 0;font-size:.78rem;font-family:var(--font-mono);}
 </style>
 
@@ -97,8 +97,8 @@ const RAW_TXNS=[
 ];
 
 const PALETTE_ITEMS={
-  'pan':'#58a6ff','leche':'#3fb950','huevos':'#f85149','cerveza':'#d29922',
-  'pañales':'#bc8cff','mantequilla':'#79c0ff','café':'#56d364','jugo':'#ff7b72'
+  'pan':'#007AFF','leche':'#34C759','huevos':'#FF3B30','cerveza':'#FF9500',
+  'pañales':'#AF52DE','mantequilla':'#5AC8FA','café':'#30D158','jugo':'#FF375F'
 };
 
 // Count global frequencies
@@ -142,7 +142,7 @@ function render(){
   document.getElementById('txnQueue').innerHTML=TXNS.map((t,i)=>{
     const cl=i===txnIdx?'txn-row current':i<txnIdx?'txn-row':'txn-row';
     const prefix=i<txnIdx?'✓ ':i===txnIdx?'→ ':'  ';
-    const col=i<txnIdx?'rgba(63,185,80,.5)':i===txnIdx?'#d29922':'var(--muted)';
+    const col=i<txnIdx?'rgba(63,185,80,.5)':i===txnIdx?'#FF9500':'var(--muted)';
     return `<div class="${cl}" style="color:${col};">${prefix}T${i+1}: ${t.map(item=>`<span class="txn-badge">${item}</span>`).join('')}</div>`;
   }).join('');
 
