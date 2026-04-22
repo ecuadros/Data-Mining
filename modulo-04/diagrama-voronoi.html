@@ -96,9 +96,9 @@ canvas{display:block;border-radius:var(--radius-md);cursor:crosshair;}
 
 <script>
 const PALETTE = [
-  '#58a6ff','#bc8cff','#3fb950','#f85149','#d29922',
-  '#e3b341','#79c0ff','#d2a8ff','#56d364','#ff7b72',
-  '#ffa657','#7ee787','#a5d6ff','#f2cc60','#db61a2'
+  '#007AFF','#FF3B30','#34C759','#FF9500','#AF52DE',
+  '#FF2D55','#5AC8FA','#FFCC00','#5856D6','#FF6B35',
+  '#00C7BE','#FF375F','#30D158','#FFD60A','#BF5AF2'
 ];
 
 const canvas = document.getElementById('vorCanvas');
@@ -122,7 +122,7 @@ function computeVoronoi(){
       }
       const col=hexToRGB(PALETTE[nearest%PALETTE.length]);
       const idx=(y*W+x)*4;
-      data[idx]=col[0]; data[idx+1]=col[1]; data[idx+2]=col[2]; data[idx+3]=180;
+      data[idx]=col[0]; data[idx+1]=col[1]; data[idx+2]=col[2]; data[idx+3]=255;
     }
   }
   voronoiImg=imageData;
